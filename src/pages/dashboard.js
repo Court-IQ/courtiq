@@ -9,17 +9,20 @@ function Dashboard() {
   }, []);
 
   async function fetchAnalyses() {
-    const { data, error } = await supabase
-      .from('analyses')
-      .select('*')
-      .order('created_at', { ascending: false });
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  const { data, error } = await supabase
+    .from('analyses')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
 
-    console.log('data:', data);
-    console.log('error:', error);
+  console.log('data:', data);
+  console.log('error:', error);
 
-    if (error) console.error(error);
-    else setAnalyses(data);
-  }
+  if (error) console.error(error);
+  else setAnalyses(data);
+}
 
   const avgScore = analyses.length
     ? Math.round(analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length)

@@ -55,15 +55,18 @@ export default function Upload() {
       const data = await response.json();
       setResult(data.result);
 
-      const { error } = await supabase.from('analyses').insert([{
-        session_name: data.result.sessionName,
-        player_name: data.result.playerName,
-        jersey_number: data.result.jerseyNumber,
-        position: data.result.position,
-        score: data.result.score,
-        grade: data.result.grade,
-        summary: data.result.summary,
-      }]);
+      const { data: { user } } = await supabase.auth.getUser();
+
+const { error } = await supabase.from('analyses').insert([{
+  session_name: data.result.sessionName,
+  player_name: data.result.playerName,
+  jersey_number: data.result.jerseyNumber,
+  position: data.result.position,
+  score: data.result.score,
+  grade: data.result.grade,
+  summary: data.result.summary,
+  user_id: user.id,
+}]);
 
       if (error) console.error('Save error:', error);
       else console.log('Saved!');

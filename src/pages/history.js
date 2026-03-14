@@ -10,10 +10,16 @@ function History() {
 }, []);
 
 async function fetchAnalyses() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
   const { data, error } = await supabase
     .from('analyses')
     .select('*')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
+
+  console.log('data:', data);
+  console.log('error:', error);
 
   if (error) console.error(error);
   else setAnalyses(data);
