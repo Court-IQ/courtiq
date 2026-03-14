@@ -28,15 +28,7 @@ async function handleDelete(id) {
     if (selected?.id === id) setSelected(null);
   }
 }
-  async function fetchAnalyses() {
-    const { data, error } = await supabase
-      .from('analyses')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) console.error(error);
-    else setAnalyses(data);
-  }
+ 
 
   function timeAgo(date) {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
