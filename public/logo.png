@@ -1,0 +1,7 @@
+<div className="logo">
+  <img src="/logo.png" alt="CourtIQ" />
+  <div>
+    <div className="logo-title">CourtIQ</div>
+    <div className="logo-sub">AI FILM ANALYSIS</div>
+  </div>
+</div>
