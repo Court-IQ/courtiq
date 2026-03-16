@@ -92,7 +92,8 @@ export default function Upload() {
       });
 
       const data = await response.json();
-      setResult(data.result);
+if (!data.success) throw new Error(data.error);
+setResult(data.result);
 
       const { data: { user } } = await supabase.auth.getUser();
 
