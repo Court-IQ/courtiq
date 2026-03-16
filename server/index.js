@@ -16,86 +16,6 @@ const supabase = createClient(
   process.env.REACT_APP_SUPABASE_ANON_KEY
 );
 
-async function analyzeBasketballFrame(base64Frame, playerName, jerseyNumber, position, playType) {
-  const response = await groq.chat.completions.create({
-    model: "meta-llama/llama-4-scout-17b-16e-instruct",
-    max_tokens: 1000,
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:image/jpeg;base64,${base64Frame}`
-            }
-          },
-          {
-            type: "text",
-            text: `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience developing players at the college and professional level. Your job is to help players understand things about their game they cannot see themselves.
-
-PLAY TYPE: ${playType} — focus your entire analysis on this specific type of play.
-FOCUS PLAYER: ${playerName ? playerName : 'the primary ball handler'}, Jersey #${jerseyNumber || 'unknown'}, Position: ${position}.
-
-Analyze this game film frame and give deep coaching feedback that teaches the player something they didn't already know. Return ONLY a JSON object, no extra text, no markdown:
-
-{
-  "positioning": {
-    "offense": "describe exactly where the focus player is on the court and how their positioning is affecting the play. Are they in the right spot? Why or why not?",
-    "defense": "describe the defensive situation the focus player is facing. What is the defense trying to take away?"
-  },
-  "shotQuality": {
-    "verdict": "GOOD SHOT or BAD SHOT",
-    "reason": "Don't just say if it's good or bad — explain the deeper basketball reason WHY. What does this shot choice reveal about the player's habits? What is the defense doing that the player is or isn't reading correctly?",
-    "whatToDoInstead": "If it was a bad shot, explain exactly what the better option was and why it would have been more effective"
-  },
-  "decisionMaking": {
-    "verdict": "RIGHT DECISION or WRONG DECISION",
-    "reason": "Explain what the player was likely thinking and why that thinking is right or wrong from a basketball IQ standpoint. What did they miss? What should they have seen?",
-    "habit": "Identify the underlying habit or tendency this decision reveals — good or bad."
-  },
-  "coachingTip": "Give one very specific, actionable coaching tip the player can work on in their next practice.",
-  "drill": "Suggest one specific basketball drill by name that directly addresses the weakness or reinforces the strength shown in this play. Explain how to run it in 1-2 sentences.",
-  "score": 75,
-  "grade": "B+"
-}
-
-Scoring: 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-72=C-, below 70=D`
-          }
-        ]
-      }
-    ]
-  });
-
-  const text = response.choices[0].message.content;
-  const clean = text.replace(/```json|```/g, "").trim();
-
-  try {
-    return JSON.parse(clean);
-  } catch(e) {
-    try {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) {
-        const fixed = match[0]
-          .replace(/[\u0000-\u001F]+/g, " ")
-          .replace(/,\s*}/g, "}")
-          .replace(/,\s*]/g, "]");
-        return JSON.parse(fixed);
-      }
-    } catch(e2) {
-      return {
-        positioning: { offense: "Unable to parse", defense: "Unable to parse" },
-        shotQuality: { verdict: "UNKNOWN", reason: "Analysis parsing failed", whatToDoInstead: "" },
-        decisionMaking: { verdict: "UNKNOWN", reason: "Analysis parsing failed", habit: "" },
-        coachingTip: "Please try again",
-        drill: "Please try again",
-        score: 70,
-        grade: "C"
-      };
-    }
-  }
-}
-
 app.post("/api/analyze", async (req, res) => {
   try {
     const { frames, sessionName, position, playerName, jerseyNumber, playType } = req.body;
@@ -104,17 +24,93 @@ app.post("/api/analyze", async (req, res) => {
       return res.status(400).json({ error: "No frames provided" });
     }
 
-    const framesToAnalyze = frames.slice(0, 1);
-    const analyses = [];
+    const framesToAnalyze = frames.slice(0, 10);
 
-    for (const frame of framesToAnalyze) {
-      const analysis = await analyzeBasketballFrame(frame, playerName, jerseyNumber, position, playType);
-      analyses.push(analysis);
+    const frameContents = framesToAnalyze.map((frame, i) => ([
+      {
+        type: "image_url",
+        image_url: { url: `data:image/jpeg;base64,${frame}` }
+      },
+      {
+        type: "text",
+        text: `Frame ${i + 1} of ${framesToAnalyze.length}`
+      }
+    ])).flat();
+
+    const response = await groq.chat.completions.create({
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      max_tokens: 1500,
+      messages: [
+        {
+          role: "user",
+          content: [
+            ...frameContents,
+            {
+              type: "text",
+              text: `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience developing players at the college and professional level. Your job is to help players understand things about their game they cannot see themselves.
+
+You are being given ${framesToAnalyze.length} frames from a single play in chronological order.
+PLAY TYPE: ${playType} — focus your entire analysis on this specific type of play.
+FOCUS PLAYER: ${playerName ? playerName : 'the primary ball handler'}, Jersey #${jerseyNumber || 'unknown'}, Position: ${position}.
+
+Analyze the FULL SEQUENCE of the play like a coach watching film. Look at how the play develops from start to finish. Return ONLY a JSON object, no extra text, no markdown:
+
+{
+  "positioning": {
+    "offense": "how did the offensive positioning develop throughout the play? Was the focus player in the right spots?",
+    "defense": "how did the defense react and adjust throughout the play? What were they trying to take away?"
+  },
+  "shotQuality": {
+    "verdict": "GOOD SHOT or BAD SHOT",
+    "reason": "based on the full sequence of the play, explain the deeper basketball reason WHY. What does this reveal about the player's habits?",
+    "whatToDoInstead": "if it was a bad shot, what should have happened instead and why?"
+  },
+  "decisionMaking": {
+    "verdict": "RIGHT DECISION or WRONG DECISION",
+    "reason": "what decisions did the player make throughout the play and were they correct? What did they miss?",
+    "habit": "what underlying habit or tendency does this play reveal — good or bad?"
+  },
+  "coachingTip": "one very specific actionable coaching tip the player can work on in their next practice",
+  "drill": "one specific basketball drill by name that addresses what you saw. Explain how to run it in 1-2 sentences.",
+  "score": 75,
+  "grade": "B+"
+}
+
+Scoring: 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-72=C-, below 70=D`
+            }
+          ]
+        }
+      ]
+    });
+
+    const text = response.choices[0].message.content;
+    const clean = text.replace(/```json|```/g, "").trim();
+
+    let summary;
+    try {
+      summary = JSON.parse(clean);
+    } catch(e) {
+      try {
+        const match = clean.match(/\{[\s\S]*\}/);
+        if (match) {
+          const fixed = match[0]
+            .replace(/[\u0000-\u001F]+/g, " ")
+            .replace(/,\s*}/g, "}")
+            .replace(/,\s*]/g, "]");
+          summary = JSON.parse(fixed);
+        }
+      } catch(e2) {
+        summary = {
+          positioning: { offense: "Unable to parse", defense: "Unable to parse" },
+          shotQuality: { verdict: "UNKNOWN", reason: "Analysis parsing failed", whatToDoInstead: "" },
+          decisionMaking: { verdict: "UNKNOWN", reason: "Analysis parsing failed", habit: "" },
+          coachingTip: "Please try again",
+          drill: "Please try again",
+          score: 70,
+          grade: "C"
+        };
+      }
     }
-
-    const avgScore = Math.round(
-      analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length
-    );
 
     const getGrade = (score) => {
       if (score >= 93) return "A";
@@ -127,16 +123,14 @@ app.post("/api/analyze", async (req, res) => {
       return "C-";
     };
 
-    const summary = analyses[0];
-
     const result = {
       sessionName,
       position,
       playerName,
       jerseyNumber,
       playType,
-      score: avgScore,
-      grade: getGrade(avgScore),
+      score: summary.score || 70,
+      grade: getGrade(summary.score || 70),
       summary,
       createdAt: new Date().toISOString()
     };
@@ -148,4 +142,4 @@ app.post("/api/analyze", async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log("✅ CourtIQ backend running on port 3001"));
+app.listen(process.env.PORT || 3001, () => console.log("✅ CourtIQ backend running!"));
