@@ -76,7 +76,7 @@ export default function Upload() {
     setLoading(true);
 
     try {
-      const frames = await extractFrames(videoRef.current, startTime, endTime, 10);
+      const frames = await extractFrames(videoRef.current, startTime, endTime, 5);
 
       const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/analyze', {
         method: 'POST',
@@ -214,7 +214,7 @@ setResult(data.result);
 
             {startTime !== null && endTime !== null && endTime > startTime && (
               <p style={{ color: '#ff6b00', fontWeight: '600', marginTop: '8px', textAlign: 'center' }}>
-                📽️ {(endTime - startTime).toFixed(1)} second clip selected — 10 frames will be analyzed
+                📽️ {(endTime - startTime).toFixed(1)} second clip selected — 5 frames will be analyzed
               </p>
             )}
 
@@ -224,7 +224,7 @@ setResult(data.result);
               disabled={loading}
               style={{ marginTop: '15px', width: '100%', opacity: loading ? 0.6 : 1 }}
             >
-              {loading ? '⏳ Analyzing 10 frames...' : '🏀 Analyze Play'}
+              {loading ? '⏳ Analyzing 5 frames...' : '🏀 Analyze Play'}
             </button>
           </div>
         )}

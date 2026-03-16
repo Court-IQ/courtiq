@@ -24,7 +24,7 @@ app.post("/api/analyze", async (req, res) => {
       return res.status(400).json({ error: "No frames provided" });
     }
 
-    const framesToAnalyze = frames.slice(0, 10);
+    const framesToAnalyze = frames.slice(0, 5);
 
     const frameContents = framesToAnalyze.map((frame, i) => ([
       {
