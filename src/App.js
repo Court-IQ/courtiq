@@ -5,6 +5,7 @@ import Dashboard from './pages/dashboard';
 import Upload from './pages/upload';
 import History from './pages/history';
 import Chat from './pages/chat';
+import Admin from './pages/admin';
 import Auth from './Auth';
 import { supabase } from './supabase';
 
@@ -100,6 +101,7 @@ function App() {
           <Route path="/upload" element={<Upload />} />
           <Route path="/history" element={<History />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </div>
     </BrowserRouter>
