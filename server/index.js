@@ -163,6 +163,45 @@ below 70 = D or F (wrong decision or very poor execution)`
   }
 });
 
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { message, analyses } = req.body;
+
+    const analysisHistory = analyses && analyses.length > 0
+      ? analyses.map((a, i) => 
+          `Analysis ${i + 1}: ${a.session_name} | ${a.play_type} | ${a.position} | Score: ${a.score}/100 | Grade: ${a.grade} | Player: ${a.player_name} #${a.jersey_number}`
+        ).join('\n')
+      : 'No analyses yet.';
+
+    const response = await groq.chat.completions.create({
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      max_tokens: 1000,
+      messages: [
+        {
+          role: "system",
+          content: `You are CourtIQ, an elite personal basketball coach with 20+ years of experience coaching high school and college players. You are talking directly to a player who wants to improve their game.
+
+Here is this player's analysis history:
+${analysisHistory}
+
+Use this data to give specific, personalized advice. Reference their actual scores, play types, and patterns you notice. Be encouraging but honest. Keep responses concise and actionable — like a real coach talking to a player, not a lecture. Use casual language. Max 3-4 sentences unless they ask for more detail.`
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ]
+    });
+
+    const reply = response.choices[0].message.content;
+    res.json({ success: true, reply });
+
+  } catch (err) {
+    console.error("Chat error:", err);
+    res.status(500).json({ success: false, reply: "Sorry, I couldn't process that. Try again!" });
+  }
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "CourtIQ backend is running!" });
 });

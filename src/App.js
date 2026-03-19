@@ -4,6 +4,7 @@ import './App.css';
 import Dashboard from './pages/dashboard';
 import Upload from './pages/upload';
 import History from './pages/history';
+import Chat from './pages/chat';
 import Auth from './Auth';
 import { supabase } from './supabase';
 
@@ -58,6 +59,7 @@ function Sidebar({ onSignOut }) {
           <div className="nav-item" onClick={() => { navigate('/'); setOpen(false); }}>Dashboard</div>
           <div className="nav-item" onClick={() => { navigate('/upload'); setOpen(false); }}>Upload Film</div>
           <div className="nav-item" onClick={() => { navigate('/history'); setOpen(false); }}>History</div>
+          <div className="nav-item" onClick={() => { navigate('/chat'); setOpen(false); }}>AI Coach</div>
           <div className="nav-item" onClick={onSignOut} style={{ marginTop: 'auto', color: '#ff4444' }}>Sign Out</div>
         </nav>
       </div>
@@ -97,6 +99,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/history" element={<History />} />
+          <Route path="/chat" element={<Chat />} />
         </Routes>
       </div>
     </BrowserRouter>
