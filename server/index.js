@@ -39,7 +39,7 @@ app.post("/api/analyze", async (req, res) => {
 
     const response = await groq.chat.completions.create({
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
-      max_tokens: 1500,
+      max_tokens: 2000,
       messages: [
         {
           role: "user",
@@ -47,36 +47,53 @@ app.post("/api/analyze", async (req, res) => {
             ...frameContents,
             {
               type: "text",
-              text: `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience developing players at the college and professional level. Your job is to help players understand things about their game they cannot see themselves.
+              text: `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience. You have coached at the high school and college level and specialize in player development for young athletes.
 
-You are being given ${framesToAnalyze.length} frames from a single play in chronological order.
-PLAY TYPE: ${playType} — focus your entire analysis on this specific type of play.
-FOCUS PLAYER: ${playerName ? playerName : 'the primary ball handler'}, Jersey #${jerseyNumber || 'unknown'}, Position: ${position}.
+You are analyzing ${framesToAnalyze.length} frames from a ${playType} by ${playerName || 'the focus player'}, Jersey #${jerseyNumber || 'unknown'}, playing ${position}.
 
-Analyze the FULL SEQUENCE of the play like a coach watching film. Look at how the play develops from start to finish. Return ONLY a JSON object, no extra text, no markdown:
+Study the FULL SEQUENCE carefully. Look at:
+- Where the player starts and ends the play
+- How defenders are positioned and rotating
+- Whether the player reads the defense correctly
+- Body positioning, footwork, and balance
+- Spacing of teammates on the floor
+- Whether the play type matches what the defense is giving them
+
+Be BRUTALLY HONEST like a real coach watching film. Do not sugarcoat. High school players need real feedback to actually improve. If the shot was bad, say it was bad and explain exactly why. If the decision was wrong, say so.
+
+Return ONLY valid JSON, no markdown, no extra text, no backticks:
 
 {
   "positioning": {
-    "offense": "how did the offensive positioning develop throughout the play? Was the focus player in the right spots?",
-    "defense": "how did the defense react and adjust throughout the play? What were they trying to take away?"
+    "offense": "specific description of offensive positioning throughout the full play sequence — where was the focus player, where were teammates, was the spacing good or bad?",
+    "defense": "specific description of how the defense was set up and how they reacted — were they in help position, was the defender close, did they rotate correctly?"
   },
   "shotQuality": {
     "verdict": "GOOD SHOT or BAD SHOT",
-    "reason": "based on the full sequence of the play, explain the deeper basketball reason WHY. What does this reveal about the player's habits?",
-    "whatToDoInstead": "if it was a bad shot, what should have happened instead and why?"
+    "reason": "deep basketball reason WHY based on what you see — defender position, shot location, shot type for this player's position, game situation awareness",
+    "whatToDoInstead": "if it was a bad shot, exactly what should have been done instead and why would that have been better?"
   },
   "decisionMaking": {
     "verdict": "RIGHT DECISION or WRONG DECISION",
-    "reason": "what decisions did the player make throughout the play and were they correct? What did they miss?",
-    "habit": "what underlying habit or tendency does this play reveal — good or bad?"
+    "reason": "what did the player read correctly or miss? What information did they have available but ignore? What did they see that led to this decision?",
+    "habit": "what does this play reveal about this player's tendencies — is this a good habit being reinforced or a bad habit that needs to be broken?"
   },
-  "coachingTip": "one very specific actionable coaching tip the player can work on in their next practice",
-  "drill": "one specific basketball drill by name that addresses what you saw. Explain how to run it in 1-2 sentences.",
+  "coachingTip": "one very specific actionable coaching tip this player can work on in their very next practice session — be specific, not generic",
+  "drill": "one specific named basketball drill that directly addresses what you saw in this play. Explain exactly how to run it in 2 sentences so a high school player can do it alone or with a partner.",
   "score": 75,
   "grade": "B+"
 }
 
-Scoring: 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-72=C-, below 70=D`
+Scoring guide — be honest, most high school plays should score between 60-85:
+93-100 = A (elite play, professional level execution)
+90-92 = A- (excellent play, minor improvements only)
+87-89 = B+ (good play, solid execution with small mistakes)
+83-86 = B (above average, did the right thing mostly)
+80-82 = B- (decent play, some clear mistakes)
+77-79 = C+ (average play, several things to fix)
+73-76 = C (below average, significant issues)
+70-72 = C- (poor execution, major mistakes)
+below 70 = D or F (wrong decision or very poor execution)`
             }
           ]
         }
@@ -101,11 +118,11 @@ Scoring: 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-
         }
       } catch(e2) {
         summary = {
-          positioning: { offense: "Unable to parse", defense: "Unable to parse" },
-          shotQuality: { verdict: "UNKNOWN", reason: "Analysis parsing failed", whatToDoInstead: "" },
-          decisionMaking: { verdict: "UNKNOWN", reason: "Analysis parsing failed", habit: "" },
-          coachingTip: "Please try again",
-          drill: "Please try again",
+          positioning: { offense: "Unable to parse response", defense: "Unable to parse response" },
+          shotQuality: { verdict: "UNKNOWN", reason: "Analysis parsing failed. Please try again.", whatToDoInstead: "" },
+          decisionMaking: { verdict: "UNKNOWN", reason: "Analysis parsing failed. Please try again.", habit: "" },
+          coachingTip: "Please try the analysis again",
+          drill: "Please try the analysis again",
           score: 70,
           grade: "C"
         };
@@ -120,7 +137,10 @@ Scoring: 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-
       if (score >= 80) return "B-";
       if (score >= 77) return "C+";
       if (score >= 73) return "C";
-      return "C-";
+      if (score >= 70) return "C-";
+      if (score >= 65) return "D+";
+      if (score >= 60) return "D";
+      return "F";
     };
 
     const result = {
@@ -136,10 +156,17 @@ Scoring: 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-
     };
 
     res.json({ success: true, result });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("CourtIQ API Error:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-app.listen(process.env.PORT || 3001, () => console.log("✅ CourtIQ backend running!"));
+app.get("/health", (req, res) => {
+  res.json({ status: "CourtIQ backend is running!" });
+});
+
+app.listen(process.env.PORT || 3001, () => {
+  console.log("✅ CourtIQ backend running on port", process.env.PORT || 3001);
+});
