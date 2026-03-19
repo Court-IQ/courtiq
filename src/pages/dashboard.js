@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [analyses, setAnalyses] = useState([]);
 
   useEffect(() => {
@@ -9,20 +11,15 @@ function Dashboard() {
   }, []);
 
   async function fetchAnalyses() {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  const { data, error } = await supabase
-    .from('analyses')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  console.log('data:', data);
-  console.log('error:', error);
-
-  if (error) console.error(error);
-  else setAnalyses(data);
-}
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('analyses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error) console.error(error);
+    else setAnalyses(data);
+  }
 
   const avgScore = analyses.length
     ? Math.round(analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length)
@@ -47,9 +44,8 @@ function Dashboard() {
           <h1>Dashboard</h1>
           <p>Your basketball performance at a glance</p>
         </div>
-        <button className="upload-btn">Upload Film</button>
+        <button className="upload-btn" onClick={() => navigate('/upload')}>Upload Film</button>
       </div>
-
       <div className="stats-row">
         <div className="stat-card">
           <div className="stat-label">TOTAL SESSIONS</div>
@@ -68,7 +64,6 @@ function Dashboard() {
           <div className="stat-value">{bestGrade}</div>
         </div>
       </div>
-
       <h2>Recent Analyses</h2>
       <div className="analyses-grid">
         {analyses.map((a) => (
@@ -82,7 +77,6 @@ function Dashboard() {
             <div className="score-label">{a.score}/100</div>
           </div>
         ))}
-
         {analyses.length === 0 && (
           <p style={{ color: '#888' }}>No analyses yet. Upload your first film!</p>
         )}
