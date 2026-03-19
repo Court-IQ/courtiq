@@ -365,3 +365,45 @@ h2 {
 ::-webkit-scrollbar-thumb:hover {
   background: #ff6b00;
 }
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block !important;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100vh;
+    z-index: 999;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar-open {
+    left: 0;
+  }
+
+  .main {
+    padding: 20px;
+    padding-top: 60px;
+  }
+
+  .stats-row {
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    min-width: calc(50% - 8px);
+  }
+
+  .analyses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

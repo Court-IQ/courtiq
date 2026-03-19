@@ -9,22 +9,59 @@ import { supabase } from './supabase';
 
 function Sidebar({ onSignOut }) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="sidebar">
-      <div className="logo">
-        <span className="logo-icon">🏀</span>
-        <div>
-          <div className="logo-title">CourtIQ</div>
-          <div className="logo-sub">AI FILM ANALYSIS</div>
+    <>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          display: 'none',
+          position: 'fixed',
+          top: '16px',
+          left: '16px',
+          zIndex: 1000,
+          background: '#e85d24',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '10px 14px',
+          color: 'white',
+          fontSize: '20px',
+          cursor: 'pointer'
+        }}
+        className="hamburger"
+      >
+        {open ? '✕' : '☰'}
+      </button>
+
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 998
+          }}
+        />
+      )}
+
+      <div className={`sidebar ${open ? 'sidebar-open' : ''}`}>
+        <div className="logo">
+          <span className="logo-icon">🏀</span>
+          <div>
+            <div className="logo-title">CourtIQ</div>
+            <div className="logo-sub">AI FILM ANALYSIS</div>
+          </div>
         </div>
+        <nav>
+          <div className="nav-item" onClick={() => { navigate('/'); setOpen(false); }}>Dashboard</div>
+          <div className="nav-item" onClick={() => { navigate('/upload'); setOpen(false); }}>Upload Film</div>
+          <div className="nav-item" onClick={() => { navigate('/history'); setOpen(false); }}>History</div>
+          <div className="nav-item" onClick={onSignOut} style={{ marginTop: 'auto', color: '#ff4444' }}>Sign Out</div>
+        </nav>
       </div>
-      <nav>
-        <div className="nav-item" onClick={() => navigate('/')}>Dashboard</div>
-        <div className="nav-item" onClick={() => navigate('/upload')}>Upload Film</div>
-        <div className="nav-item" onClick={() => navigate('/history')}>History</div>
-        <div className="nav-item" onClick={onSignOut} style={{ marginTop: 'auto', color: '#ff4444' }}>Sign Out</div>
-      </nav>
-    </div>
+    </>
   );
 }
 
