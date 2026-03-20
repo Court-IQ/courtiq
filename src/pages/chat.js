@@ -1,31 +1,50 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 
+const CONVERSATION_ID = crypto.randomUUID();
+
 function Chat() {
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm your AI coach. Ask me anything about your game — I can see all your past analyses and help you improve. What do you want to work on?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
   const bottomRef = useRef(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  async function saveMessage(role, text) {
+    if (!userId) return;
+    await supabase.from('messages').insert([{
+      user_id: userId,
+      role,
+      text,
+      conversation_id: CONVERSATION_ID
+    }]);
+  }
 
   async function sendMessage() {
     if (!input.trim()) return;
     const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    await saveMessage('user', userMessage);
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       const { data: analyses } = await supabase
         .from('analyses')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -37,6 +56,7 @@ function Chat() {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
+      await saveMessage('assistant', data.reply);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, something went wrong. Try again!' }]);
     } finally {
@@ -70,11 +90,12 @@ function Chat() {
               maxWidth: '75%',
               padding: '12px 16px',
               borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: msg.role === 'user' ? '#e85d24' : '#1a1d27',
+              background: msg.role === 'user' ? '#e85d24' : msg.role === 'coach' ? '#2a5c2a' : '#1a1d27',
               color: 'white',
               fontSize: '15px',
               lineHeight: '1.5'
             }}>
+              {msg.role === 'coach' && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}>👨‍🏫 CourtIQ Coach</div>}
               {msg.text}
             </div>
           </div>
