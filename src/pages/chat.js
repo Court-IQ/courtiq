@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 
-const CONVERSATION_ID = crypto.randomUUID();
-
 function Chat() {
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm your AI coach. Ask me anything about your game — I can see all your past analyses and help you improve. What do you want to work on?" }
@@ -10,41 +8,72 @@ function Chat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    if (user) setUserId(user.id);
-  });
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
 
-  const subscription = supabase
-    .channel('messages')
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages'
-    }, (payload) => {
-      const msg = payload.new;
-      if (msg.role === 'coach') {
-        setMessages(prev => [...prev, { role: 'coach', text: msg.text }]);
+      // Check if user has an existing conversation
+      const { data: existing } = await supabase
+        .from('messages')
+        .select('conversation_id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let convoId;
+      if (existing && existing.length > 0) {
+        convoId = existing[0].conversation_id;
+        // Load existing messages
+        const { data: msgs } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', convoId)
+          .order('created_at', { ascending: true });
+        if (msgs && msgs.length > 0) {
+          setMessages(msgs.map(m => ({ role: m.role, text: m.text })));
+        }
+      } else {
+        convoId = crypto.randomUUID();
       }
-    })
-    .subscribe();
+      setConversationId(convoId);
 
-  return () => supabase.removeChannel(subscription);
-}, []);
+      // Subscribe to new messages in this conversation
+      const subscription = supabase
+        .channel(`conversation-${convoId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${convoId}`
+        }, (payload) => {
+          const msg = payload.new;
+          if (msg.role === 'coach') {
+            setMessages(prev => [...prev, { role: 'coach', text: msg.text }]);
+          }
+        })
+        .subscribe();
+
+      return () => supabase.removeChannel(subscription);
+    }
+    init();
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   async function saveMessage(role, text) {
-    if (!userId) return;
+    if (!userId || !conversationId) return;
     await supabase.from('messages').insert([{
       user_id: userId,
       role,
       text,
-      conversation_id: CONVERSATION_ID
+      conversation_id: conversationId
     }]);
   }
 
@@ -106,12 +135,14 @@ function Chat() {
               maxWidth: '75%',
               padding: '12px 16px',
               borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: msg.role === 'user' ? '#e85d24' : msg.role === 'coach' ? '#2a5c2a' : '#1a1d27',
+              background: msg.role === 'user' ? '#e85d24' : msg.role === 'coach' ? '#1a4a1a' : '#1a1d27',
               color: 'white',
               fontSize: '15px',
               lineHeight: '1.5'
             }}>
-              {msg.role === 'coach' && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}>👨‍🏫 CourtIQ Coach</div>}
+              {msg.role === 'coach' && (
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}>👨‍🏫 CourtIQ Coach</div>
+              )}
               {msg.text}
             </div>
           </div>
