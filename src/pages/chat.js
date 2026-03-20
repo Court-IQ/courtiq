@@ -13,10 +13,26 @@ function Chat() {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id);
-    });
-  }, []);
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (user) setUserId(user.id);
+  });
+
+  const subscription = supabase
+    .channel('messages')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages'
+    }, (payload) => {
+      const msg = payload.new;
+      if (msg.role === 'coach') {
+        setMessages(prev => [...prev, { role: 'coach', text: msg.text }]);
+      }
+    })
+    .subscribe();
+
+  return () => supabase.removeChannel(subscription);
+}, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
