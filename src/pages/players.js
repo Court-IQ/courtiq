@@ -47,7 +47,6 @@ function Players() {
   }
 
   const section = { background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '24px' };
-  const sectionTitle = { fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px' };
 
   return (
     <div className="main">
