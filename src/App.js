@@ -10,6 +10,7 @@ import Analysis from './pages/analysis';
 import Players from './pages/players';
 import GameUpload from './pages/game-upload';
 import Landing from './pages/landing';
+import Onboarding from './pages/onboarding';
 import Auth from './Auth';
 import { supabase } from './supabase';
 
@@ -94,15 +95,22 @@ function Sidebar({ onSignOut }) {
 function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session && !localStorage.getItem('courtiq_onboarded')) {
+        setShowOnboarding(true);
+      }
       setLoading(false);
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session && !localStorage.getItem('courtiq_onboarded')) {
+        setShowOnboarding(true);
+      }
     });
   }, []);
 
@@ -129,6 +137,12 @@ function App() {
 
   return (
     <BrowserRouter>
+      {showOnboarding && (
+        <Onboarding onComplete={() => {
+          localStorage.setItem('courtiq_onboarded', 'true');
+          setShowOnboarding(false);
+        }} />
+      )}
       <div className="layout">
         <Sidebar onSignOut={handleSignOut} />
         <Routes>
