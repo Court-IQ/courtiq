@@ -1,9 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 export default function GameUpload() {
-  const navigate = useNavigate();
   const [phase, setPhase] = useState(1); // 1=setup, 2=tagging, 3=analyzing
   const [file, setFile] = useState(null);
   const [videoURL, setVideoURL] = useState(null);
