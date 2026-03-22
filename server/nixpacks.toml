@@ -5,15 +5,4 @@ cmds = ["npm install --legacy-peer-deps"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx serve -s build -l $PORT"
-```
-
-**Step 2** — In the **zsh** terminal run these three commands one at a time:
-```
-git add .
-```
-```
-git commit -m "fix railway build"
-```
-```
-git push
+cmd = "node server/index.js"
