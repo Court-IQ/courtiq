@@ -329,11 +329,13 @@ app.post("/api/brain", async (req, res) => {
     });
 
     const id = `custom-${Date.now()}`;
-    await brainIndex.upsert([{
-      id,
-      values: embeddingResponse.data[0].embedding,
-      metadata: { category: category || 'general', play_type: playType || '', verdict: verdict || '', text }
-    }]);
+    await brainIndex.upsert({
+      records: [{
+        id,
+        values: embeddingResponse.data[0].embedding,
+        metadata: { category: category || 'general', play_type: playType || '', verdict: verdict || '', text }
+      }]
+    });
 
     res.json({ success: true, id });
   } catch (err) {
