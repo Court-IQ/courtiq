@@ -189,6 +189,10 @@ below 65 = D/F — fundamentally wrong play`;
         max_tokens: 2000,
         messages: [
           {
+            role: "system",
+            content: "You are CourtIQ, an elite basketball film analyst. You analyze basketball video frames and return structured JSON analysis. Always respond with valid JSON only."
+          },
+          {
             role: "user",
             content: [
               ...frameContents,
@@ -215,7 +219,13 @@ below 65 = D/F — fundamentally wrong play`;
     }
 
     const text = response.choices[0].message.content;
-    const clean = text.replace(/```json|```/g, "").trim();
+    console.log(`🔍 [${mode || 'standard'}] Raw response (first 500 chars):`, text?.slice(0, 500));
+
+    if (!text) {
+      console.log('⚠️ Empty response. Refusal:', response.choices[0].message.refusal || 'none');
+    }
+
+    const clean = (text || '').replace(/```json|```/g, "").trim();
 
     let summary;
     try {
@@ -231,6 +241,7 @@ below 65 = D/F — fundamentally wrong play`;
           summary = JSON.parse(fixed);
         }
       } catch(e2) {
+        console.log('❌ Parse failed. Clean text:', clean?.slice(0, 300));
         summary = {
           positioning: { offense: "Unable to parse response", defense: "Unable to parse response" },
           shotQuality: { verdict: "UNKNOWN", reason: "Analysis parsing failed. Please try again.", whatToDoInstead: "" },
