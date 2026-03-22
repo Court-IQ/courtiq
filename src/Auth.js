@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from './supabase';
 
 function Auth() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(!searchParams.get('signup'));
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +32,7 @@ function Auth() {
     <div className="auth-container">
       <div style={{ width: '100%', maxWidth: '420px' }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px', cursor: 'pointer' }} onClick={() => navigate('/')}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏀</div>
           <div style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', letterSpacing: '-1px' }}>CourtIQ</div>
           <div style={{ fontSize: '11px', color: '#555', letterSpacing: '3px', fontWeight: '700', marginTop: '4px' }}>AI FILM ANALYSIS</div>
@@ -46,10 +49,7 @@ function Auth() {
           </div>
 
           {error && (
-            <div style={{
-              background: '#2a0a0a', border: '1px solid #ff4444', borderRadius: '8px',
-              padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500'
-            }}>
+            <div style={{ background: '#2a0a0a', border: '1px solid #ff4444', borderRadius: '8px', padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500' }}>
               {error}
             </div>
           )}

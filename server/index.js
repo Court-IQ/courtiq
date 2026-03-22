@@ -263,9 +263,19 @@ app.post("/api/chat", async (req, res) => {
     const { message, analyses } = req.body;
 
     const analysisHistory = analyses && analyses.length > 0
-      ? analyses.map((a, i) => 
-          `Analysis ${i + 1}: ${a.session_name} | ${a.play_type} | ${a.position} | Score: ${a.score}/100 | Grade: ${a.grade} | Player: ${a.player_name} #${a.jersey_number}`
-        ).join('\n')
+      ? analyses.map((a, i) => {
+          const s = a.summary || {};
+          return `--- Analysis ${i + 1}: ${a.session_name} ---
+Play: ${a.play_type || 'unknown'} | Position: ${a.position} | Player: ${a.player_name} #${a.jersey_number}
+Score: ${a.score}/100 | Grade: ${a.grade}
+Offense: ${s.positioning?.offense || 'N/A'}
+Defense: ${s.positioning?.defense || 'N/A'}
+Shot Quality: ${s.shotQuality?.verdict || 'N/A'} — ${s.shotQuality?.reason || ''}
+Decision: ${s.decisionMaking?.verdict || 'N/A'} — ${s.decisionMaking?.reason || ''}
+Habit: ${s.decisionMaking?.habit || 'N/A'}
+Coaching Tip: ${s.coachingTip || 'N/A'}
+Drill: ${s.drill || 'N/A'}`;
+        }).join('\n\n')
       : 'No analyses yet.';
 
     const response = await groq.chat.completions.create({
@@ -274,12 +284,17 @@ app.post("/api/chat", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are CourtIQ, an elite personal basketball coach with 20+ years of experience coaching high school and college players. You are talking directly to a player who wants to improve their game.
+          content: `You are CourtIQ, an elite personal basketball coach with 20+ years of experience. You are talking directly to a player who wants to improve.
 
-Here is this player's analysis history:
+Here is their full film analysis history:
 ${analysisHistory}
 
-Use this data to give specific, personalized advice. Reference their actual scores, play types, and patterns you notice. Be encouraging but honest. Keep responses concise and actionable — like a real coach talking to a player, not a lecture. Use casual language. Max 3-4 sentences unless they ask for more detail.`
+Rules:
+- Reference specific details from their analyses (habits, drills, verdicts, coaching tips)
+- Spot patterns across multiple plays if they exist
+- Be direct and honest like a real coach — no fluff
+- Keep it conversational, max 4 sentences unless they ask for more
+- If they ask about a specific play type or area, pull from the relevant analysis`
         },
         {
           role: "user",

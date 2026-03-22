@@ -7,6 +7,9 @@ import History from './pages/history';
 import Chat from './pages/chat';
 import Admin from './pages/admin';
 import Brain from './pages/brain';
+import Analysis from './pages/analysis';
+import Players from './pages/players';
+import Landing from './pages/landing';
 import Auth from './Auth';
 import { supabase } from './supabase';
 
@@ -19,6 +22,7 @@ function Sidebar({ onSignOut }) {
     { label: 'Dashboard', path: '/' },
     { label: 'Upload Film', path: '/upload' },
     { label: 'History', path: '/history' },
+    { label: 'Players', path: '/players' },
     { label: 'AI Coach', path: '/chat' },
     { label: 'Brain', path: '/brain' },
   ];
@@ -60,7 +64,7 @@ function Sidebar({ onSignOut }) {
 
       <div className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="logo">
-          <span className="logo-icon" style={{ fontSize: '24px' }}>🏀</span>
+          <span style={{ fontSize: '24px' }}>🏀</span>
           <div>
             <div className="logo-title">CourtIQ</div>
             <div className="logo-sub">AI FILM ANALYSIS</div>
@@ -109,9 +113,21 @@ function App() {
     setSession(null);
   }
 
-  if (loading) return <div style={{ color: 'white', padding: '20px', background: '#080a0f', height: '100vh' }}>Loading...</div>;
+  if (loading) return (
+    <div style={{ color: 'white', padding: '20px', background: '#080a0f', height: '100vh' }}>Loading...</div>
+  );
 
-  if (!session) return <Auth />;
+  // Not logged in — use BrowserRouter so Landing/Auth can use useNavigate
+  if (!session) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="*" element={<Landing />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -121,9 +137,11 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/history" element={<History />} />
+          <Route path="/players" element={<Players />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/brain" element={<Brain />} />
+          <Route path="/analysis/:id" element={<Analysis />} />
         </Routes>
       </div>
     </BrowserRouter>
