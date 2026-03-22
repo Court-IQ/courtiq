@@ -9,12 +9,14 @@ function Brain() {
   const [verdict, setVerdict] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [entries, setEntries] = useState([]);
 
   async function handleSave() {
     if (!text.trim()) return alert('Please write something first!');
     setLoading(true);
     setSuccess(false);
+    setError('');
 
     try {
       const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/brain', {
@@ -30,9 +32,11 @@ function Brain() {
         setText('');
         setPlayType('');
         setVerdict('');
+      } else {
+        setError(data.error || 'Save failed. Check your Pinecone/OpenAI keys.');
       }
     } catch (err) {
-      alert('Failed to save: ' + err.message);
+      setError('Could not reach the server. Is the backend running?');
     } finally {
       setLoading(false);
     }
@@ -131,6 +135,11 @@ function Brain() {
           <p style={{ color: '#4ade80', marginTop: '12px', textAlign: 'center', fontSize: '14px', fontWeight: '600' }}>
             ✅ Added to the basketball brain successfully!
           </p>
+        )}
+        {error && (
+          <div style={{ background: '#2a0a0a', border: '1px solid #ff4444', borderRadius: '8px', padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500', marginTop: '12px' }}>
+            {error}
+          </div>
         )}
       </div>
 
