@@ -1,0 +1,144 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const ADMIN_ID = '4b1e31f7-6366-440b-896f-ef858d9fdec2';
+
+function Brain() {
+  const navigate = useNavigate();
+  const [text, setText] = useState('');
+  const [category, setCategory] = useState('general');
+  const [playType, setPlayType] = useState('');
+  const [verdict, setVerdict] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [entries, setEntries] = useState([]);
+
+  async function handleSave() {
+    if (!text.trim()) return alert('Please write something first!');
+    setLoading(true);
+    setSuccess(false);
+
+    try {
+      const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/brain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, category, playType, verdict })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSuccess(true);
+        setEntries(prev => [...prev, { text, category, playType, verdict }]);
+        setText('');
+        setPlayType('');
+        setVerdict('');
+      }
+    } catch (err) {
+      alert('Failed to save: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="main">
+      <div className="top-bar">
+        <div>
+          <h1>🧠 Basketball Brain</h1>
+          <p>Add your basketball knowledge to train the AI</p>
+        </div>
+        <button className="upload-btn" onClick={() => navigate('/')}>Back to Dashboard</button>
+      </div>
+
+      <div style={{ background: '#1a1d27', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
+        <h2 style={{ marginBottom: '16px' }}>Add New Knowledge</h2>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ color: '#888', fontSize: '13px', display: 'block', marginBottom: '6px' }}>Category</label>
+          <select
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0f1117', color: 'white', fontSize: '14px' }}
+          >
+            <option value="general">General</option>
+            <option value="shot_quality">Shot Quality</option>
+            <option value="decision_making">Decision Making</option>
+            <option value="positioning">Positioning</option>
+            <option value="drill">Drill</option>
+            <option value="habit">Habit</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ color: '#888', fontSize: '13px', display: 'block', marginBottom: '6px' }}>Play Type (optional)</label>
+          <input
+            type="text"
+            placeholder="e.g. pull up jumper, drive to basket, pick and roll"
+            value={playType}
+            onChange={e => setPlayType(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0f1117', color: 'white', fontSize: '14px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ color: '#888', fontSize: '13px', display: 'block', marginBottom: '6px' }}>Verdict (optional)</label>
+          <select
+            value={verdict}
+            onChange={e => setVerdict(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0f1117', color: 'white', fontSize: '14px' }}
+          >
+            <option value="">None</option>
+            <option value="GOOD SHOT">GOOD SHOT</option>
+            <option value="BAD SHOT">BAD SHOT</option>
+            <option value="RIGHT DECISION">RIGHT DECISION</option>
+            <option value="WRONG DECISION">WRONG DECISION</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ color: '#888', fontSize: '13px', display: 'block', marginBottom: '6px' }}>Your Basketball Knowledge</label>
+          <textarea
+            placeholder="Write your basketball knowledge here. Be specific and detailed. Example: When a point guard drives left and the help defender rotates from the weak side, the best play is to either finish strong or hit the corner shooter. Most high school players panic and pick up their dribble..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+            rows={6}
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#0f1117', color: 'white', fontSize: '14px', resize: 'vertical', fontFamily: 'sans-serif' }}
+          />
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="upload-btn"
+          style={{ width: '100%', opacity: loading ? 0.6 : 1 }}
+        >
+          {loading ? '⏳ Saving to Brain...' : '🧠 Add to Basketball Brain'}
+        </button>
+
+        {success && (
+          <p style={{ color: '#4ade80', marginTop: '12px', textAlign: 'center' }}>
+            ✅ Added to the basketball brain successfully!
+          </p>
+        )}
+      </div>
+
+      {entries.length > 0 && (
+        <div style={{ background: '#1a1d27', borderRadius: '12px', padding: '24px' }}>
+          <h2 style={{ marginBottom: '16px' }}>Added This Session</h2>
+          {entries.map((e, i) => (
+            <div key={i} style={{ background: '#0f1117', borderRadius: '8px', padding: '16px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ background: '#e85d24', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.category}</span>
+                {e.playType && <span style={{ background: '#2a2d3a', color: '#888', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.playType}</span>}
+                {e.verdict && <span style={{ background: '#1a4a1a', color: '#4ade80', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.verdict}</span>}
+              </div>
+              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.5' }}>{e.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default Brain;

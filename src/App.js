@@ -6,6 +6,7 @@ import Upload from './pages/upload';
 import History from './pages/history';
 import Chat from './pages/chat';
 import Admin from './pages/admin';
+import Brain from './pages/brain';
 import Auth from './Auth';
 import { supabase } from './supabase';
 
@@ -61,6 +62,7 @@ function Sidebar({ onSignOut }) {
           <div className="nav-item" onClick={() => { navigate('/upload'); setOpen(false); }}>Upload Film</div>
           <div className="nav-item" onClick={() => { navigate('/history'); setOpen(false); }}>History</div>
           <div className="nav-item" onClick={() => { navigate('/chat'); setOpen(false); }}>AI Coach</div>
+          <div className="nav-item" onClick={() => { navigate('/brain'); setOpen(false); }}>🧠 Brain</div>
           <div className="nav-item" onClick={onSignOut} style={{ marginTop: 'auto', color: '#ff4444' }}>Sign Out</div>
         </nav>
       </div>
@@ -102,6 +104,7 @@ function App() {
           <Route path="/history" element={<History />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/brain" element={<Brain />} />
         </Routes>
       </div>
     </BrowserRouter>

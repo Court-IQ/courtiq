@@ -235,6 +235,36 @@ Use this data to give specific, personalized advice. Reference their actual scor
   }
 });
 
+app.post("/api/brain", async (req, res) => {
+  try {
+    const { text, category, playType, verdict } = req.body;
+    if (!text) return res.status(400).json({ error: "No text provided" });
+
+    const { Pinecone } = require('@pinecone-database/pinecone');
+    const OpenAI = require('openai');
+    const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+    const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const brainIndex = pinecone.index('courtiq-brain');
+
+    const embeddingResponse = await openaiClient.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: text
+    });
+
+    const id = `custom-${Date.now()}`;
+    await brainIndex.upsert([{
+      id,
+      values: embeddingResponse.data[0].embedding,
+      metadata: { category: category || 'general', play_type: playType || '', verdict: verdict || '', text }
+    }]);
+
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "CourtIQ backend is running!" });
 });
