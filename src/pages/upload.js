@@ -9,6 +9,7 @@ export default function Upload() {
   const [playerName, setPlayerName] = useState('');
   const [jerseyNumber, setJerseyNumber] = useState('');
   const [playType, setPlayType] = useState('post move');
+  const [mode, setMode] = useState('standard');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const videoRef = useRef(null);
@@ -62,7 +63,7 @@ export default function Upload() {
       const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frames, sessionName, position, playerName, jerseyNumber, playType })
+        body: JSON.stringify({ frames, sessionName, position, playerName, jerseyNumber, playType, mode })
       });
 
       const data = await response.json();
@@ -186,6 +187,44 @@ export default function Upload() {
             <option>pull up jumper</option>
             <option>defensive play</option>
           </select>
+
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '1px', marginBottom: '10px' }}>ANALYSIS MODE</div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setMode('standard')}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: '10px', cursor: 'pointer',
+                  border: `2px solid ${mode === 'standard' ? '#ff6b00' : '#1a1d2e'}`,
+                  background: mode === 'standard' ? 'rgba(255,107,0,0.1)' : '#080a0f',
+                  color: mode === 'standard' ? '#ff6b00' : '#888',
+                  fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div>Standard</div>
+                <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '4px', color: mode === 'standard' ? '#cc5500' : '#555' }}>
+                  Free — Llama Scout
+                </div>
+              </button>
+              <button
+                onClick={() => setMode('pro')}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: '10px', cursor: 'pointer',
+                  border: `2px solid ${mode === 'pro' ? '#4ade80' : '#1a1d2e'}`,
+                  background: mode === 'pro' ? 'rgba(74,222,128,0.1)' : '#080a0f',
+                  color: mode === 'pro' ? '#4ade80' : '#888',
+                  fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div>Pro</div>
+                <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '4px', color: mode === 'pro' ? '#2d8a56' : '#555' }}>
+                  Higher quality — GPT-4o
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Video Upload */}

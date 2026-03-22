@@ -11,6 +11,7 @@ export default function GameUpload() {
   const [position, setPosition] = useState('point guard');
   const [playerName, setPlayerName] = useState('');
   const [jerseyNumber, setJerseyNumber] = useState('');
+  const [mode, setMode] = useState('standard');
   const [segments, setSegments] = useState([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [gameResult, setGameResult] = useState(null);
@@ -157,6 +158,7 @@ export default function GameUpload() {
             playerName,
             jerseyNumber,
             playType: seg.playType,
+            mode,
           })
         });
 
@@ -291,6 +293,40 @@ export default function GameUpload() {
               <option>power forward</option>
               <option>center</option>
             </select>
+          </div>
+
+          <div style={section}>
+            <div style={sectionTitle}>Analysis Mode</div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setMode('standard')}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: '10px', cursor: 'pointer',
+                  border: `2px solid ${mode === 'standard' ? '#ff6b00' : '#1a1d2e'}`,
+                  background: mode === 'standard' ? 'rgba(255,107,0,0.1)' : '#080a0f',
+                  color: mode === 'standard' ? '#ff6b00' : '#888',
+                  fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div>Standard</div>
+                <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '4px', color: mode === 'standard' ? '#cc5500' : '#555' }}>Free — Llama Scout</div>
+              </button>
+              <button
+                onClick={() => setMode('pro')}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: '10px', cursor: 'pointer',
+                  border: `2px solid ${mode === 'pro' ? '#4ade80' : '#1a1d2e'}`,
+                  background: mode === 'pro' ? 'rgba(74,222,128,0.1)' : '#080a0f',
+                  color: mode === 'pro' ? '#4ade80' : '#888',
+                  fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div>Pro</div>
+                <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '4px', color: mode === 'pro' ? '#2d8a56' : '#555' }}>Higher quality — GPT-4o</div>
+              </button>
+            </div>
           </div>
 
           <div style={section}>

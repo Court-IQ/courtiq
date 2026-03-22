@@ -20,7 +20,7 @@ const supabase = createClient(
 
 app.post("/api/analyze", async (req, res) => {
   try {
-    const { frames, sessionName, position, playerName, jerseyNumber, playType } = req.body;
+    const { frames, sessionName, position, playerName, jerseyNumber, playType, mode } = req.body;
 
     if (!frames || frames.length === 0) {
       return res.status(400).json({ error: "No frames provided" });
@@ -126,17 +126,7 @@ try {
 - Decision making based on what the defense is giving
 - Execution and body control`;
 
-    const response = await groq.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
-      max_tokens: 2000,
-      messages: [
-        {
-          role: "user",
-          content: [
-            ...frameContents,
-            {
-              type: "text",
-              text: `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience coaching high school and college players.
+    const analysisPrompt = `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience coaching high school and college players.
 
 You are analyzing ${framesToAnalyze.length} sequential frames from a ${playType} by ${playerName || 'the focus player'}, Jersey #${jerseyNumber || 'unknown'}, playing ${position}.
 
@@ -188,12 +178,41 @@ SCORING — be strict, most high school plays score 60-82:
 80-86  = B/B- — solid play, one or two clear mistakes
 73-79  = C+/C — average play, significant issues with execution or decision
 65-72  = C-/D+ — poor execution or clearly wrong decision
-below 65 = D/F — fundamentally wrong play`
-            }
-          ]
-        }
-      ]
-    });
+below 65 = D/F — fundamentally wrong play`;
+
+    let response;
+
+    if (mode === 'pro') {
+      // GPT-4o for higher quality analysis
+      response = await openaiClient.chat.completions.create({
+        model: "gpt-4o",
+        max_tokens: 2000,
+        messages: [
+          {
+            role: "user",
+            content: [
+              ...frameContents,
+              { type: "text", text: analysisPrompt }
+            ]
+          }
+        ]
+      });
+    } else {
+      // Llama Scout via Groq (free)
+      response = await groq.chat.completions.create({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        max_tokens: 2000,
+        messages: [
+          {
+            role: "user",
+            content: [
+              ...frameContents,
+              { type: "text", text: analysisPrompt }
+            ]
+          }
+        ]
+      });
+    }
 
     const text = response.choices[0].message.content;
     const clean = text.replace(/```json|```/g, "").trim();
