@@ -2,6 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 const { createClient } = require("@supabase/supabase-js");
+const { Pinecone } = require('@pinecone-database/pinecone');
+const OpenAI = require('openai');
+const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const brainIndex = pinecone.index('courtiq-brain');
 
 require("dotenv").config({ path: "../.env" });
 
@@ -25,6 +30,27 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     const framesToAnalyze = frames.slice(0, 5);
+
+    let brainContext = '';
+try {
+  const queryEmbedding = await openaiClient.embeddings.create({
+    model: 'text-embedding-ada-002',
+    input: `${playType} ${position} basketball analysis`
+  });
+  const brainResults = await brainIndex.query({
+    vector: queryEmbedding.data[0].embedding,
+    topK: 3,
+    includeMetadata: true
+  });
+  brainContext = brainResults.matches
+    .map(m => m.metadata.text)
+    .join('\n\n');
+  console.log('🏀 Brain context found:', brainContext.slice(0, 100));
+} catch(e) {
+  console.log('Brain search failed, continuing without it:', e.message);
+}
+
+
 
     const frameContents = framesToAnalyze.map((frame, i) => ([
       {
@@ -83,6 +109,9 @@ Return ONLY valid JSON, no markdown, no extra text, no backticks:
   "score": 75,
   "grade": "B+"
 }
+  
+BASKETBALL BRAIN KNOWLEDGE (use this to inform your analysis):
+${brainContext}
 
 Scoring guide — be honest, most high school plays should score between 60-85:
 93-100 = A (elite play, professional level execution)
