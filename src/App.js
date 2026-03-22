@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Dashboard from './pages/dashboard';
-import Upload from './pages/upload';
 import History from './pages/history';
 import Chat from './pages/chat';
 import Admin from './pages/admin';
@@ -21,12 +20,9 @@ function Sidebar({ onSignOut }) {
 
   const navItems = [
     { label: 'Dashboard', path: '/' },
-    { label: 'Upload Film', path: '/upload' },
-    { label: 'Full Game', path: '/game' },
+    { label: 'Upload', path: '/upload' },
     { label: 'History', path: '/history' },
-    { label: 'Players', path: '/players' },
     { label: 'AI Coach', path: '/chat' },
-    { label: 'Brain', path: '/brain' },
   ];
 
   return (
@@ -137,8 +133,7 @@ function App() {
         <Sidebar onSignOut={handleSignOut} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/game" element={<GameUpload />} />
+          <Route path="/upload" element={<GameUpload />} />
           <Route path="/history" element={<History />} />
           <Route path="/players" element={<Players />} />
           <Route path="/chat" element={<Chat />} />
