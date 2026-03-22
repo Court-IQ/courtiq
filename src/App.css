@@ -412,53 +412,107 @@ h2 {
   }
 
   .main {
-    padding: 20px;
-    padding-top: 72px;
+    padding: 16px;
+    padding-top: 64px;
   }
 
   .top-bar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 10px;
+    margin-bottom: 20px;
   }
 
   .top-bar h1 {
-    font-size: 28px;
+    font-size: 24px;
+  }
+
+  .top-bar p {
+    font-size: 13px;
   }
 
   .upload-btn {
     width: 100%;
     text-align: center;
+    padding: 12px 20px;
+    font-size: 13px;
   }
 
   .stats-row {
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
   }
 
   .stat-card {
-    min-width: calc(50% - 5px);
-    padding: 20px;
+    padding: 16px;
   }
 
   .stat-value {
-    font-size: 32px;
+    font-size: 28px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    margin-bottom: 8px;
   }
 
   .analyses-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .analysis-card {
+    padding: 16px;
+  }
+
+  .analysis-title {
+    font-size: 14px;
+  }
+
+  h2 {
+    font-size: 17px;
+    margin-bottom: 14px;
   }
 
   .auth-box {
-    padding: 32px 24px;
+    padding: 28px 20px;
     width: 100%;
+    border-radius: 16px;
   }
 
   .auth-container {
-    padding: 24px;
+    padding: 16px;
     align-items: flex-start;
-    padding-top: 60px;
+    padding-top: 40px;
+  }
+
+  /* Game upload mobile overrides */
+  .game-tag-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .game-tag-video {
+    position: relative !important;
+    top: 0 !important;
+  }
+
+  .game-segment-list {
+    max-height: none !important;
+  }
+
+  .game-segment-card {
+    flex-wrap: wrap;
+  }
+
+  .game-segment-card select {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Result grids go single column */
+  .result-grid-2col {
+    grid-template-columns: 1fr !important;
   }
 }

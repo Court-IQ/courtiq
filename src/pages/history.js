@@ -108,7 +108,7 @@ function History() {
           </div>
 
           {/* Result boxes */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div style={section}>
               <div style={sectionTitle}>Offense</div>
               <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.positioning?.offense}</p>

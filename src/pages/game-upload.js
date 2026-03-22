@@ -369,9 +369,9 @@ export default function GameUpload() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div className="game-tag-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           {/* Video player */}
-          <div style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
+          <div className="game-tag-video" style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
             <video
               ref={tagVideoRef}
               src={videoURL}
@@ -396,10 +396,11 @@ export default function GameUpload() {
           </div>
 
           {/* Segment list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '80vh', overflowY: 'auto' }}>
+          <div className="game-segment-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '80vh', overflowY: 'auto' }}>
             {segments.map(seg => (
               <div
                 key={seg.index}
+                className="game-segment-card"
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px',
                   padding: '10px 14px', background: '#0f1117',
@@ -505,7 +506,7 @@ export default function GameUpload() {
             {gameResult.gameNarrative}
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
               <div style={{ fontSize: '11px', fontWeight: '700', color: '#4ade80', letterSpacing: '1px', marginBottom: '8px' }}>STRENGTHS</div>
               {(gameResult.strengths || []).map((s, i) => (
@@ -608,7 +609,7 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
       {/* Expanded detail */}
       {expanded && seg.result && (
         <div style={{ padding: '0 18px 18px', borderTop: '1px solid #1a1d2e' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+          <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
             <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px' }}>
               <div style={sectionTitle}>Offense</div>
               <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.positioning?.offense}</p>

@@ -250,7 +250,7 @@ export default function Upload() {
             </div>
 
             {/* Result boxes grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
 
               <div style={section}>
                 <div style={sectionTitle}>Offense</div>
