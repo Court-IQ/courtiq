@@ -7,8 +7,8 @@
 }
 
 body {
-  background-color: #ffffff;
-  color: #080a0f;
+  background-color: #080a0f;
+  color: #ffffff;
   font-family: 'Inter', sans-serif;
 }
 
@@ -21,7 +21,7 @@ body {
 /* SIDEBAR */
 .sidebar {
   width: 240px;
-  background-color: #080a0f;
+  background-color: #0a0c12;
   padding: 28px 16px;
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@ body {
 
 .logo-sub {
   font-size: 9px;
-  color: #888;
+  color: #555;
   letter-spacing: 2px;
   font-weight: 600;
 }
@@ -70,7 +70,7 @@ body {
 
 .nav-item:hover {
   color: white;
-  background-color: #1a1d2e;
+  background-color: #13161f;
 }
 
 .nav-item.active {
@@ -84,7 +84,7 @@ body {
   flex: 1;
   padding: 40px 48px;
   overflow-y: auto;
-  background-color: #ffffff;
+  background-color: #080a0f;
 }
 
 /* TOP BAR */
@@ -99,11 +99,11 @@ body {
   font-size: 36px;
   font-weight: 900;
   letter-spacing: -1px;
-  color: #080a0f;
+  color: #ffffff;
 }
 
 .top-bar p {
-  color: #888;
+  color: #555;
   margin-top: 4px;
   font-size: 14px;
   font-weight: 500;
@@ -120,7 +120,7 @@ body {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.25);
   transition: all 0.2s;
   text-transform: uppercase;
 }
@@ -144,10 +144,10 @@ body {
 
 .stat-card {
   flex: 1;
-  background: #f5f5f5;
+  background: #0f1117;
   border-radius: 16px;
   padding: 28px;
-  border: 1px solid #eeeeee;
+  border: 1px solid #1a1d2e;
   position: relative;
   overflow: hidden;
   transition: transform 0.2s;
@@ -169,7 +169,7 @@ body {
 
 .stat-label {
   font-size: 10px;
-  color: #999;
+  color: #555;
   letter-spacing: 2px;
   margin-bottom: 12px;
   font-weight: 700;
@@ -180,7 +180,7 @@ body {
   font-size: 40px;
   font-weight: 900;
   letter-spacing: -2px;
-  color: #080a0f;
+  color: #ffffff;
 }
 
 /* SECTION HEADERS */
@@ -190,7 +190,7 @@ h2 {
   margin-bottom: 20px;
   letter-spacing: -0.5px;
   text-transform: uppercase;
-  color: #333;
+  color: #e5e7eb;
 }
 
 /* ANALYSIS GRID */
@@ -201,10 +201,10 @@ h2 {
 }
 
 .analysis-card {
-  background: #f5f5f5;
+  background: #0f1117;
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid #eeeeee;
+  border: 1px solid #1a1d2e;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -212,7 +212,7 @@ h2 {
 .analysis-card:hover {
   border-color: #ff6b00;
   transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(255, 107, 0, 0.1);
+  box-shadow: 0 8px 30px rgba(255, 107, 0, 0.08);
 }
 
 .analysis-title {
@@ -220,12 +220,12 @@ h2 {
   font-weight: 800;
   margin-bottom: 6px;
   letter-spacing: -0.3px;
-  color: #080a0f;
+  color: #ffffff;
 }
 
 .analysis-meta {
   font-size: 11px;
-  color: #999;
+  color: #555;
   margin-bottom: 16px;
   font-weight: 500;
   text-transform: uppercase;
@@ -235,13 +235,13 @@ h2 {
 .grade {
   font-size: 28px;
   font-weight: 900;
-  color: #16a34a;
+  color: #4ade80;
   margin-bottom: 12px;
   letter-spacing: -1px;
 }
 
 .score-bar {
-  background-color: #e5e5e5;
+  background-color: #1a1d2e;
   border-radius: 4px;
   height: 4px;
   margin-bottom: 8px;
@@ -255,7 +255,7 @@ h2 {
 
 .score-label {
   font-size: 11px;
-  color: #999;
+  color: #555;
   font-weight: 600;
 }
 
@@ -265,8 +265,8 @@ h2 {
 }
 
 .upload-box {
-  background: #f5f5f5;
-  border: 1px solid #eeeeee;
+  background: #0f1117;
+  border: 1px solid #1a1d2e;
   border-radius: 20px;
   padding: 32px;
   margin-bottom: 24px;
@@ -280,16 +280,39 @@ h2 {
 .upload-box h2 {
   font-size: 20px;
   font-weight: 800;
-  color: #080a0f;
+  color: #ffffff;
   text-transform: none;
   letter-spacing: -0.5px;
   margin-bottom: 6px;
 }
 
 .upload-box p {
-  color: #999;
+  color: #555;
   font-size: 13px;
   margin-bottom: 16px;
+}
+
+/* FORM INPUTS */
+.dark-input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #1a1d2e;
+  background: #12141c;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dark-input:focus {
+  border-color: #ff6b00;
+}
+
+.dark-input::placeholder {
+  color: #444;
 }
 
 /* AUTH PAGE */
@@ -298,34 +321,38 @@ h2 {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: #ffffff;
+  background: #080a0f;
 }
 
 .auth-box {
-  background: #f5f5f5;
+  background: #0f1117;
   padding: 48px;
   border-radius: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 420px;
-  border: 1px solid #eeeeee;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+  border: 1px solid #1a1d2e;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
 }
 
 .auth-input {
-  background-color: #ffffff;
-  border: 1px solid #eeeeee;
+  background-color: #12141c;
+  border: 1px solid #1a1d2e;
   border-radius: 10px;
   padding: 14px 16px;
-  color: #080a0f;
+  color: #ffffff;
   font-size: 15px;
   font-family: 'Inter', sans-serif;
   transition: border-color 0.2s;
+  outline: none;
+}
+
+.auth-input::placeholder {
+  color: #444;
 }
 
 .auth-input:focus {
-  outline: none;
   border-color: #ff6b00;
 }
 
@@ -354,11 +381,11 @@ h2 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #ffffff;
+  background: #080a0f;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #eeeeee;
+  background: #1a1d2e;
   border-radius: 3px;
 }
 
@@ -386,24 +413,52 @@ h2 {
 
   .main {
     padding: 20px;
-    padding-top: 60px;
-  }
-
-  .stats-row {
-    flex-wrap: wrap;
-  }
-
-  .stat-card {
-    min-width: calc(50% - 8px);
-  }
-
-  .analyses-grid {
-    grid-template-columns: 1fr;
+    padding-top: 72px;
   }
 
   .top-bar {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .top-bar h1 {
+    font-size: 28px;
+  }
+
+  .upload-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .stats-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    min-width: calc(50% - 5px);
+    padding: 20px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+  }
+
+  .analyses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-box {
+    padding: 32px 24px;
+    width: 100%;
+  }
+
+  .auth-container {
+    padding: 24px;
+    align-items: flex-start;
+    padding-top: 60px;
   }
 }

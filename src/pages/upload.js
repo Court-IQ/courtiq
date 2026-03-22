@@ -26,13 +26,11 @@ export default function Upload() {
   }
 
   function markStart() {
-    const time = videoRef.current.currentTime;
-    setStartTime(time);
+    setStartTime(videoRef.current.currentTime);
   }
 
   function markEnd() {
-    const time = videoRef.current.currentTime;
-    setEndTime(time);
+    setEndTime(videoRef.current.currentTime);
   }
 
   function extractFrames(video, start, end, numFrames = 10) {
@@ -46,16 +44,12 @@ export default function Upload() {
       const interval = duration / numFrames;
       let captured = 0;
 
-      function captureFrame(time) {
-        video.currentTime = time;
-      }
+      function captureFrame(time) { video.currentTime = time; }
 
       video.addEventListener('seeked', function onSeeked() {
         ctx.drawImage(video, 0, 0);
-        const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-        frames.push(base64);
+        frames.push(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
         captured++;
-
         if (captured < numFrames) {
           captureFrame(start + interval * captured);
         } else {
@@ -76,27 +70,19 @@ export default function Upload() {
     setLoading(true);
 
     try {
-      const frames = await extractFrames(videoRef.current, startTime, endTime, 15);
+      const frames = await extractFrames(videoRef.current, startTime, endTime, 5);
 
       const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          frames,
-          sessionName,
-          position,
-          playerName,
-          jerseyNumber,
-          playType
-        })
+        body: JSON.stringify({ frames, sessionName, position, playerName, jerseyNumber, playType })
       });
 
       const data = await response.json();
-if (!data.success) throw new Error(data.error);
-setResult(data.result);
+      if (!data.success) throw new Error(data.error);
+      setResult(data.result);
 
       const { data: { user } } = await supabase.auth.getUser();
-
       const { error } = await supabase.from('analyses').insert([{
         session_name: data.result.sessionName,
         player_name: data.result.playerName,
@@ -107,15 +93,44 @@ setResult(data.result);
         summary: data.result.summary,
         user_id: user.id,
       }]);
-
       if (error) console.error('Save error:', error);
-      else console.log('Saved!');
     } catch (err) {
       alert('Analysis failed: ' + err.message);
     } finally {
       setLoading(false);
     }
   }
+
+  const input = {
+    width: '100%',
+    padding: '12px 14px',
+    borderRadius: '8px',
+    border: '1px solid #1a1d2e',
+    background: '#080a0f',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontFamily: 'Inter, sans-serif',
+    outline: 'none',
+  };
+
+  const section = {
+    background: '#0f1117',
+    border: '1px solid #1a1d2e',
+    borderRadius: '16px',
+    padding: '24px',
+    marginBottom: '16px',
+  };
+
+  const sectionTitle = {
+    fontSize: '11px',
+    fontWeight: '700',
+    color: '#555',
+    letterSpacing: '2px',
+    textTransform: 'uppercase',
+    marginBottom: '16px',
+  };
+
+  const row = { display: 'flex', gap: '12px' };
 
   return (
     <div className="main">
@@ -126,45 +141,52 @@ setResult(data.result);
         </div>
       </div>
 
-      <div className="upload-area">
-        <div className="upload-box">
+      <div style={{ maxWidth: '680px' }}>
+
+        {/* Session Info */}
+        <div style={section}>
+          <div style={sectionTitle}>Session Info</div>
           <input
             type="text"
             placeholder="Session name (e.g. League Game vs Eagles)"
             value={sessionName}
-            onChange={(e) => setSessionName(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd', background: 'white', color: '#080a0f' }}
+            onChange={e => setSessionName(e.target.value)}
+            style={input}
           />
-          <input
-            type="text"
-            placeholder="Player name (e.g. Thomas Diew)"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd', background: 'white', color: '#080a0f' }}
-          />
-          <input
-            type="text"
-            placeholder="Jersey number (e.g. 11)"
-            value={jerseyNumber}
-            onChange={(e) => setJerseyNumber(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd', background: 'white', color: '#080a0f' }}
-          />
-          <select
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd', background: 'white', color: '#080a0f' }}
-          >
+        </div>
+
+        {/* Player Info */}
+        <div style={section}>
+          <div style={sectionTitle}>Player Info</div>
+          <div style={{ ...row, marginBottom: '12px' }}>
+            <input
+              type="text"
+              placeholder="Player name"
+              value={playerName}
+              onChange={e => setPlayerName(e.target.value)}
+              style={input}
+            />
+            <input
+              type="text"
+              placeholder="Jersey #"
+              value={jerseyNumber}
+              onChange={e => setJerseyNumber(e.target.value)}
+              style={{ ...input, width: '120px', flexShrink: 0 }}
+            />
+          </div>
+          <select value={position} onChange={e => setPosition(e.target.value)} style={input}>
             <option>point guard</option>
             <option>shooting guard</option>
             <option>small forward</option>
             <option>power forward</option>
             <option>center</option>
           </select>
-          <select
-            value={playType}
-            onChange={(e) => setPlayType(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '20px', borderRadius: '8px', border: '1px solid #ddd', background: 'white', color: '#080a0f' }}
-          >
+        </div>
+
+        {/* Play Details */}
+        <div style={section}>
+          <div style={sectionTitle}>Play Details</div>
+          <select value={playType} onChange={e => setPlayType(e.target.value)} style={input}>
             <option>post move</option>
             <option>mid-range jumper</option>
             <option>3 pointer</option>
@@ -176,78 +198,162 @@ setResult(data.result);
             <option>pull up jumper</option>
             <option>defensive play</option>
           </select>
-
-          <div className="upload-icon">🎬</div>
-          <h2>Upload your game film</h2>
-          <p>Supports MP4, MOV, AVI files</p>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={handleFileChange}
-            style={{ marginTop: '10px' }}
-          />
         </div>
 
-        {videoURL && (
-          <div style={{ marginTop: '20px' }}>
-            <video
-              ref={videoRef}
-              src={videoURL}
-              controls
-              style={{ width: '100%', borderRadius: '12px', maxHeight: '400px' }}
-            />
+        {/* Video Upload */}
+        <div style={section}>
+          <div style={sectionTitle}>Game Film</div>
+          <label style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', gap: '8px', padding: '32px',
+            border: '2px dashed #1a1d2e', borderRadius: '12px', cursor: 'pointer',
+            transition: 'border-color 0.2s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
+          >
+            <span style={{ fontSize: '32px' }}>🎬</span>
+            <span style={{ color: '#888', fontSize: '14px', fontWeight: '600' }}>
+              {file ? file.name : 'Click to upload MP4, MOV, AVI'}
+            </span>
+            <span style={{ color: '#444', fontSize: '12px' }}>Max 15s clip recommended</span>
+            <input type="file" accept="video/*" onChange={handleFileChange} style={{ display: 'none' }} />
+          </label>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+          {videoURL && (
+            <div style={{ marginTop: '20px' }}>
+              <video
+                ref={videoRef}
+                src={videoURL}
+                controls
+                style={{ width: '100%', borderRadius: '10px', maxHeight: '360px' }}
+              />
+
+              <div style={{ ...row, marginTop: '14px' }}>
+                <button
+                  onClick={markStart}
+                  style={{
+                    flex: 1, padding: '12px', borderRadius: '8px',
+                    border: '2px solid ' + (startTime !== null ? '#ff6b00' : '#1a1d2e'),
+                    background: startTime !== null ? '#ff6b00' : 'transparent',
+                    color: 'white', fontWeight: '700', cursor: 'pointer', fontSize: '13px',
+                  }}
+                >
+                  {startTime !== null ? `▶ Start: ${startTime.toFixed(1)}s` : '▶ Mark Start'}
+                </button>
+                <button
+                  onClick={markEnd}
+                  style={{
+                    flex: 1, padding: '12px', borderRadius: '8px',
+                    border: '2px solid ' + (endTime !== null ? '#ff6b00' : '#1a1d2e'),
+                    background: endTime !== null ? '#ff6b00' : 'transparent',
+                    color: 'white', fontWeight: '700', cursor: 'pointer', fontSize: '13px',
+                  }}
+                >
+                  {endTime !== null ? `■ End: ${endTime.toFixed(1)}s` : '■ Mark End'}
+                </button>
+              </div>
+
+              {startTime !== null && endTime !== null && endTime > startTime && (
+                <p style={{ color: '#ff6b00', fontWeight: '600', marginTop: '10px', textAlign: 'center', fontSize: '13px' }}>
+                  {(endTime - startTime).toFixed(1)}s clip selected — 5 frames will be analyzed
+                </p>
+              )}
+
               <button
-                onClick={markStart}
-                style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '2px solid #ff6b00', background: startTime !== null ? '#ff6b00' : 'white', color: startTime !== null ? 'white' : '#ff6b00', fontWeight: '700', cursor: 'pointer' }}
+                className="upload-btn"
+                onClick={handleAnalyze}
+                disabled={loading}
+                style={{ marginTop: '14px', width: '100%', opacity: loading ? 0.6 : 1 }}
               >
-                {startTime !== null ? `✅ Start: ${startTime.toFixed(1)}s` : '▶️ Mark Start'}
-              </button>
-              <button
-                onClick={markEnd}
-                style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '2px solid #ff6b00', background: endTime !== null ? '#ff6b00' : 'white', color: endTime !== null ? 'white' : '#ff6b00', fontWeight: '700', cursor: 'pointer' }}
-              >
-                {endTime !== null ? `✅ End: ${endTime.toFixed(1)}s` : '⏹️ Mark End'}
+                {loading ? 'Analyzing...' : 'Analyze Play'}
               </button>
             </div>
+          )}
+        </div>
 
-            {startTime !== null && endTime !== null && endTime > startTime && (
-              <p style={{ color: '#ff6b00', fontWeight: '600', marginTop: '8px', textAlign: 'center' }}>
-                📽️ {(endTime - startTime).toFixed(1)} second clip selected — 15 frames will be analyzed
-              </p>
-            )}
-
-            <button
-              className="upload-btn"
-              onClick={handleAnalyze}
-              disabled={loading}
-              style={{ marginTop: '15px', width: '100%', opacity: loading ? 0.6 : 1 }}
-            >
-              {loading ? '⏳ Analyzing 15 frames...' : '🏀 Analyze Play'}
-            </button>
-          </div>
-        )}
-
+        {/* Results */}
         {result && (
-          <div style={{ marginTop: '30px', background: '#f5f5f5', padding: '20px', borderRadius: '12px', color: '#080a0f' }}>
-            <h2 style={{ color: '#080a0f' }}>Analysis Complete!</h2>
-            <p style={{ color: '#ff6b00' }}>Player: {result.playerName} #{result.jerseyNumber} — {result.position}</p>
-            <p style={{ color: '#888' }}>Play Type: {result.playType}</p>
-            <p style={{ fontSize: '2rem', color: '#ff6b00', fontWeight: '900' }}>{result.grade} — {result.score}/100</p>
+          <div style={{ marginTop: '8px' }}>
+            {/* Header */}
+            <div style={{ ...section, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={sectionTitle}>Analysis Complete</div>
+                <div style={{ fontSize: '13px', color: '#888' }}>
+                  {result.playerName} #{result.jerseyNumber} · {result.position} · {result.playType}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '48px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>
+                  {result.grade}
+                </div>
+                <div style={{ fontSize: '13px', color: '#555', marginTop: '4px' }}>{result.score}/100</div>
+              </div>
+            </div>
 
-            <div style={{ marginTop: '15px', borderTop: '1px solid #ddd', paddingTop: '15px' }}>
-              <p><strong>🏃 Offense:</strong> {result.summary?.positioning?.offense}</p>
-              <p style={{ marginTop: '8px' }}><strong>🛡️ Defense:</strong> {result.summary?.positioning?.defense}</p>
-              <p style={{ marginTop: '8px' }}><strong>🎯 Shot Quality:</strong> <span style={{ color: result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#16a34a' : '#ff4444', fontWeight: '700' }}>{result.summary?.shotQuality?.verdict}</span> — {result.summary?.shotQuality?.reason}</p>
-              <p style={{ marginTop: '8px' }}><strong>🔄 What To Do Instead:</strong> {result.summary?.shotQuality?.whatToDoInstead}</p>
-              <p style={{ marginTop: '8px' }}><strong>🧠 Decision:</strong> <span style={{ color: result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#16a34a' : '#ff4444', fontWeight: '700' }}>{result.summary?.decisionMaking?.verdict}</span> — {result.summary?.decisionMaking?.reason}</p>
-              <p style={{ marginTop: '8px' }}><strong>📋 Habit:</strong> {result.summary?.decisionMaking?.habit}</p>
-              <p style={{ marginTop: '8px' }}><strong>💡 Coaching Tip:</strong> {result.summary?.coachingTip}</p>
-              <p style={{ marginTop: '8px' }}><strong>🏋️ Drill:</strong> {result.summary?.drill}</p>
+            {/* Result boxes grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+
+              <div style={section}>
+                <div style={sectionTitle}>Offense</div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.positioning?.offense}</p>
+              </div>
+
+              <div style={section}>
+                <div style={sectionTitle}>Defense</div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.positioning?.defense}</p>
+              </div>
+
+              <div style={section}>
+                <div style={sectionTitle}>Shot Quality</div>
+                <div style={{
+                  display: 'inline-block', marginBottom: '8px', padding: '3px 10px',
+                  borderRadius: '6px', fontSize: '12px', fontWeight: '700',
+                  background: result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#0a2a0a' : '#2a0a0a',
+                  color: result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#4ade80' : '#ff4444',
+                }}>
+                  {result.summary?.shotQuality?.verdict}
+                </div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.shotQuality?.reason}</p>
+              </div>
+
+              <div style={section}>
+                <div style={sectionTitle}>Decision Making</div>
+                <div style={{
+                  display: 'inline-block', marginBottom: '8px', padding: '3px 10px',
+                  borderRadius: '6px', fontSize: '12px', fontWeight: '700',
+                  background: result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#0a2a0a' : '#2a0a0a',
+                  color: result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#4ade80' : '#ff4444',
+                }}>
+                  {result.summary?.decisionMaking?.verdict}
+                </div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.decisionMaking?.reason}</p>
+              </div>
+
+              <div style={section}>
+                <div style={sectionTitle}>What To Do Instead</div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.shotQuality?.whatToDoInstead}</p>
+              </div>
+
+              <div style={section}>
+                <div style={sectionTitle}>Habit</div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.decisionMaking?.habit}</p>
+              </div>
+
+              <div style={{ ...section, gridColumn: '1 / -1' }}>
+                <div style={sectionTitle}>Coaching Tip</div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.coachingTip}</p>
+              </div>
+
+              <div style={{ ...section, gridColumn: '1 / -1' }}>
+                <div style={sectionTitle}>Drill</div>
+                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.drill}</p>
+              </div>
+
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

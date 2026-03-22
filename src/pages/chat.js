@@ -17,7 +17,6 @@ function Chat() {
       if (!user) return;
       setUserId(user.id);
 
-      // Check if user has an existing conversation
       const { data: existing } = await supabase
         .from('messages')
         .select('conversation_id')
@@ -28,7 +27,6 @@ function Chat() {
       let convoId;
       if (existing && existing.length > 0) {
         convoId = existing[0].conversation_id;
-        // Load existing messages
         const { data: msgs } = await supabase
           .from('messages')
           .select('*')
@@ -42,7 +40,6 @@ function Chat() {
       }
       setConversationId(convoId);
 
-      // Subscribe to new messages in this conversation
       const subscription = supabase
         .channel(`conversation-${convoId}`)
         .on('postgres_changes', {
@@ -135,13 +132,14 @@ function Chat() {
               maxWidth: '75%',
               padding: '12px 16px',
               borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: msg.role === 'user' ? '#e85d24' : msg.role === 'coach' ? '#1a4a1a' : '#1a1d27',
+              background: msg.role === 'user' ? '#ff6b00' : '#0f1117',
+              border: msg.role === 'user' ? 'none' : '1px solid #1a1d2e',
               color: 'white',
               fontSize: '15px',
               lineHeight: '1.5'
             }}>
-              {msg.role === 'coach' && (
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}>👨‍🏫 CourtIQ Coach</div>
+              {msg.role !== 'user' && (
+                <div style={{ fontSize: '11px', color: '#555', marginBottom: '4px' }}>CourtIQ Coach</div>
               )}
               {msg.text}
             </div>
@@ -149,8 +147,11 @@ function Chat() {
         ))}
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <div style={{ background: '#1a1d27', padding: '12px 16px', borderRadius: '18px 18px 18px 4px', color: '#888' }}>
-              Coaching...⏳
+            <div style={{
+              background: '#0f1117', border: '1px solid #1a1d2e',
+              padding: '12px 16px', borderRadius: '18px 18px 18px 4px', color: '#555'
+            }}>
+              Coaching...
             </div>
           </div>
         )}
@@ -168,10 +169,12 @@ function Chat() {
             flex: 1,
             padding: '14px 18px',
             borderRadius: '12px',
-            border: '1px solid #333',
-            background: '#1a1d27',
+            border: '1px solid #1a1d2e',
+            background: '#0f1117',
             color: 'white',
-            fontSize: '15px'
+            fontSize: '15px',
+            outline: 'none',
+            fontFamily: 'Inter, sans-serif',
           }}
         />
         <button

@@ -67,6 +67,65 @@ try {
       }
     ])).flat();
 
+    const playTypeCriteria = {
+      'post move': `
+- FOOTWORK: Are the pivot foot and drop step correct? Is the player creating separation or just backing down?
+- BODY POSITION: Is the player sealing their defender with their body (hip into the defender's hip)? Low center of gravity?
+- FINISH: Is the player going up strong, or off-balance? Shot fake used before going up?
+- DEFENDER: How close is the help defense? Is the player reading the double team?`,
+      'mid-range jumper': `
+- SHOT CREATION: Did the player use a hesitation, shot fake, or pull-up to create space?
+- FEET: Are feet set and squared to the basket at release, or fading/off-balance?
+- DEFENDER: How much space between the shooter and the closest defender at release?
+- LOCATION: Is this a high-efficiency mid-range (elbow, short corner) or a contested pull-up from a bad spot?`,
+      '3 pointer': `
+- CATCH AND FOOTWORK: Did the player catch in rhythm with feet ready, or did they need an extra gather step?
+- BALANCE: Is the player square to the basket? Are they fading left/right or jumping forward?
+- DEFENDER CLOSEOUT: How hard is the defender closing out? Did the player use a shot fake to draw them off their feet?
+- SPACING: Is the player behind the line? Are teammates spacing the floor to create the open look?`,
+      'drive to basket': `
+- ATTACK ANGLE: Is the player driving to the paint or going baseline into help defense?
+- FIRST STEP: Is the first step explosive, crossing the defender's foot?
+- FINISH: Going up strong or getting blocked? Using the off hand, floater, or layup correctly based on defender position?
+- READING HELP: Is the player reading the help defender — should they kick out, floater, or attack the rim?`,
+      'floater': `
+- TIMING: Is the floater triggered at the right moment — before the shot blocker can contest?
+- RELEASE POINT: Is the player getting enough arc and releasing before contact with the big?
+- APPROACH: Was the floater the right read, or did the player have a better option (kick out, pull up)?
+- BODY CONTROL: Is the player balanced going into the floater or rushing it?`,
+      'pick and roll': `
+- READING THE SCREEN: Is the player reading how the defense is playing the pick? (hedge, drop, switch)
+- DECISION: Did the player attack the right gap — pull up, drive, or kick to the roll man/corner?
+- TIMING: Did the player use the screen at the right moment or go too early/late?
+- SPACING: Are the other three players spaced properly to punish the defense?`,
+      'fast break': `
+- DECISION: 2-on-1 / 3-on-2 — did the player make the right choice to finish or pass?
+- SPEED CONTROL: Is the player in control going into the break or too fast to finish cleanly?
+- LANE SELECTION: Is the player running the correct lane — ball handler middle, wings wide?
+- FINISH: Lay up, runner, or dish — did they pick the right shot based on the defender?`,
+      'catch and shoot': `
+- CATCH FOOTWORK: One-two step or hop? Are feet set before the catch or scrambling after?
+- SHOT FAKE: Did the player use a shot fake if the defender was closing out hard?
+- BODY BALANCE: Squared up? Any drift left or right at release?
+- SPACING: Was this player in the right spot to receive the pass — open corner, wing?`,
+      'pull up jumper': `
+- CREATION: Did the player use a hesitation dribble, between-the-legs, or crossover to create space?
+- BALANCE AT RELEASE: Are the feet set or is the player still moving? Jumping forward or straight up?
+- SHOT SELECTION: Is this the right read based on defender position, or should the player have driven or passed?
+- RHYTHM: Is this a one-dribble pull-up or did the player take too many dribbles, allowing the defense to recover?`,
+      'defensive play': `
+- STANCE: Is the player in a low defensive stance with active hands, or upright and flat-footed?
+- POSITIONING: Correct help or on-ball positioning based on where the ball is?
+- FOOTWORK: Drop step, slide step, or lunge — which did the player use and was it correct?
+- CONTEST: On a shot contest — is the player going straight up or fouling? Close-out under control?`
+    };
+
+    const criteria = playTypeCriteria[playType] || `
+- Footwork and balance
+- Defender positioning and distance
+- Decision making based on what the defense is giving
+- Execution and body control`;
+
     const response = await groq.chat.completions.create({
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       max_tokens: 2000,
@@ -79,59 +138,57 @@ try {
               type: "text",
               text: `You are CourtIQ, an elite basketball coach and analyst with 20+ years of experience coaching high school and college players.
 
-You are analyzing ${framesToAnalyze.length} frames from a ${playType} by ${playerName || 'the focus player'}, Jersey #${jerseyNumber || 'unknown'}, playing ${position}.
+You are analyzing ${framesToAnalyze.length} sequential frames from a ${playType} by ${playerName || 'the focus player'}, Jersey #${jerseyNumber || 'unknown'}, playing ${position}.
 
-IMPORTANT RULES:
-- Only comment on what you can ACTUALLY SEE in the frames. Do not make assumptions about things you cannot see.
-- Do not assume a player is a bad shooter unless you can see their form breaking down in the frames.
-- Do not assume team tendencies unless visible in the frames.
-- Be specific about what you see — body position, defender location, court spacing, footwork.
-- Be brutally honest like a real coach but ONLY about what is visible.
+STRICT RULES:
+- Only describe what you can DIRECTLY SEE. No assumptions.
+- Every statement must reference something visible in the frames.
+- Be brutally honest. High school players should rarely score above 85.
+- Your feedback must be specific to THIS play, not generic basketball tips.
 
-Study the FULL SEQUENCE carefully:
-- Where does the player start and end the play?
-- How are defenders positioned and rotating?
-- Is the player reading the defense correctly based on what you can see?
-- What is the body positioning, footwork, and balance?
-- What is the spacing of teammates on the floor?
-- Does the play type match what the defense is giving?
+WHAT TO LOOK FOR IN A ${playType.toUpperCase()}:
+${criteria}
 
-BASKETBALL BRAIN KNOWLEDGE (use this to inform your analysis):
-${brainContext}
+BASKETBALL BRAIN CONTEXT (apply this knowledge to your analysis):
+${brainContext || 'No additional context.'}
+
+ANALYSIS STEPS:
+1. Trace the full sequence across frames — what happened from start to finish?
+2. Identify the key moment (release, decision point, screen usage) and evaluate it
+3. Note exactly where the closest defender is and how they're positioned
+4. Identify one thing done well and one clear mistake
+5. Give a coaching tip that directly addresses the mistake you saw
 
 Return ONLY valid JSON, no markdown, no extra text:
 
 {
   "positioning": {
-    "offense": "specific description of what you SEE in the frames — where is the focus player, where are teammates, is spacing good or bad?",
-    "defense": "specific description of what you SEE — how is the defense set up, how are they reacting, where is the closest defender?"
+    "offense": "2-3 sentences describing the player's position, footwork, and body control across the frames. Be specific — mention court location, stance, and how they moved.",
+    "defense": "2-3 sentences describing where the defender(s) are, how close the primary defender is at the key moment, and whether help defense is visible."
   },
   "shotQuality": {
     "verdict": "GOOD SHOT or BAD SHOT",
-    "reason": "based ONLY on what you can see — defender distance, shot location, body balance, foot positioning",
-    "whatToDoInstead": "if bad shot, exactly what should have happened based on what you saw in the frames"
+    "reason": "Specific reason based on what you saw — defender distance, player balance, shot location, and release. Name what you see.",
+    "whatToDoInstead": "If BAD SHOT: exactly what the player should have done based on the defensive positioning visible in the frames. If GOOD SHOT: what made it a good shot selection."
   },
   "decisionMaking": {
     "verdict": "RIGHT DECISION or WRONG DECISION",
-    "reason": "what did the player read correctly or miss based on what is VISIBLE in the frames?",
-    "habit": "what does this specific play reveal about this player's tendencies?"
+    "reason": "What did the player read correctly or miss? Reference specific visible details — where was the open man, what was the defender doing?",
+    "habit": "Based on this play, what is one pattern or habit this player seems to have — good or bad?"
   },
-  "coachingTip": "one very specific actionable tip based on exactly what you saw in these frames",
-  "drill": "one specific named drill that addresses exactly what you saw. Explain how to run it in 2 sentences.",
-  "score": 75,
-  "grade": "B+"
+  "coachingTip": "One sentence, extremely specific to what you saw. Start with an action verb. Example: 'Square your left shoulder before releasing — you were fading right which killed your power on this jumper.'",
+  "drill": "Name a specific drill (e.g. 'Mikan Drill', 'Chair Shooting', '1-on-1 Post') and explain in 2 sentences exactly how to run it to fix what you saw.",
+  "score": 72,
+  "grade": "C+"
 }
 
-Scoring guide — be honest, most high school plays should score between 60-85:
-93-100 = A (elite play, professional level execution)
-90-92 = A- (excellent play, minor improvements only)
-87-89 = B+ (good play, solid execution with small mistakes)
-83-86 = B (above average, did the right thing mostly)
-80-82 = B- (decent play, some clear mistakes)
-77-79 = C+ (average play, several things to fix)
-73-76 = C (below average, significant issues)
-70-72 = C- (poor execution, major mistakes)
-below 70 = D or F (wrong decision or very poor execution)`
+SCORING — be strict, most high school plays score 60-82:
+93-100 = A  — elite execution, near-perfect read and finish
+87-92  = A-/B+ — very good play, only minor details to fix
+80-86  = B/B- — solid play, one or two clear mistakes
+73-79  = C+/C — average play, significant issues with execution or decision
+65-72  = C-/D+ — poor execution or clearly wrong decision
+below 65 = D/F — fundamentally wrong play`
             }
           ]
         }

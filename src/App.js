@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Dashboard from './pages/dashboard';
 import Upload from './pages/upload';
@@ -12,7 +12,16 @@ import { supabase } from './supabase';
 
 function Sidebar({ onSignOut }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  const navItems = [
+    { label: 'Dashboard', path: '/' },
+    { label: 'Upload Film', path: '/upload' },
+    { label: 'History', path: '/history' },
+    { label: 'AI Coach', path: '/chat' },
+    { label: 'Brain', path: '/brain' },
+  ];
 
   return (
     <>
@@ -24,7 +33,7 @@ function Sidebar({ onSignOut }) {
           top: '16px',
           left: '16px',
           zIndex: 1000,
-          background: '#e85d24',
+          background: '#ff6b00',
           border: 'none',
           borderRadius: '8px',
           padding: '10px 14px',
@@ -43,7 +52,7 @@ function Sidebar({ onSignOut }) {
           style={{
             position: 'fixed',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0,0,0,0.6)',
             zIndex: 998
           }}
         />
@@ -51,20 +60,30 @@ function Sidebar({ onSignOut }) {
 
       <div className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="logo">
-          <span className="logo-icon">🏀</span>
+          <span className="logo-icon" style={{ fontSize: '24px' }}>🏀</span>
           <div>
             <div className="logo-title">CourtIQ</div>
             <div className="logo-sub">AI FILM ANALYSIS</div>
           </div>
         </div>
-        <nav>
-          <div className="nav-item" onClick={() => { navigate('/'); setOpen(false); }}>Dashboard</div>
-          <div className="nav-item" onClick={() => { navigate('/upload'); setOpen(false); }}>Upload Film</div>
-          <div className="nav-item" onClick={() => { navigate('/history'); setOpen(false); }}>History</div>
-          <div className="nav-item" onClick={() => { navigate('/chat'); setOpen(false); }}>AI Coach</div>
-          <div className="nav-item" onClick={() => { navigate('/brain'); setOpen(false); }}>🧠 Brain</div>
-          <div className="nav-item" onClick={onSignOut} style={{ marginTop: 'auto', color: '#ff4444' }}>Sign Out</div>
+        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {navItems.map(item => (
+            <div
+              key={item.path}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              onClick={() => { navigate(item.path); setOpen(false); }}
+            >
+              {item.label}
+            </div>
+          ))}
         </nav>
+        <div
+          className="nav-item"
+          onClick={onSignOut}
+          style={{ color: '#ff4444', marginTop: '8px' }}
+        >
+          Sign Out
+        </div>
       </div>
     </>
   );
@@ -90,7 +109,7 @@ function App() {
     setSession(null);
   }
 
-  if (loading) return <div style={{ color: 'white', padding: '20px' }}>Loading...</div>;
+  if (loading) return <div style={{ color: 'white', padding: '20px', background: '#080a0f', height: '100vh' }}>Loading...</div>;
 
   if (!session) return <Auth />;
 
