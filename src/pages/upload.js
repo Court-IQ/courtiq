@@ -9,8 +9,6 @@ export default function Upload() {
   const [playerName, setPlayerName] = useState('');
   const [jerseyNumber, setJerseyNumber] = useState('');
   const [playType, setPlayType] = useState('post move');
-  const [startTime, setStartTime] = useState(null);
-  const [endTime, setEndTime] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const videoRef = useRef(null);
@@ -21,26 +19,16 @@ export default function Upload() {
     setFile(selected);
     setVideoURL(URL.createObjectURL(selected));
     setResult(null);
-    setStartTime(null);
-    setEndTime(null);
   }
 
-  function markStart() {
-    setStartTime(videoRef.current.currentTime);
-  }
-
-  function markEnd() {
-    setEndTime(videoRef.current.currentTime);
-  }
-
-  function extractFrames(video, start, end, numFrames = 10) {
+  function extractFrames(video, numFrames = 5) {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
       const frames = [];
-      const duration = end - start;
+      const duration = video.duration;
       const interval = duration / numFrames;
       let captured = 0;
 
@@ -51,26 +39,25 @@ export default function Upload() {
         frames.push(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
         captured++;
         if (captured < numFrames) {
-          captureFrame(start + interval * captured);
+          captureFrame(interval * captured);
         } else {
           video.removeEventListener('seeked', onSeeked);
           resolve(frames);
         }
       });
 
-      captureFrame(start);
+      captureFrame(0);
     });
   }
 
   async function handleAnalyze() {
     if (!file || !sessionName) return alert('Please add a session name and video');
-    if (startTime === null || endTime === null) return alert('Please mark the start and end of the play!');
-    if (endTime <= startTime) return alert('End time must be after start time!');
-    if (endTime - startTime > 15) return alert('Please keep the clip under 15 seconds for best results!');
     setLoading(true);
 
     try {
-      const frames = await extractFrames(videoRef.current, startTime, endTime, 5);
+      const video = videoRef.current;
+      if (video.duration > 30) return alert('Please upload a clip under 30 seconds for best results.');
+      const frames = await extractFrames(video, 5);
 
       const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/analyze', {
         method: 'POST',
@@ -88,6 +75,7 @@ export default function Upload() {
         player_name: data.result.playerName,
         jersey_number: data.result.jerseyNumber,
         position: data.result.position,
+        play_type: data.result.playType,
         score: data.result.score,
         grade: data.result.grade,
         summary: data.result.summary,
@@ -216,7 +204,7 @@ export default function Upload() {
             <span style={{ color: '#888', fontSize: '14px', fontWeight: '600' }}>
               {file ? file.name : 'Click to upload MP4, MOV, AVI'}
             </span>
-            <span style={{ color: '#444', fontSize: '12px' }}>Max 15s clip recommended</span>
+            <span style={{ color: '#444', fontSize: '12px' }}>Upload a short clip of one play (under 30s)</span>
             <input type="file" accept="video/*" onChange={handleFileChange} style={{ display: 'none' }} />
           </label>
 
@@ -228,37 +216,6 @@ export default function Upload() {
                 controls
                 style={{ width: '100%', borderRadius: '10px', maxHeight: '360px' }}
               />
-
-              <div style={{ ...row, marginTop: '14px' }}>
-                <button
-                  onClick={markStart}
-                  style={{
-                    flex: 1, padding: '12px', borderRadius: '8px',
-                    border: '2px solid ' + (startTime !== null ? '#ff6b00' : '#1a1d2e'),
-                    background: startTime !== null ? '#ff6b00' : 'transparent',
-                    color: 'white', fontWeight: '700', cursor: 'pointer', fontSize: '13px',
-                  }}
-                >
-                  {startTime !== null ? `▶ Start: ${startTime.toFixed(1)}s` : '▶ Mark Start'}
-                </button>
-                <button
-                  onClick={markEnd}
-                  style={{
-                    flex: 1, padding: '12px', borderRadius: '8px',
-                    border: '2px solid ' + (endTime !== null ? '#ff6b00' : '#1a1d2e'),
-                    background: endTime !== null ? '#ff6b00' : 'transparent',
-                    color: 'white', fontWeight: '700', cursor: 'pointer', fontSize: '13px',
-                  }}
-                >
-                  {endTime !== null ? `■ End: ${endTime.toFixed(1)}s` : '■ Mark End'}
-                </button>
-              </div>
-
-              {startTime !== null && endTime !== null && endTime > startTime && (
-                <p style={{ color: '#ff6b00', fontWeight: '600', marginTop: '10px', textAlign: 'center', fontSize: '13px' }}>
-                  {(endTime - startTime).toFixed(1)}s clip selected — 5 frames will be analyzed
-                </p>
-              )}
 
               <button
                 className="upload-btn"

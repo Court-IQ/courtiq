@@ -344,6 +344,103 @@ app.post("/api/brain", async (req, res) => {
   }
 });
 
+app.post("/api/game-summary", async (req, res) => {
+  try {
+    const { sessionName, playerName, position, segments } = req.body;
+    if (!segments || segments.length === 0) return res.status(400).json({ error: "No segments provided" });
+
+    const segmentSummaries = segments.map((s, i) => {
+      const sum = s.summary || {};
+      return `--- Play ${i + 1}: ${s.playType} (${s.timeRange}) ---
+Score: ${s.score}/100 | Grade: ${s.grade}
+Offense: ${sum.positioning?.offense || 'N/A'}
+Defense: ${sum.positioning?.defense || 'N/A'}
+Shot Quality: ${sum.shotQuality?.verdict || 'N/A'} — ${sum.shotQuality?.reason || ''}
+Decision: ${sum.decisionMaking?.verdict || 'N/A'} — ${sum.decisionMaking?.reason || ''}
+Habit: ${sum.decisionMaking?.habit || 'N/A'}
+Coaching Tip: ${sum.coachingTip || 'N/A'}`;
+    }).join('\n\n');
+
+    const response = await groq.chat.completions.create({
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      max_tokens: 1500,
+      messages: [
+        {
+          role: "system",
+          content: `You are CourtIQ, an elite basketball analyst. You are reviewing a full game's worth of play-by-play analyses for ${playerName || 'a player'}, playing ${position}.
+
+Game: ${sessionName}
+Total plays analyzed: ${segments.length}
+
+Here are all the individual play analyses:
+${segmentSummaries}
+
+Based on ALL of these plays, generate a comprehensive game summary. Look for patterns across multiple plays — recurring habits, consistent strengths, repeated mistakes.
+
+Return ONLY valid JSON, no markdown:
+{
+  "overallScore": 75,
+  "overallGrade": "C+",
+  "gameNarrative": "2-3 sentence overall assessment of game performance, referencing specific plays and patterns",
+  "strengths": ["strength 1", "strength 2"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "patterns": ["pattern 1", "pattern 2"],
+  "keyCoachingPoints": ["specific actionable tip 1", "specific actionable tip 2", "specific actionable tip 3"]
+}`
+        },
+        {
+          role: "user",
+          content: "Generate the full game summary based on the play analyses above."
+        }
+      ]
+    });
+
+    const text = response.choices[0].message.content;
+    const clean = text.replace(/```json|```/g, "").trim();
+
+    let result;
+    try {
+      result = JSON.parse(clean);
+    } catch (e) {
+      const match = clean.match(/\{[\s\S]*\}/);
+      if (match) {
+        result = JSON.parse(match[0].replace(/[\u0000-\u001F]+/g, " ").replace(/,\s*}/g, "}").replace(/,\s*]/g, "]"));
+      } else {
+        result = {
+          overallScore: Math.round(segments.reduce((s, seg) => s + seg.score, 0) / segments.length),
+          overallGrade: "C",
+          gameNarrative: "Game summary could not be generated. See individual play analyses below.",
+          strengths: [],
+          weaknesses: [],
+          patterns: [],
+          keyCoachingPoints: [],
+        };
+      }
+    }
+
+    const getGrade = (score) => {
+      if (score >= 93) return "A";
+      if (score >= 90) return "A-";
+      if (score >= 87) return "B+";
+      if (score >= 83) return "B";
+      if (score >= 80) return "B-";
+      if (score >= 77) return "C+";
+      if (score >= 73) return "C";
+      if (score >= 70) return "C-";
+      if (score >= 65) return "D+";
+      if (score >= 60) return "D";
+      return "F";
+    };
+
+    result.overallGrade = getGrade(result.overallScore || 70);
+
+    res.json({ success: true, result });
+  } catch (err) {
+    console.error("Game summary error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "CourtIQ backend is running!" });
 });

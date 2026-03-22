@@ -9,6 +9,7 @@ import Admin from './pages/admin';
 import Brain from './pages/brain';
 import Analysis from './pages/analysis';
 import Players from './pages/players';
+import GameUpload from './pages/game-upload';
 import Landing from './pages/landing';
 import Auth from './Auth';
 import { supabase } from './supabase';
@@ -21,6 +22,7 @@ function Sidebar({ onSignOut }) {
   const navItems = [
     { label: 'Dashboard', path: '/' },
     { label: 'Upload Film', path: '/upload' },
+    { label: 'Full Game', path: '/game' },
     { label: 'History', path: '/history' },
     { label: 'Players', path: '/players' },
     { label: 'AI Coach', path: '/chat' },
@@ -136,6 +138,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/game" element={<GameUpload />} />
           <Route path="/history" element={<History />} />
           <Route path="/players" element={<Players />} />
           <Route path="/chat" element={<Chat />} />
