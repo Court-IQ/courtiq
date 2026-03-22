@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ADMIN_ID = '4b1e31f7-6366-440b-896f-ef858d9fdec2';
 
 function Brain() {
   const navigate = useNavigate();
