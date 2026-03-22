@@ -2,11 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 const { createClient } = require("@supabase/supabase-js");
-const { Pinecone } = require('@pinecone-database/pinecone');
-const OpenAI = require('openai');
-const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const brainIndex = pinecone.index('courtiq-brain');
+
+
 
 require("dotenv").config({ path: "../.env" });
 
@@ -30,6 +27,13 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     const framesToAnalyze = frames.slice(0, 5);
+
+    const { Pinecone } = require('@pinecone-database/pinecone');
+const OpenAI = require('openai');
+const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const brainIndex = pinecone.index('courtiq-brain');
+
 
     let brainContext = '';
 try {
@@ -109,7 +113,7 @@ Return ONLY valid JSON, no markdown, no extra text, no backticks:
   "score": 75,
   "grade": "B+"
 }
-  
+
 BASKETBALL BRAIN KNOWLEDGE (use this to inform your analysis):
 ${brainContext}
 
