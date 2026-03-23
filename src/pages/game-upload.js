@@ -20,9 +20,11 @@ export default function GameUpload() {
   const API_URL_BASE = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
 
   useEffect(() => {
-    async function checkUsage() {
+    async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Check usage
       try {
         const res = await fetch(`${API_URL_BASE}/api/check-usage`, {
           method: 'POST',
@@ -34,8 +36,16 @@ export default function GameUpload() {
       } catch (e) {
         console.error('Usage check failed:', e);
       }
+
+      // Pre-fill from profile
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      if (profile) {
+        if (profile.full_name) setPlayerName(profile.full_name);
+        if (profile.jersey_number) setJerseyNumber(profile.jersey_number);
+        if (profile.position) setPosition(profile.position);
+      }
     }
-    checkUsage();
+    init();
   }, []);
 
   const SEGMENT_LENGTH = 12;
