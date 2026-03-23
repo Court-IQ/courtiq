@@ -324,7 +324,7 @@ export default function GameUpload() {
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏀</div>
         <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginBottom: '8px', textTransform: 'none' }}>You've used all your free analyses</h2>
         <p style={{ color: '#666', fontSize: '14px', marginBottom: '28px', lineHeight: '1.6' }}>
-          Free accounts get {PLAN_LIMITS.free} analyses per month. Upgrade to keep improving.
+          Free accounts get 2 analyses per month. Upgrade to keep improving.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
           <button
