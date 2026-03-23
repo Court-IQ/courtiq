@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const Groq = require("groq-sdk");
+// const Groq = require("groq-sdk"); // deprecated — all models now use OpenAI
 const { createClient } = require("@supabase/supabase-js");
 
 
@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
@@ -43,7 +43,7 @@ try {
   });
   const brainResults = await brainIndex.query({
     vector: queryEmbedding.data[0].embedding,
-    topK: 3,
+    topK: 5,
     includeMetadata: true
   });
   brainContext = brainResults.matches
@@ -202,11 +202,15 @@ below 65 = D/F — fundamentally wrong play`;
         ]
       });
     } else {
-      // Llama Scout via Groq (free)
-      response = await groq.chat.completions.create({
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      // Default to GPT-4o as well
+      response = await openaiClient.chat.completions.create({
+        model: "gpt-4o",
         max_tokens: 2000,
         messages: [
+          {
+            role: "system",
+            content: "You are CourtIQ, an elite basketball film analyst with 20+ years of coaching experience at the college level. You break down film with precision and give actionable feedback."
+          },
           {
             role: "user",
             content: [
@@ -292,6 +296,27 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { message, analyses } = req.body;
 
+    // Search the Brain for relevant basketball knowledge
+    let brainKnowledge = '';
+    try {
+      const chatEmbedding = await openaiClient.embeddings.create({
+        model: 'text-embedding-ada-002',
+        input: message
+      });
+      const brainResults = await brainIndex.query({
+        vector: chatEmbedding.data[0].embedding,
+        topK: 5,
+        includeMetadata: true
+      });
+      brainKnowledge = brainResults.matches
+        .filter(m => m.score > 0.75)
+        .map(m => m.metadata.text)
+        .join('\n\n');
+      console.log('🧠 Chat brain hits:', brainResults.matches.length, 'above threshold:', brainKnowledge ? 'yes' : 'no');
+    } catch(e) {
+      console.log('Brain search failed for chat:', e.message);
+    }
+
     const analysisHistory = analyses && analyses.length > 0
       ? analyses.map((a, i) => {
           const s = a.summary || {};
@@ -308,23 +333,28 @@ Drill: ${s.drill || 'N/A'}`;
         }).join('\n\n')
       : 'No analyses yet.';
 
-    const response = await groq.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+    const response = await openaiClient.chat.completions.create({
+      model: "gpt-4o",
       max_tokens: 1000,
       messages: [
         {
           role: "system",
-          content: `You are CourtIQ, an elite personal basketball coach with 20+ years of experience. You are talking directly to a player who wants to improve.
+          content: `You are CourtIQ, an elite personal basketball coach with 20+ years of experience coaching at the college level. You are talking directly to a player who wants to improve. You have deep knowledge of the game — spacing, gap theory, pick and roll reads, transition, court vision, defensive concepts, and shooting mechanics.
 
 Here is their full film analysis history:
 ${analysisHistory}
 
+${brainKnowledge ? `BASKETBALL KNOWLEDGE (use this to give expert-level answers):
+${brainKnowledge}` : ''}
+
 Rules:
-- Reference specific details from their analyses (habits, drills, verdicts, coaching tips)
+- You are a real coach talking to your player. Be direct, specific, and honest — no fluff.
+- When the player asks about a concept (like gap theory, horns, closeouts, etc.), teach it using the basketball knowledge provided. Explain it like you're drawing it up on a whiteboard.
+- Reference specific details from their film analyses when relevant (habits, scores, verdicts, coaching tips)
 - Spot patterns across multiple plays if they exist
-- Be direct and honest like a real coach — no fluff
-- Keep it conversational, max 4 sentences unless they ask for more
-- If they ask about a specific play type or area, pull from the relevant analysis`
+- Keep responses conversational — 2-5 sentences unless they ask for a deeper breakdown
+- If they ask about something you have basketball knowledge on, go deep. Use real terminology and real concepts.
+- Give actionable advice they can use in their next game or workout`
         },
         {
           role: "user",
@@ -391,8 +421,8 @@ Habit: ${sum.decisionMaking?.habit || 'N/A'}
 Coaching Tip: ${sum.coachingTip || 'N/A'}`;
     }).join('\n\n');
 
-    const response = await groq.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+    const response = await openaiClient.chat.completions.create({
+      model: "gpt-4o",
       max_tokens: 1500,
       messages: [
         {
