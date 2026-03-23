@@ -93,6 +93,55 @@ function Dashboard() {
         <button className="upload-btn" onClick={() => navigate('/upload')}>Upload Film</button>
       </div>
 
+      {/* Usage banner */}
+      {usage && usage.plan === 'free' && usage.used >= usage.limit && (
+        <div style={{
+          background: 'linear-gradient(135deg, #2a1000 0%, #1a0800 100%)',
+          border: '1px solid #ff6b00',
+          borderRadius: '14px',
+          padding: '20px 24px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}>
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+              You've used all your free analyses this month
+            </div>
+            <div style={{ fontSize: '13px', color: '#888' }}>
+              Upgrade to Pro for 15 analyses/month or Elite for unlimited.
+            </div>
+          </div>
+          <button className="upload-btn" onClick={() => navigate('/upload')} style={{ whiteSpace: 'nowrap' }}>
+            Upgrade Now
+          </button>
+        </div>
+      )}
+      {usage && usage.plan === 'free' && usage.used > 0 && usage.used < usage.limit && (
+        <div style={{
+          background: '#0f1117',
+          border: '1px solid #1a1d2e',
+          borderRadius: '14px',
+          padding: '16px 24px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}>
+          <div style={{ fontSize: '14px', color: '#888' }}>
+            <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
+          </div>
+          <a href="#pricing" onClick={(e) => { e.preventDefault(); navigate('/upload'); }} style={{ fontSize: '13px', color: '#ff6b00', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
+            Upgrade for more
+          </a>
+        </div>
+      )}
+
       <div className="stats-row">
         {[
           ['Total Sessions', analyses.length],
