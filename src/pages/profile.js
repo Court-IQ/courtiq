@@ -270,22 +270,39 @@ export default function Profile() {
               </div>
             </div>
             {usage && usage.plan === 'free' && (
-              <button
-                className="upload-btn"
-                onClick={async () => {
-                  const { data: { user } } = await supabase.auth.getUser();
-                  const res = await fetch(`${API_URL}/api/create-checkout`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: user.id, plan: 'pro' }),
-                  });
-                  const data = await res.json();
-                  if (data.url) window.location.href = data.url;
-                }}
-                style={{ padding: '8px 16px', fontSize: '12px' }}
-              >
-                Upgrade
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="upload-btn"
+                  onClick={async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const res = await fetch(`${API_URL}/api/create-checkout`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ userId: user.id, plan: 'pro' }),
+                    });
+                    const data = await res.json();
+                    if (data.url) window.location.href = data.url;
+                  }}
+                  style={{ padding: '8px 16px', fontSize: '12px' }}
+                >
+                  Pro $9.99/mo
+                </button>
+                <button
+                  onClick={async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const res = await fetch(`${API_URL}/api/create-checkout`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ userId: user.id, plan: 'elite' }),
+                    });
+                    const data = await res.json();
+                    if (data.url) window.location.href = data.url;
+                  }}
+                  style={{ padding: '8px 16px', fontSize: '12px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}
+                >
+                  Elite $19.99/mo
+                </button>
+              </div>
             )}
           </div>
         </div>
