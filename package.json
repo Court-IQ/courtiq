@@ -20,6 +20,7 @@
     "react-scripts": "5.0.1",
     "recharts": "^3.8.0",
     "stripe": "^20.4.1",
+    "typescript": "^5.9.3",
     "web-vitals": "^2.1.4",
     "yaml": "^2.8.2"
   },
