@@ -9,6 +9,7 @@ import Brain from './pages/brain';
 import Analysis from './pages/analysis';
 import Players from './pages/players';
 import GameUpload from './pages/game-upload';
+import Profile from './pages/profile';
 import Landing from './pages/landing';
 import Onboarding from './pages/onboarding';
 import Auth from './Auth';
@@ -24,6 +25,7 @@ function Sidebar({ onSignOut }) {
     { label: 'Upload', path: '/upload' },
     { label: 'History', path: '/history' },
     { label: 'AI Coach', path: '/chat' },
+    { label: 'Profile', path: '/profile' },
   ];
 
   return (
@@ -151,6 +153,7 @@ function App() {
           <Route path="/history" element={<History />} />
           <Route path="/players" element={<Players />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/brain" element={<Brain />} />
           <Route path="/analysis/:id" element={<Analysis />} />
