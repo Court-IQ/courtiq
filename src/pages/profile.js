@@ -272,7 +272,16 @@ export default function Profile() {
             {usage && usage.plan === 'free' && (
               <button
                 className="upload-btn"
-                onClick={() => window.location.href = '/upload'}
+                onClick={async () => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  const res = await fetch(`${API_URL}/api/create-checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.id, plan: 'pro' }),
+                  });
+                  const data = await res.json();
+                  if (data.url) window.location.href = data.url;
+                }}
                 style={{ padding: '8px 16px', fontSize: '12px' }}
               >
                 Upgrade

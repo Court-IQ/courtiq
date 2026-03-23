@@ -115,7 +115,16 @@ function Dashboard() {
               Upgrade to Pro for 15 analyses/month or Elite for unlimited.
             </div>
           </div>
-          <button className="upload-btn" onClick={() => navigate('/upload')} style={{ whiteSpace: 'nowrap' }}>
+          <button className="upload-btn" onClick={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/create-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.id, plan: 'pro' }),
+            });
+            const data = await res.json();
+            if (data.url) window.location.href = data.url;
+          }} style={{ whiteSpace: 'nowrap' }}>
             Upgrade Now
           </button>
         </div>
@@ -136,7 +145,17 @@ function Dashboard() {
           <div style={{ fontSize: '14px', color: '#888' }}>
             <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
           </div>
-          <a href="#pricing" onClick={(e) => { e.preventDefault(); navigate('/upload'); }} style={{ fontSize: '13px', color: '#ff6b00', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
+          <a href="#pricing" onClick={async (e) => {
+            e.preventDefault();
+            const { data: { user } } = await supabase.auth.getUser();
+            const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/create-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.id, plan: 'pro' }),
+            });
+            const data = await res.json();
+            if (data.url) window.location.href = data.url;
+          }} style={{ fontSize: '13px', color: '#ff6b00', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
             Upgrade for more
           </a>
         </div>
