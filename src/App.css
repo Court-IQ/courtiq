@@ -393,6 +393,225 @@ h2 {
   background: #ff6b00;
 }
 
+/* ─── LANDING PAGE ─────────────────────────────────────────────── */
+.landing-page {
+  background: #080a0f;
+  min-height: 100vh;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 48px;
+  border-bottom: 1px solid #1a1d2e;
+}
+
+.landing-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.landing-nav-link {
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.landing-nav-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.landing-btn-ghost {
+  background: none;
+  border: 1px solid #1a1d2e;
+  color: #888;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.landing-btn-cta {
+  padding: 10px 20px !important;
+}
+
+.landing-hero {
+  text-align: center;
+  padding: 120px 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-hero-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,107,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.landing-badge {
+  display: inline-block;
+  background: rgba(255,107,0,0.1);
+  border: 1px solid rgba(255,107,0,0.2);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff6b00;
+  letter-spacing: 1px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+}
+
+.landing-hero-title {
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1.05;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.landing-hero-sub {
+  font-size: 18px;
+  color: #666;
+  max-width: 520px;
+  margin: 0 auto 44px;
+  line-height: 1.7;
+}
+
+.landing-stats {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  padding: 48px;
+  border-top: 1px solid #1a1d2e;
+  border-bottom: 1px solid #1a1d2e;
+  flex-wrap: wrap;
+}
+
+.landing-stat {
+  text-align: center;
+}
+
+.landing-stat-val {
+  font-size: 36px;
+  font-weight: 900;
+  color: #ff6b00;
+  letter-spacing: -1px;
+}
+
+.landing-stat-label {
+  font-size: 13px;
+  color: #555;
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.landing-section {
+  padding: 100px 48px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.landing-section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.landing-section-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff6b00;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.landing-section-title {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  text-transform: none;
+  color: #fff;
+}
+
+.landing-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.landing-card {
+  background: #0f1117;
+  border: 1px solid #1a1d2e;
+  border-radius: 16px;
+  padding: 28px;
+  transition: border-color 0.2s;
+}
+
+.landing-card:hover {
+  border-color: #ff6b00;
+}
+
+.landing-pricing-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 36px;
+  border-radius: 20px;
+}
+
+.landing-pricing-highlight {
+  background: linear-gradient(135deg, #1a1000 0%, #0f1117 100%) !important;
+  border-color: #ff6b00 !important;
+}
+
+.landing-pricing-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff6b00;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 16px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.landing-final-cta {
+  text-align: center;
+  padding: 100px 48px;
+  border-top: 1px solid #1a1d2e;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── MOBILE STYLES ──────────────────────────────────────────────── */
+
 @media (max-width: 768px) {
   .hamburger {
     display: block !important;
@@ -514,5 +733,91 @@ h2 {
   /* Result grids go single column */
   .result-grid-2col {
     grid-template-columns: 1fr !important;
+  }
+
+  /* ─── LANDING PAGE MOBILE ──────────────────────────────────────── */
+
+  .landing-nav {
+    padding: 16px 20px;
+  }
+
+  .landing-nav-links {
+    display: none;
+  }
+
+  .landing-nav-buttons {
+    gap: 8px;
+  }
+
+  .landing-btn-ghost {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .landing-btn-cta {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .landing-hero {
+    padding: 60px 20px 50px;
+  }
+
+  .landing-hero-title {
+    letter-spacing: -2px;
+  }
+
+  .landing-hero-sub {
+    font-size: 15px;
+    margin-bottom: 32px;
+  }
+
+  .landing-stats {
+    gap: 24px;
+    padding: 32px 20px;
+  }
+
+  .landing-stat-val {
+    font-size: 28px;
+  }
+
+  .landing-stat-label {
+    font-size: 11px;
+  }
+
+  .landing-section {
+    padding: 60px 20px;
+  }
+
+  .landing-section-header {
+    margin-bottom: 32px;
+  }
+
+  .landing-section-title {
+    font-size: 24px;
+    letter-spacing: -1px;
+  }
+
+  .landing-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .landing-card {
+    padding: 20px;
+  }
+
+  .landing-pricing-card {
+    padding: 24px;
+  }
+
+  .landing-final-cta {
+    padding: 60px 20px;
+  }
+
+  /* ─── CHAT MOBILE ──────────────────────────────────────────────── */
+
+  .main {
+    height: auto;
   }
 }

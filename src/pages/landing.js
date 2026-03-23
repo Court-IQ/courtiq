@@ -49,85 +49,70 @@ function Landing() {
   ];
 
   return (
-    <div style={{ background: '#080a0f', minHeight: '100vh', color: '#fff', fontFamily: 'Inter, sans-serif' }}>
+    <div className="landing-page">
 
       {/* Nav */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 48px', borderBottom: '1px solid #1a1d2e' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <nav className="landing-nav">
+        <div className="landing-nav-logo" onClick={() => window.scrollTo(0, 0)} style={{ cursor: 'pointer' }}>
           <span style={{ fontSize: '22px' }}>🏀</span>
           <span style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px' }}>
             COURT<span style={{ color: '#ff6b00' }}>IQ</span>
           </span>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <a href="#how-it-works" style={{ color: '#888', fontSize: '14px', fontWeight: '600', textDecoration: 'none' }}>How It Works</a>
-          <a href="#pricing" style={{ color: '#888', fontSize: '14px', fontWeight: '600', textDecoration: 'none' }}>Pricing</a>
-          <button
-            onClick={() => navigate('/auth')}
-            style={{ background: 'none', border: '1px solid #1a1d2e', color: '#888', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => navigate('/auth?signup=true')}
-            className="upload-btn"
-            style={{ padding: '10px 20px' }}
-          >
-            Get Started
-          </button>
+        <div className="landing-nav-links">
+          <a href="#how-it-works" className="landing-nav-link">How It Works</a>
+          <a href="#pricing" className="landing-nav-link">Pricing</a>
         </div>
-      </div>
+        <div className="landing-nav-buttons">
+          <button onClick={() => navigate('/auth')} className="landing-btn-ghost">Sign In</button>
+          <button onClick={() => navigate('/auth?signup=true')} className="upload-btn landing-btn-cta">Get Started</button>
+        </div>
+      </nav>
 
       {/* Hero */}
-      <div style={{ textAlign: 'center', padding: '120px 48px 80px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(255,107,0,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ display: 'inline-block', background: 'rgba(255,107,0,0.1)', border: '1px solid rgba(255,107,0,0.2)', borderRadius: '20px', padding: '6px 16px', fontSize: '12px', fontWeight: '700', color: '#ff6b00', letterSpacing: '1px', marginBottom: '28px', textTransform: 'uppercase' }}>
-          AI-Powered Film Analysis
-        </div>
-        <h1 style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: '900', letterSpacing: '-3px', lineHeight: '1.05', marginBottom: '24px', position: 'relative' }}>
+      <div className="landing-hero">
+        <div className="landing-hero-glow" />
+        <div className="landing-badge">AI-Powered Film Analysis</div>
+        <h1 className="landing-hero-title">
           Your personal coach<br />
           <span style={{ color: '#ff6b00' }}>is watching film.</span>
         </h1>
-        <p style={{ fontSize: '18px', color: '#666', maxWidth: '520px', margin: '0 auto 44px', lineHeight: '1.7' }}>
+        <p className="landing-hero-sub">
           Upload your game film and get elite-level breakdowns — positioning, decision making, shot quality, and a personalized plan to improve.
         </p>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => navigate('/auth?signup=true')}
-            className="upload-btn"
-            style={{ fontSize: '16px', padding: '18px 40px' }}
-          >
-            Start Analyzing Free
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/auth?signup=true')}
+          className="upload-btn"
+          style={{ fontSize: '16px', padding: '18px 40px' }}
+        >
+          Start Analyzing Free
+        </button>
       </div>
 
       {/* Stats bar */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '64px', padding: '48px', borderTop: '1px solid #1a1d2e', borderBottom: '1px solid #1a1d2e', flexWrap: 'wrap' }}>
+      <div className="landing-stats">
         {[
           ['GPT-4o', 'Vision AI'],
           ['270+', 'Brain entries'],
           ['10+', 'Play types'],
           ['A–F', 'Graded plays'],
         ].map(([val, label]) => (
-          <div key={label} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '36px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-1px' }}>{val}</div>
-            <div style={{ fontSize: '13px', color: '#555', fontWeight: '600', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
+          <div key={label} className="landing-stat">
+            <div className="landing-stat-val">{val}</div>
+            <div className="landing-stat-label">{label}</div>
           </div>
         ))}
       </div>
 
       {/* How It Works */}
-      <div id="how-it-works" style={{ padding: '100px 48px', maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: '#ff6b00', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>How It Works</div>
-          <h2 style={{ fontSize: '36px', fontWeight: '900', letterSpacing: '-1.5px', textTransform: 'none', color: '#fff' }}>
-            Three steps to better basketball
-          </h2>
+      <div id="how-it-works" className="landing-section">
+        <div className="landing-section-header">
+          <div className="landing-section-tag">How It Works</div>
+          <h2 className="landing-section-title">Three steps to better basketball</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+        <div className="landing-grid-3">
           {steps.map(s => (
-            <div key={s.num} style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '32px', position: 'relative' }}>
+            <div key={s.num} className="landing-card" style={{ position: 'relative' }}>
               <div style={{ fontSize: '48px', fontWeight: '900', color: 'rgba(255,107,0,0.15)', position: 'absolute', top: '16px', right: '20px', letterSpacing: '-2px' }}>{s.num}</div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '10px', marginTop: '8px' }}>{s.title}</div>
               <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.7' }}>{s.desc}</div>
@@ -137,19 +122,14 @@ function Landing() {
       </div>
 
       {/* Features */}
-      <div style={{ padding: '80px 48px', borderTop: '1px solid #1a1d2e' }}>
-        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: '#ff6b00', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>Features</div>
-          <h2 style={{ fontSize: '36px', fontWeight: '900', letterSpacing: '-1.5px', textTransform: 'none', color: '#fff' }}>
-            Everything you need to level up
-          </h2>
+      <div className="landing-section" style={{ borderTop: '1px solid #1a1d2e' }}>
+        <div className="landing-section-header">
+          <div className="landing-section-tag">Features</div>
+          <h2 className="landing-section-title">Everything you need to level up</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
+        <div className="landing-grid-3">
           {features.map(f => (
-            <div key={f.title} style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '28px', transition: 'border-color 0.2s', cursor: 'default' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
-            >
+            <div key={f.title} className="landing-card">
               <div style={{ fontSize: '32px', marginBottom: '14px' }}>{f.icon}</div>
               <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>{f.title}</div>
               <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.7' }}>{f.desc}</div>
@@ -159,29 +139,17 @@ function Landing() {
       </div>
 
       {/* Pricing */}
-      <div id="pricing" style={{ padding: '100px 48px', borderTop: '1px solid #1a1d2e' }}>
-        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: '#ff6b00', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>Pricing</div>
-          <h2 style={{ fontSize: '36px', fontWeight: '900', letterSpacing: '-1.5px', textTransform: 'none', color: '#fff' }}>
-            Pick your plan
-          </h2>
+      <div id="pricing" className="landing-section" style={{ borderTop: '1px solid #1a1d2e' }}>
+        <div className="landing-section-header">
+          <div className="landing-section-tag">Pricing</div>
+          <h2 className="landing-section-title">Pick your plan</h2>
           <p style={{ color: '#555', fontSize: '16px', marginTop: '12px' }}>Start free. Upgrade when you're ready.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', maxWidth: '900px', margin: '0 auto' }}>
+        <div className="landing-grid-3 landing-pricing-grid">
           {plans.map(plan => (
-            <div key={plan.name} style={{
-              background: plan.highlighted ? 'linear-gradient(135deg, #1a1000 0%, #0f1117 100%)' : '#0f1117',
-              border: plan.highlighted ? '1px solid #ff6b00' : '1px solid #1a1d2e',
-              borderRadius: '20px',
-              padding: '36px',
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-            }}>
+            <div key={plan.name} className={`landing-card landing-pricing-card ${plan.highlighted ? 'landing-pricing-highlight' : ''}`}>
               {plan.highlighted && (
-                <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#ff6b00', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 16px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Most Popular
-                </div>
+                <div className="landing-pricing-badge">Most Popular</div>
               )}
               <div style={{ fontSize: '14px', fontWeight: '700', color: '#ff6b00', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{plan.name}</div>
               <div style={{ marginBottom: '4px' }}>
@@ -198,20 +166,8 @@ function Landing() {
               </div>
               <button
                 onClick={() => navigate('/auth?signup=true')}
-                style={{
-                  background: plan.highlighted ? '#ff6b00' : 'transparent',
-                  border: plan.highlighted ? 'none' : '1px solid #1a1d2e',
-                  color: plan.highlighted ? '#fff' : '#888',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  transition: 'all 0.2s',
-                  width: '100%',
-                }}
+                className={plan.highlighted ? 'upload-btn' : 'landing-btn-ghost'}
+                style={{ width: '100%', padding: '14px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700', fontSize: '14px' }}
               >
                 {plan.cta}
               </button>
@@ -221,9 +177,9 @@ function Landing() {
       </div>
 
       {/* Final CTA */}
-      <div style={{ textAlign: 'center', padding: '100px 48px', borderTop: '1px solid #1a1d2e', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(255,107,0,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <h2 style={{ fontSize: '40px', fontWeight: '900', letterSpacing: '-1.5px', marginBottom: '16px', textTransform: 'none', color: '#fff', position: 'relative' }}>
+      <div className="landing-final-cta">
+        <div className="landing-hero-glow" />
+        <h2 className="landing-section-title" style={{ fontSize: 'clamp(28px, 5vw, 40px)', position: 'relative' }}>
           Ready to see your game clearly?
         </h2>
         <p style={{ color: '#555', fontSize: '16px', marginBottom: '36px', position: 'relative' }}>Your first analysis is free. No credit card required.</p>
@@ -237,7 +193,7 @@ function Landing() {
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '28px', borderTop: '1px solid #1a1d2e', color: '#333', fontSize: '13px' }}>
+      <div style={{ textAlign: 'center', padding: '28px 20px', borderTop: '1px solid #1a1d2e', color: '#333', fontSize: '13px' }}>
         © 2026 CourtIQ · AI Film Analysis
       </div>
     </div>
