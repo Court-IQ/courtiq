@@ -79,10 +79,16 @@ export default function GameUpload() {
   }
 
   function extractFrames(video, startTime, endTime, numFrames = 5) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        video.removeEventListener('seeked', onSeeked);
+        if (frames.length > 0) resolve(frames);
+        else reject(new Error('Frame extraction timed out'));
+      }, 15000);
+
       const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
       const ctx = canvas.getContext('2d');
       const frames = [];
       const duration = endTime - startTime;
@@ -90,12 +96,13 @@ export default function GameUpload() {
       let captured = 0;
 
       function onSeeked() {
-        ctx.drawImage(video, 0, 0);
-        frames.push(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        frames.push(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
         captured++;
         if (captured < numFrames) {
           video.currentTime = startTime + interval * captured;
         } else {
+          clearTimeout(timeout);
           video.removeEventListener('seeked', onSeeked);
           resolve(frames);
         }
@@ -129,10 +136,22 @@ export default function GameUpload() {
     const tagged = segments.filter(s => s.playType !== 'skip');
     if (tagged.length === 0) return alert('Tag at least one segment with a play type');
 
+    // Create a dedicated video element for frame extraction so it survives phase changes
+    const extractionVideo = document.createElement('video');
+    extractionVideo.src = videoURL;
+    extractionVideo.crossOrigin = 'anonymous';
+    extractionVideo.preload = 'auto';
+    extractionVideo.muted = true;
+    await new Promise((resolve) => {
+      extractionVideo.onloadeddata = resolve;
+      extractionVideo.onerror = resolve;
+      setTimeout(resolve, 5000);
+    });
+
     setPhase(3);
     setProgress({ current: 0, total: tagged.length });
 
-    const video = tagVideoRef.current || videoRef.current;
+    const video = extractionVideo;
     const results = [];
 
     for (let i = 0; i < tagged.length; i++) {
@@ -221,7 +240,11 @@ export default function GameUpload() {
     } catch (err) {
       console.error('Game summary failed:', err);
     }
-  }, [segments, sessionName, position, playerName, jerseyNumber]);
+
+    // Clean up extraction video
+    extractionVideo.src = '';
+    extractionVideo.remove();
+  }, [segments, sessionName, position, playerName, jerseyNumber, videoURL]);
 
   const section = {
     background: '#0f1117',
