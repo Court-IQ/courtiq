@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-// const Groq = require("groq-sdk"); // deprecated — all models now use OpenAI
 const { createClient } = require("@supabase/supabase-js");
+const Stripe = require("stripe");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 
 
@@ -498,6 +499,126 @@ Return ONLY valid JSON, no markdown:
   } catch (err) {
     console.error("Game summary error:", err);
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── STRIPE & USAGE ──────────────────────────────────────────────
+
+const PLAN_LIMITS = { free: 2, pro: 15, elite: 999999 };
+
+// Get or create user profile
+async function getProfile(userId) {
+  let { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  if (!data) {
+    await supabase.from('profiles').insert([{ id: userId, plan: 'free', analyses_used: 0, analyses_reset_date: new Date().toISOString() }]);
+    ({ data } = await supabase.from('profiles').select('*').eq('id', userId).single());
+  }
+  // Reset monthly count if needed
+  const resetDate = new Date(data.analyses_reset_date);
+  const now = new Date();
+  if (now.getMonth() !== resetDate.getMonth() || now.getFullYear() !== resetDate.getFullYear()) {
+    await supabase.from('profiles').update({ analyses_used: 0, analyses_reset_date: now.toISOString() }).eq('id', userId);
+    data.analyses_used = 0;
+  }
+  return data;
+}
+
+// Check if user can analyze
+app.post("/api/check-usage", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "No userId" });
+    const profile = await getProfile(userId);
+    const limit = PLAN_LIMITS[profile.plan] || 2;
+    res.json({
+      plan: profile.plan,
+      used: profile.analyses_used,
+      limit,
+      canAnalyze: profile.analyses_used < limit,
+    });
+  } catch (err) {
+    console.error("Check usage error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Increment usage after analysis
+app.post("/api/increment-usage", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "No userId" });
+    const profile = await getProfile(userId);
+    await supabase.from('profiles').update({ analyses_used: profile.analyses_used + 1 }).eq('id', userId);
+    res.json({ success: true, used: profile.analyses_used + 1 });
+  } catch (err) {
+    console.error("Increment usage error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create Stripe checkout session
+app.post("/api/create-checkout", async (req, res) => {
+  try {
+    const { userId, plan } = req.body;
+    if (!userId || !plan) return res.status(400).json({ error: "Missing userId or plan" });
+
+    const prices = {
+      pro: { amount: 999, name: 'CourtIQ Pro' },
+      elite: { amount: 1999, name: 'CourtIQ Elite' },
+    };
+
+    const selected = prices[plan];
+    if (!selected) return res.status(400).json({ error: "Invalid plan" });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      client_reference_id: userId,
+      metadata: { plan, userId },
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          recurring: { interval: 'month' },
+          product_data: { name: selected.name },
+          unit_amount: selected.amount,
+        },
+        quantity: 1,
+      }],
+      success_url: `${req.headers.origin || 'https://courtiq.up.railway.app'}/?upgraded=true`,
+      cancel_url: `${req.headers.origin || 'https://courtiq.up.railway.app'}/`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe checkout error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Stripe webhook
+app.post("/api/webhook/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const event = req.body;
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const userId = session.client_reference_id || session.metadata?.userId;
+      const plan = session.metadata?.plan;
+
+      if (userId && plan) {
+        await supabase.from('profiles').update({
+          plan,
+          stripe_customer_id: session.customer,
+          analyses_used: 0,
+        }).eq('id', userId);
+        console.log(`💰 User ${userId} upgraded to ${plan}`);
+      }
+    }
+
+    res.json({ received: true });
+  } catch (err) {
+    console.error("Webhook error:", err);
+    res.status(400).json({ error: err.message });
   }
 });
 

@@ -6,10 +6,28 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 function Dashboard() {
   const navigate = useNavigate();
   const [analyses, setAnalyses] = useState([]);
+  const [usage, setUsage] = useState(null);
 
   useEffect(() => {
     fetchAnalyses();
+    fetchUsage();
   }, []);
+
+  async function fetchUsage() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    try {
+      const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/check-usage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      const data = await res.json();
+      setUsage(data);
+    } catch (e) {
+      console.error('Usage check failed:', e);
+    }
+  }
 
   async function fetchAnalyses() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -25,10 +43,6 @@ function Dashboard() {
   const avgScore = analyses.length
     ? Math.round(analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length)
     : 0;
-
-  const bestGrade = analyses.length
-    ? analyses.reduce((best, a) => a.score > best.score ? a : best, analyses[0]).grade
-    : 'N/A';
 
   const chartData = analyses.slice(-10).map((a, i) => ({
     name: `#${i + 1}`,
@@ -82,9 +96,9 @@ function Dashboard() {
       <div className="stats-row">
         {[
           ['Total Sessions', analyses.length],
-          ['Completed', analyses.length],
+          ['Plan', usage ? usage.plan.toUpperCase() : '...'],
           ['Avg Score', avgScore],
-          ['Best Grade', bestGrade],
+          ['Analyses Left', usage ? (usage.limit - usage.used) : '...'],
         ].map(([label, val]) => (
           <div className="stat-card" key={label}>
             <div className="stat-label">{label}</div>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '../supabase';
 
 export default function GameUpload() {
@@ -12,11 +12,34 @@ export default function GameUpload() {
   const [segments, setSegments] = useState([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [gameResult, setGameResult] = useState(null);
+  const [usage, setUsage] = useState(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const videoRef = useRef(null);
   const tagVideoRef = useRef(null);
 
+  const API_URL_BASE = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
+
+  useEffect(() => {
+    async function checkUsage() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      try {
+        const res = await fetch(`${API_URL_BASE}/api/check-usage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id }),
+        });
+        const data = await res.json();
+        setUsage(data);
+      } catch (e) {
+        console.error('Usage check failed:', e);
+      }
+    }
+    checkUsage();
+  }, []);
+
   const SEGMENT_LENGTH = 12;
-  const API_URL = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
+  const API_URL = API_URL_BASE;
 
   const playTypes = [
     'skip', 'post move', 'mid-range jumper', '3 pointer', 'drive to basket',
@@ -136,6 +159,12 @@ export default function GameUpload() {
     const tagged = segments.filter(s => s.playType !== 'skip');
     if (tagged.length === 0) return alert('Tag at least one segment with a play type');
 
+    // Check usage limits
+    if (usage && !usage.canAnalyze) {
+      setShowUpgrade(true);
+      return;
+    }
+
     // Create a dedicated video element for frame extraction so it survives phase changes
     const extractionVideo = document.createElement('video');
     extractionVideo.src = videoURL;
@@ -188,7 +217,7 @@ export default function GameUpload() {
           } : s));
           results.push({ ...seg, result });
 
-          // Save individual analysis to Supabase
+          // Save individual analysis to Supabase & increment usage
           const { data: { user } } = await supabase.auth.getUser();
           await supabase.from('analyses').insert([{
             session_name: `${sessionName} (${formatTime(seg.startTime)}-${formatTime(seg.endTime)})`,
@@ -201,6 +230,11 @@ export default function GameUpload() {
             summary: result.summary,
             user_id: user.id,
           }]);
+          await fetch(`${API_URL_BASE}/api/increment-usage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id }),
+          });
         } else {
           setSegments(prev => prev.map(s => s.index === seg.index ? { ...s, status: 'error' } : s));
         }
@@ -283,15 +317,75 @@ export default function GameUpload() {
     return '#ff4444';
   }
 
+  // ─── UPGRADE MODAL ────────────────────────────────────────────────
+  const UpgradeModal = () => (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '20px', padding: '40px', maxWidth: '480px', width: '100%', textAlign: 'center' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏀</div>
+        <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginBottom: '8px', textTransform: 'none' }}>You've used all your free analyses</h2>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '28px', lineHeight: '1.6' }}>
+          Free accounts get {PLAN_LIMITS.free} analyses per month. Upgrade to keep improving.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+          <button
+            onClick={async () => {
+              const { data: { user } } = await supabase.auth.getUser();
+              const res = await fetch(`${API_URL_BASE}/api/create-checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, plan: 'pro' }),
+              });
+              const data = await res.json();
+              if (data.url) window.location.href = data.url;
+            }}
+            style={{ background: '#ff6b00', color: '#fff', border: 'none', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
+          >
+            Go Pro — $9.99/mo (15 analyses)
+          </button>
+          <button
+            onClick={async () => {
+              const { data: { user } } = await supabase.auth.getUser();
+              const res = await fetch(`${API_URL_BASE}/api/create-checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, plan: 'elite' }),
+              });
+              const data = await res.json();
+              if (data.url) window.location.href = data.url;
+            }}
+            style={{ background: 'transparent', color: '#ff6b00', border: '1px solid #ff6b00', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
+          >
+            Go Elite — $19.99/mo (Unlimited)
+          </button>
+        </div>
+        <button
+          onClick={() => setShowUpgrade(false)}
+          style={{ background: 'none', border: 'none', color: '#555', fontSize: '13px', cursor: 'pointer' }}
+        >
+          Maybe later
+        </button>
+      </div>
+    </div>
+  );
+
   // ─── PHASE 1: SETUP ──────────────────────────────────────────────
   if (phase === 1) {
     return (
       <div className="main">
+        {showUpgrade && <UpgradeModal />}
         <div className="top-bar">
           <div>
             <h1>Full Game Analysis</h1>
             <p>Upload a full game or quarter for possession-by-possession breakdown</p>
           </div>
+          {usage && (
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '13px', color: '#888' }}>
+                <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.used}</span> / {usage.limit} analyses used
+              </div>
+              <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>{usage.plan} plan</div>
+            </div>
+          )}
         </div>
 
         <div style={{ maxWidth: '680px' }}>
@@ -372,6 +466,7 @@ export default function GameUpload() {
   if (phase === 2) {
     return (
       <div className="main">
+        {showUpgrade && <UpgradeModal />}
         <div className="top-bar">
           <div>
             <h1>Tag Plays</h1>
