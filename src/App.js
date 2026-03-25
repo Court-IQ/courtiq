@@ -156,6 +156,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/brain" element={<Brain />} />
           <Route path="/analysis/:id" element={<Analysis />} />
+          <Route path="*" element={<Dashboard />} />
         </Routes>
       </div>
     </BrowserRouter>
