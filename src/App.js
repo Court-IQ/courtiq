@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-ro
 import './App.css';
 import Dashboard from './pages/dashboard';
 import History from './pages/history';
-import Chat from './pages/chat';
+// import Chat from './pages/chat';
 import Admin from './pages/admin';
 import Brain from './pages/brain';
 import Analysis from './pages/analysis';
@@ -24,7 +24,6 @@ function Sidebar({ onSignOut }) {
     { label: 'Dashboard', path: '/' },
     { label: 'Upload', path: '/upload' },
     { label: 'History', path: '/history' },
-    { label: 'AI Coach', path: '/chat' },
     { label: 'Profile', path: '/profile' },
   ];
 
@@ -152,7 +151,7 @@ function App() {
           <Route path="/upload" element={<GameUpload />} />
           <Route path="/history" element={<History />} />
           <Route path="/players" element={<Players />} />
-          <Route path="/chat" element={<Chat />} />
+          {/* <Route path="/chat" element={<Chat />} /> */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/brain" element={<Brain />} />
