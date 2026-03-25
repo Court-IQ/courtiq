@@ -46,8 +46,8 @@ function Brain() {
     width: '100%',
     padding: '10px 12px',
     borderRadius: '8px',
-    border: '1px solid #1a1d2e',
-    background: '#080a0f',
+    border: '1px solid #e5e7eb',
+    background: '#f5f6f8',
     color: 'white',
     fontSize: '14px',
     fontFamily: 'Inter, sans-serif',
@@ -74,7 +74,7 @@ function Brain() {
         <button className="upload-btn" onClick={() => navigate('/')}>Back to Dashboard</button>
       </div>
 
-      <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '28px', marginBottom: '24px' }}>
+      <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '28px', marginBottom: '24px' }}>
         <h2 style={{ marginBottom: '20px' }}>Add New Knowledge</h2>
 
         <div style={{ marginBottom: '16px' }}>
@@ -137,23 +137,23 @@ function Brain() {
           </p>
         )}
         {error && (
-          <div style={{ background: '#2a0a0a', border: '1px solid #ff4444', borderRadius: '8px', padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500', marginTop: '12px' }}>
+          <div style={{ background: '#fef2f2', border: '1px solid #ff4444', borderRadius: '8px', padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500', marginTop: '12px' }}>
             {error}
           </div>
         )}
       </div>
 
       {entries.length > 0 && (
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '28px' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '28px' }}>
           <h2 style={{ marginBottom: '16px' }}>Added This Session</h2>
           {entries.map((e, i) => (
-            <div key={i} style={{ background: '#080a0f', border: '1px solid #1a1d2e', borderRadius: '10px', padding: '16px', marginBottom: '12px' }}>
+            <div key={i} style={{ background: '#f5f6f8', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '16px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
-                <span style={{ background: '#22c55e', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>{e.category}</span>
-                {e.playType && <span style={{ background: '#1a1d2e', color: '#888', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.playType}</span>}
-                {e.verdict && <span style={{ background: '#0a2a0a', color: '#4ade80', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.verdict}</span>}
+                <span style={{ background: '#ff6b00', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>{e.category}</span>
+                {e.playType && <span style={{ background: '#e5e7eb', color: '#888', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.playType}</span>}
+                {e.verdict && <span style={{ background: '#ecfdf5', color: '#4ade80', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.verdict}</span>}
               </div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{e.text}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{e.text}</p>
             </div>
           ))}
         </div>

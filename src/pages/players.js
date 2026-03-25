@@ -34,7 +34,7 @@ function Players() {
   function getGradeColor(grade) {
     if (!grade) return '#555';
     if (grade.startsWith('A')) return '#4ade80';
-    if (grade.startsWith('B')) return '#f97316';
+    if (grade.startsWith('B')) return '#ff6b00';
     if (grade.startsWith('C')) return '#facc15';
     return '#ff4444';
   }
@@ -46,7 +46,7 @@ function Players() {
     return `${Math.floor(seconds / 86400)}d ago`;
   }
 
-  const section = { background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '24px' };
+  const section = { background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '24px' };
 
   return (
     <div className="main">
@@ -58,9 +58,9 @@ function Players() {
       </div>
 
       {players.length === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 40px', background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 40px', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>👤</div>
-          <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>No players yet</div>
+          <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>No players yet</div>
           <div style={{ fontSize: '14px', color: '#555', marginBottom: '24px' }}>Upload film to start tracking players</div>
           <button className="upload-btn" onClick={() => navigate('/upload')}>Upload Film</button>
         </div>
@@ -77,15 +77,15 @@ function Players() {
                   style={{
                     ...section,
                     cursor: 'pointer', transition: 'all 0.2s',
-                    borderColor: isSelected ? '#22c55e' : '#1a1d2e',
+                    borderColor: isSelected ? '#ff6b00' : '#e5e7eb',
                   }}
                   onClick={() => setSelected(isSelected ? null : player)}
-                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = '#22c55e'; }}
-                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = '#1a1d2e'; }}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = '#ff6b00'; }}
+                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = '#e5e7eb'; }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <div>
-                      <div style={{ fontSize: '18px', fontWeight: '800', color: '#fff' }}>{player.name}</div>
+                      <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{player.name}</div>
                       <div style={{ fontSize: '13px', color: '#555', marginTop: '2px' }}>#{player.jersey} · {player.position}</div>
                     </div>
                     <div style={{ fontSize: '36px', fontWeight: '900', color: getGradeColor(best.grade), letterSpacing: '-1px' }}>{best.grade}</div>
@@ -95,14 +95,14 @@ function Players() {
                     {[['Sessions', player.analyses.length], ['Avg Score', avg], ['Best', best.score]].map(([label, val]) => (
                       <div key={label}>
                         <div style={{ fontSize: '10px', color: '#555', letterSpacing: '1px', fontWeight: '700', textTransform: 'uppercase' }}>{label}</div>
-                        <div style={{ fontSize: '22px', fontWeight: '800', color: '#fff' }}>{val}</div>
+                        <div style={{ fontSize: '22px', fontWeight: '800', color: '#111827' }}>{val}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* Score bar */}
-                  <div style={{ background: '#1a1d2e', borderRadius: '4px', height: '4px' }}>
-                    <div style={{ background: 'linear-gradient(90deg, #22c55e, #16a34a)', height: '4px', borderRadius: '4px', width: `${avg}%` }} />
+                  <div style={{ background: '#e5e7eb', borderRadius: '4px', height: '4px' }}>
+                    <div style={{ background: 'linear-gradient(90deg, #ff6b00, #e85d24)', height: '4px', borderRadius: '4px', width: `${avg}%` }} />
                   </div>
                   <div style={{ fontSize: '12px', color: '#444', marginTop: '6px' }}>{isSelected ? 'Click to collapse' : 'Click to see analyses'}</div>
                 </div>
@@ -114,13 +114,13 @@ function Players() {
                       <div
                         key={a.id}
                         onClick={() => navigate(`/analysis/${a.id}`)}
-                        style={{ background: '#0a0c12', border: '1px solid #1a1d2e', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.2s' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = '#22c55e'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
+                        style={{ background: '#f0f1f3', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.2s' }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = '#e5e7eb'}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>{a.session_name}</div>
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827' }}>{a.session_name}</div>
                             <div style={{ fontSize: '11px', color: '#444', marginTop: '2px' }}>{timeAgo(a.created_at)}</div>
                           </div>
                           <div style={{ textAlign: 'right' }}>

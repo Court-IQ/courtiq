@@ -52,12 +52,12 @@ export default function Onboarding({ onComplete }) {
       padding: '20px',
     }}>
       <div style={{
-        background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '24px',
+        background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '24px',
         padding: '48px 40px', maxWidth: '440px', width: '100%', textAlign: 'center',
       }}>
         <div style={{ fontSize: '56px', marginBottom: '20px' }}>{current.icon}</div>
         <h2 style={{
-          fontSize: '24px', fontWeight: '900', color: '#fff',
+          fontSize: '24px', fontWeight: '900', color: '#111827',
           marginBottom: '12px', letterSpacing: '-0.5px', textTransform: 'none',
         }}>
           {current.title}
@@ -77,7 +77,7 @@ export default function Onboarding({ onComplete }) {
                 width: i === step ? '24px' : '8px',
                 height: '8px',
                 borderRadius: '4px',
-                background: i === step ? '#22c55e' : '#1a1d2e',
+                background: i === step ? '#ff6b00' : '#e5e7eb',
                 transition: 'all 0.3s',
               }}
             />
@@ -90,7 +90,7 @@ export default function Onboarding({ onComplete }) {
               onClick={() => setStep(step - 1)}
               style={{
                 flex: 1, padding: '14px', borderRadius: '10px', cursor: 'pointer',
-                border: '1px solid #1a1d2e', background: 'transparent',
+                border: '1px solid #e5e7eb', background: 'transparent',
                 color: '#888', fontWeight: '700', fontSize: '14px',
                 fontFamily: 'Inter, sans-serif',
               }}

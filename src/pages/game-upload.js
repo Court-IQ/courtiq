@@ -291,8 +291,8 @@ export default function GameUpload() {
   }, [segments, sessionName, position, playerName, jerseyNumber, videoURL]);
 
   const section = {
-    background: '#0f1117',
-    border: '1px solid #1a1d2e',
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
     borderRadius: '16px',
     padding: '24px',
     marginBottom: '16px',
@@ -311,9 +311,9 @@ export default function GameUpload() {
     width: '100%',
     padding: '12px 14px',
     borderRadius: '8px',
-    border: '1px solid #1a1d2e',
-    background: '#080a0f',
-    color: '#ffffff',
+    border: '1px solid #e5e7eb',
+    background: '#f5f6f8',
+    color: '#111827',
     fontSize: '14px',
     fontFamily: 'Inter, sans-serif',
     outline: 'none',
@@ -322,7 +322,7 @@ export default function GameUpload() {
   function getGradeColor(grade) {
     if (!grade) return '#555';
     if (grade.startsWith('A')) return '#4ade80';
-    if (grade.startsWith('B')) return '#f97316';
+    if (grade.startsWith('B')) return '#ff6b00';
     if (grade.startsWith('C')) return '#facc15';
     return '#ff4444';
   }
@@ -330,9 +330,9 @@ export default function GameUpload() {
   // ─── UPGRADE MODAL ────────────────────────────────────────────────
   const UpgradeModal = () => (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '20px', padding: '40px', maxWidth: '480px', width: '100%', textAlign: 'center' }}>
+      <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '20px', padding: '40px', maxWidth: '480px', width: '100%', textAlign: 'center' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏀</div>
-        <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginBottom: '8px', textTransform: 'none' }}>You've used all your free analyses</h2>
+        <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '8px', textTransform: 'none' }}>You've used all your free analyses</h2>
         <p style={{ color: '#666', fontSize: '14px', marginBottom: '28px', lineHeight: '1.6' }}>
           Free accounts get 2 analyses per month. Upgrade to keep improving.
         </p>
@@ -348,7 +348,7 @@ export default function GameUpload() {
               const data = await res.json();
               if (data.url) window.location.href = data.url;
             }}
-            style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: '#ff6b00', color: '#111827', border: 'none', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
           >
             Go Pro — $9.99/mo (15 analyses)
           </button>
@@ -363,7 +363,7 @@ export default function GameUpload() {
               const data = await res.json();
               if (data.url) window.location.href = data.url;
             }}
-            style={{ background: 'transparent', color: '#22c55e', border: '1px solid #22c55e', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: 'transparent', color: '#ff6b00', border: '1px solid #ff6b00', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
           >
             Go Elite — $19.99/mo (Unlimited)
           </button>
@@ -391,7 +391,7 @@ export default function GameUpload() {
           {usage && (
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '13px', color: '#888' }}>
-                <span style={{ color: '#22c55e', fontWeight: '700' }}>{usage.used}</span> / {usage.limit} analyses used
+                <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.used}</span> / {usage.limit} analyses used
               </div>
               <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>{usage.plan} plan</div>
             </div>
@@ -424,11 +424,11 @@ export default function GameUpload() {
             <label style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               justifyContent: 'center', gap: '8px', padding: '32px',
-              border: '2px dashed #1a1d2e', borderRadius: '12px', cursor: 'pointer',
+              border: '2px dashed #e5e7eb', borderRadius: '12px', cursor: 'pointer',
               transition: 'border-color 0.2s',
             }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#22c55e'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#e5e7eb'}
             >
               <span style={{ fontSize: '32px' }}>🎬</span>
               <span style={{ color: '#888', fontSize: '14px', fontWeight: '600' }}>
@@ -502,15 +502,15 @@ export default function GameUpload() {
               ref={tagVideoRef}
               src={videoURL}
               controls
-              style={{ width: '100%', borderRadius: '12px', border: '1px solid #1a1d2e' }}
+              style={{ width: '100%', borderRadius: '12px', border: '1px solid #e5e7eb' }}
             />
-            <div style={{ marginTop: '12px', padding: '16px', background: '#0f1117', borderRadius: '12px', border: '1px solid #1a1d2e' }}>
+            <div style={{ marginTop: '12px', padding: '16px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
               <div style={{ fontSize: '12px', color: '#555', marginBottom: '8px' }}>QUICK TAG</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 <button
                   onClick={() => setSegments(prev => prev.map(s => ({ ...s, playType: 'skip' })))}
                   style={{
-                    padding: '6px 12px', borderRadius: '6px', border: '1px solid #1a1d2e',
+                    padding: '6px 12px', borderRadius: '6px', border: '1px solid #e5e7eb',
                     background: 'transparent', color: '#888', fontSize: '11px', cursor: 'pointer',
                     fontWeight: '600',
                   }}
@@ -529,8 +529,8 @@ export default function GameUpload() {
                 className="game-segment-card"
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '10px 14px', background: '#0f1117',
-                  border: `1px solid ${seg.playType !== 'skip' ? '#22c55e' : '#1a1d2e'}`,
+                  padding: '10px 14px', background: '#ffffff',
+                  border: `1px solid ${seg.playType !== 'skip' ? '#ff6b00' : '#e5e7eb'}`,
                   borderRadius: '12px', cursor: 'pointer', transition: 'border-color 0.2s',
                 }}
               >
@@ -539,7 +539,7 @@ export default function GameUpload() {
                   onClick={() => seekToSegment(seg.startTime)}
                   style={{
                     width: '80px', height: '45px', borderRadius: '6px', overflow: 'hidden',
-                    background: '#1a1d2e', flexShrink: 0,
+                    background: '#e5e7eb', flexShrink: 0,
                   }}
                 >
                   {seg.thumbnail && (
@@ -549,7 +549,7 @@ export default function GameUpload() {
 
                 {/* Time range */}
                 <div style={{ flex: '0 0 auto', minWidth: '90px' }} onClick={() => seekToSegment(seg.startTime)}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>
                     {formatTime(seg.startTime)} - {formatTime(seg.endTime)}
                   </div>
                   <div style={{ fontSize: '11px', color: '#444' }}>Segment {seg.index + 1}</div>
@@ -561,8 +561,8 @@ export default function GameUpload() {
                   onChange={e => updateSegmentPlayType(seg.index, e.target.value)}
                   style={{
                     flex: 1, padding: '8px 10px', borderRadius: '6px',
-                    border: '1px solid #1a1d2e', background: '#080a0f',
-                    color: seg.playType === 'skip' ? '#555' : '#22c55e',
+                    border: '1px solid #e5e7eb', background: '#f5f6f8',
+                    color: seg.playType === 'skip' ? '#555' : '#ff6b00',
                     fontSize: '12px', fontFamily: 'Inter, sans-serif', outline: 'none',
                     fontWeight: '600', textTransform: 'capitalize',
                   }}
@@ -600,13 +600,13 @@ export default function GameUpload() {
         <div style={{ ...section }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
             <span style={{ color: '#888', fontSize: '14px' }}>Analyzing plays...</span>
-            <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '700' }}>
+            <span style={{ color: '#ff6b00', fontSize: '14px', fontWeight: '700' }}>
               {progress.current}/{progress.total}
             </span>
           </div>
-          <div style={{ background: '#1a1d2e', borderRadius: '6px', height: '8px' }}>
+          <div style={{ background: '#e5e7eb', borderRadius: '6px', height: '8px' }}>
             <div style={{
-              background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+              background: 'linear-gradient(90deg, #ff6b00, #e85d24)',
               height: '8px', borderRadius: '6px',
               width: `${(progress.current / progress.total) * 100}%`,
               transition: 'width 0.5s ease',
@@ -617,18 +617,18 @@ export default function GameUpload() {
 
       {/* Game Summary */}
       {gameResult && (
-        <div style={{ ...section, borderColor: '#22c55e' }}>
+        <div style={{ ...section, borderColor: '#ff6b00' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div style={sectionTitle}>Game Summary</div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '48px', fontWeight: '900', color: '#22c55e', lineHeight: 1 }}>
+              <div style={{ fontSize: '48px', fontWeight: '900', color: '#ff6b00', lineHeight: 1 }}>
                 {gameResult.overallGrade}
               </div>
               <div style={{ fontSize: '13px', color: '#555' }}>{gameResult.overallScore}/100</div>
             </div>
           </div>
 
-          <p style={{ color: '#ccc', fontSize: '15px', lineHeight: '1.7', marginBottom: '20px' }}>
+          <p style={{ color: '#374151', fontSize: '15px', lineHeight: '1.7', marginBottom: '20px' }}>
             {gameResult.gameNarrative}
           </p>
 
@@ -636,22 +636,22 @@ export default function GameUpload() {
             <div>
               <div style={{ fontSize: '11px', fontWeight: '700', color: '#4ade80', letterSpacing: '1px', marginBottom: '8px' }}>STRENGTHS</div>
               {(gameResult.strengths || []).map((s, i) => (
-                <p key={i} style={{ color: '#aaa', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>+ {s}</p>
+                <p key={i} style={{ color: '#6b7280', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>+ {s}</p>
               ))}
             </div>
             <div>
               <div style={{ fontSize: '11px', fontWeight: '700', color: '#ff4444', letterSpacing: '1px', marginBottom: '8px' }}>WEAKNESSES</div>
               {(gameResult.weaknesses || []).map((w, i) => (
-                <p key={i} style={{ color: '#aaa', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>- {w}</p>
+                <p key={i} style={{ color: '#6b7280', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>- {w}</p>
               ))}
             </div>
           </div>
 
           {gameResult.keyCoachingPoints && gameResult.keyCoachingPoints.length > 0 && (
-            <div style={{ marginTop: '20px', padding: '16px', background: '#080a0f', borderRadius: '10px', borderLeft: '3px solid #22c55e' }}>
-              <div style={{ fontSize: '11px', fontWeight: '700', color: '#22c55e', letterSpacing: '1px', marginBottom: '8px' }}>KEY COACHING POINTS</div>
+            <div style={{ marginTop: '20px', padding: '16px', background: '#f5f6f8', borderRadius: '10px', borderLeft: '3px solid #ff6b00' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#ff6b00', letterSpacing: '1px', marginBottom: '8px' }}>KEY COACHING POINTS</div>
               {gameResult.keyCoachingPoints.map((tip, i) => (
-                <p key={i} style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>{i + 1}. {tip}</p>
+                <p key={i} style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>{i + 1}. {tip}</p>
               ))}
             </div>
           )}
@@ -690,7 +690,7 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
 
   return (
     <div style={{
-      background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '12px',
+      background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px',
       overflow: 'hidden', transition: 'border-color 0.2s',
     }}>
       {/* Header */}
@@ -706,7 +706,7 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
             <img src={seg.thumbnail} alt="" style={{ width: '60px', height: '34px', borderRadius: '4px', objectFit: 'cover' }} />
           )}
           <div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827' }}>
               {formatTime(seg.startTime)} - {formatTime(seg.endTime)}
             </div>
             <div style={{ fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{seg.playType}</div>
@@ -715,7 +715,7 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {seg.status === 'analyzing' && (
-            <span style={{ color: '#22c55e', fontSize: '13px', fontWeight: '600' }}>Analyzing...</span>
+            <span style={{ color: '#ff6b00', fontSize: '13px', fontWeight: '600' }}>Analyzing...</span>
           )}
           {seg.status === 'error' && (
             <span style={{ color: '#ff4444', fontSize: '13px', fontWeight: '600' }}>Failed</span>
@@ -734,43 +734,43 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
 
       {/* Expanded detail */}
       {expanded && seg.result && (
-        <div style={{ padding: '0 18px 18px', borderTop: '1px solid #1a1d2e' }}>
+        <div style={{ padding: '0 18px 18px', borderTop: '1px solid #e5e7eb' }}>
           <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
-            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ background: '#f5f6f8', borderRadius: '10px', padding: '16px' }}>
               <div style={sectionTitle}>Offense</div>
-              <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.positioning?.offense}</p>
+              <p style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.positioning?.offense}</p>
             </div>
-            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ background: '#f5f6f8', borderRadius: '10px', padding: '16px' }}>
               <div style={sectionTitle}>Defense</div>
-              <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.positioning?.defense}</p>
+              <p style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.positioning?.defense}</p>
             </div>
-            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ background: '#f5f6f8', borderRadius: '10px', padding: '16px' }}>
               <div style={sectionTitle}>Shot Quality</div>
               <div style={{
                 display: 'inline-block', marginBottom: '6px', padding: '2px 8px',
                 borderRadius: '4px', fontSize: '11px', fontWeight: '700',
-                background: seg.result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#0a2a0a' : '#2a0a0a',
+                background: seg.result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#ecfdf5' : '#fef2f2',
                 color: seg.result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#4ade80' : '#ff4444',
               }}>
                 {seg.result.summary?.shotQuality?.verdict}
               </div>
-              <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.shotQuality?.reason}</p>
+              <p style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.shotQuality?.reason}</p>
             </div>
-            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ background: '#f5f6f8', borderRadius: '10px', padding: '16px' }}>
               <div style={sectionTitle}>Decision Making</div>
               <div style={{
                 display: 'inline-block', marginBottom: '6px', padding: '2px 8px',
                 borderRadius: '4px', fontSize: '11px', fontWeight: '700',
-                background: seg.result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#0a2a0a' : '#2a0a0a',
+                background: seg.result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#ecfdf5' : '#fef2f2',
                 color: seg.result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#4ade80' : '#ff4444',
               }}>
                 {seg.result.summary?.decisionMaking?.verdict}
               </div>
-              <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.decisionMaking?.reason}</p>
+              <p style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.decisionMaking?.reason}</p>
             </div>
-            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px', gridColumn: '1 / -1', borderLeft: '3px solid #22c55e' }}>
+            <div style={{ background: '#f5f6f8', borderRadius: '10px', padding: '16px', gridColumn: '1 / -1', borderLeft: '3px solid #ff6b00' }}>
               <div style={sectionTitle}>Coaching Tip</div>
-              <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.coachingTip}</p>
+              <p style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.coachingTip}</p>
             </div>
           </div>
         </div>

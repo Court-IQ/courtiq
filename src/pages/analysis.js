@@ -22,12 +22,12 @@ function Analysis() {
     load();
   }, [id]);
 
-  const section = { background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '24px' };
+  const section = { background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '24px' };
   const sectionTitle = { fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px' };
   const verdictBadge = (verdict, goodValue) => ({
     display: 'inline-block', marginBottom: '8px', padding: '3px 10px',
     borderRadius: '6px', fontSize: '12px', fontWeight: '700',
-    background: verdict === goodValue ? '#0a2a0a' : '#2a0a0a',
+    background: verdict === goodValue ? '#ecfdf5' : '#fef2f2',
     color: verdict === goodValue ? '#4ade80' : '#ff4444',
   });
 
@@ -53,7 +53,7 @@ function Analysis() {
         >
           ← Back
         </button>
-        <h1 style={{ fontSize: '32px', fontWeight: '900', letterSpacing: '-1px', color: '#fff', marginBottom: '4px' }}>{analysis.session_name}</h1>
+        <h1 style={{ fontSize: '32px', fontWeight: '900', letterSpacing: '-1px', color: '#111827', marginBottom: '4px' }}>{analysis.session_name}</h1>
         <p style={{ color: '#555', fontSize: '14px' }}>{analysis.player_name} #{analysis.jersey_number} · {analysis.position}</p>
       </div>
 
@@ -61,12 +61,12 @@ function Analysis() {
       <div style={{ ...section, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div>
           <div style={sectionTitle}>Overall Score</div>
-          <div style={{ fontSize: '56px', fontWeight: '900', color: '#22c55e', letterSpacing: '-2px', lineHeight: 1 }}>{analysis.grade}</div>
+          <div style={{ fontSize: '56px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>{analysis.grade}</div>
           <div style={{ fontSize: '13px', color: '#555', marginTop: '6px' }}>{analysis.score}/100</div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={sectionTitle}>Play Type</div>
-          <div style={{ color: '#fff', fontWeight: '700', fontSize: '15px' }}>{analysis.play_type || analysis.position}</div>
+          <div style={{ color: '#111827', fontWeight: '700', fontSize: '15px' }}>{analysis.play_type || analysis.position}</div>
           <div style={{ color: '#555', fontSize: '13px', marginTop: '4px' }}>
             {new Date(analysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
@@ -77,12 +77,12 @@ function Analysis() {
       <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         <div style={section}>
           <div style={sectionTitle}>Offense</div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.positioning?.offense}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.positioning?.offense}</p>
         </div>
 
         <div style={section}>
           <div style={sectionTitle}>Defense</div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.positioning?.defense}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.positioning?.defense}</p>
         </div>
 
         <div style={section}>
@@ -90,7 +90,7 @@ function Analysis() {
           <div style={verdictBadge(analysis.summary?.shotQuality?.verdict, 'GOOD SHOT')}>
             {analysis.summary?.shotQuality?.verdict}
           </div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.shotQuality?.reason}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.shotQuality?.reason}</p>
         </div>
 
         <div style={section}>
@@ -98,27 +98,27 @@ function Analysis() {
           <div style={verdictBadge(analysis.summary?.decisionMaking?.verdict, 'RIGHT DECISION')}>
             {analysis.summary?.decisionMaking?.verdict}
           </div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.decisionMaking?.reason}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.decisionMaking?.reason}</p>
         </div>
 
         <div style={section}>
           <div style={sectionTitle}>What To Do Instead</div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.shotQuality?.whatToDoInstead}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.shotQuality?.whatToDoInstead}</p>
         </div>
 
         <div style={section}>
           <div style={sectionTitle}>Habit</div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.decisionMaking?.habit}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.decisionMaking?.habit}</p>
         </div>
 
-        <div style={{ ...section, gridColumn: '1 / -1', borderLeft: '3px solid #22c55e' }}>
+        <div style={{ ...section, gridColumn: '1 / -1', borderLeft: '3px solid #ff6b00' }}>
           <div style={sectionTitle}>Coaching Tip</div>
-          <p style={{ color: '#fff', fontSize: '15px', lineHeight: '1.7', fontWeight: '500' }}>{analysis.summary?.coachingTip}</p>
+          <p style={{ color: '#111827', fontSize: '15px', lineHeight: '1.7', fontWeight: '500' }}>{analysis.summary?.coachingTip}</p>
         </div>
 
         <div style={{ ...section, gridColumn: '1 / -1' }}>
           <div style={sectionTitle}>Drill</div>
-          <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.drill}</p>
+          <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.drill}</p>
         </div>
       </div>
     </div>

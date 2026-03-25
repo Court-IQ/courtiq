@@ -132,8 +132,8 @@ function Chat() {
               maxWidth: '75%',
               padding: '12px 16px',
               borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: msg.role === 'user' ? '#22c55e' : '#0f1117',
-              border: msg.role === 'user' ? 'none' : '1px solid #1a1d2e',
+              background: msg.role === 'user' ? '#ff6b00' : '#ffffff',
+              border: msg.role === 'user' ? 'none' : '1px solid #e5e7eb',
               color: 'white',
               fontSize: '15px',
               lineHeight: '1.5'
@@ -148,7 +148,7 @@ function Chat() {
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{
-              background: '#0f1117', border: '1px solid #1a1d2e',
+              background: '#ffffff', border: '1px solid #e5e7eb',
               padding: '12px 16px', borderRadius: '18px 18px 18px 4px', color: '#555'
             }}>
               Coaching...
@@ -169,8 +169,8 @@ function Chat() {
             flex: 1,
             padding: '14px 18px',
             borderRadius: '12px',
-            border: '1px solid #1a1d2e',
-            background: '#0f1117',
+            border: '1px solid #e5e7eb',
+            background: '#ffffff',
             color: 'white',
             fontSize: '15px',
             outline: 'none',

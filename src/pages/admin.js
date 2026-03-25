@@ -54,8 +54,8 @@ function Admin() {
   if (!stats) return <div className="main" style={{ color: '#555' }}>Failed to load admin data.</div>;
 
   const section = {
-    background: '#0f1117',
-    border: '1px solid #1a1d2e',
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
     borderRadius: '16px',
     padding: '24px',
     marginBottom: '16px',
@@ -97,8 +97,8 @@ function Admin() {
             style={{
               padding: '10px 20px',
               borderRadius: '8px',
-              border: tab === t ? 'none' : '1px solid #1a1d2e',
-              background: tab === t ? '#22c55e' : 'transparent',
+              border: tab === t ? 'none' : '1px solid #e5e7eb',
+              background: tab === t ? '#ff6b00' : 'transparent',
               color: tab === t ? '#fff' : '#888',
               fontSize: '13px',
               fontWeight: '700',
@@ -123,7 +123,7 @@ function Admin() {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                     {['Email', 'Name', 'Plan', 'Analyses', 'Signed Up'].map(h => (
                       <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
                     ))}
@@ -131,18 +131,18 @@ function Admin() {
                 </thead>
                 <tbody>
                   {stats.users.slice(0, 10).map(u => (
-                    <tr key={u.id} style={{ borderBottom: '1px solid #0a0c12' }}>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{u.email}</td>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{u.full_name || '—'}</td>
+                    <tr key={u.id} style={{ borderBottom: '1px solid #f0f1f3' }}>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{u.email}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151' }}>{u.full_name || '—'}</td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
                           fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px',
-                          background: u.plan === 'elite' ? '#0a2a12' : u.plan === 'pro' ? '#0a1a0e' : '#1a1d2e',
-                          color: u.plan === 'elite' ? '#22c55e' : u.plan === 'pro' ? '#22c55e' : '#555',
+                          background: u.plan === 'elite' ? '#fff5eb' : u.plan === 'pro' ? '#fff0e6' : '#e5e7eb',
+                          color: u.plan === 'elite' ? '#ff6b00' : u.plan === 'pro' ? '#ff6b00' : '#555',
                           textTransform: 'uppercase', letterSpacing: '1px',
                         }}>{u.plan}</span>
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{u.total_analyses}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151', fontWeight: '700' }}>{u.total_analyses}</td>
                       <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(u.signed_up)}</td>
                     </tr>
                   ))}
@@ -158,7 +158,7 @@ function Admin() {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                     {['User', 'Session', 'Play Type', 'Score', 'Grade', 'When'].map(h => (
                       <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
                     ))}
@@ -166,12 +166,12 @@ function Admin() {
                 </thead>
                 <tbody>
                   {stats.recentAnalyses.slice(0, 10).map((a, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #0a0c12' }}>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{a.email}</td>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{a.session_name}</td>
+                    <tr key={i} style={{ borderBottom: '1px solid #f0f1f3' }}>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{a.email}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151' }}>{a.session_name}</td>
                       <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{a.play_type || '—'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{a.score}</td>
-                      <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#f97316' : '#ff4444' }}>{a.grade}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151', fontWeight: '700' }}>{a.score}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#ff6b00' : '#ff4444' }}>{a.grade}</td>
                       <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(a.created_at)}</td>
                     </tr>
                   ))}
@@ -191,7 +191,7 @@ function Admin() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                   {['Email', 'Name', 'Team', 'Position', 'Plan', 'Analyses', 'Signed Up'].map(h => (
                     <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
                   ))}
@@ -199,20 +199,20 @@ function Admin() {
               </thead>
               <tbody>
                 {stats.users.map(u => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid #0a0c12' }}>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{u.email}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{u.full_name || '—'}</td>
+                  <tr key={u.id} style={{ borderBottom: '1px solid #f0f1f3' }}>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{u.email}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151' }}>{u.full_name || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#888' }}>{u.team_name || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{u.position || '—'}</td>
                     <td style={{ padding: '10px 12px' }}>
                       <span style={{
                         fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px',
-                        background: u.plan === 'elite' ? '#0a2a12' : u.plan === 'pro' ? '#0a1a0e' : '#1a1d2e',
-                        color: u.plan === 'elite' ? '#22c55e' : u.plan === 'pro' ? '#22c55e' : '#555',
+                        background: u.plan === 'elite' ? '#fff5eb' : u.plan === 'pro' ? '#fff0e6' : '#e5e7eb',
+                        color: u.plan === 'elite' ? '#ff6b00' : u.plan === 'pro' ? '#ff6b00' : '#555',
                         textTransform: 'uppercase', letterSpacing: '1px',
                       }}>{u.plan}</span>
                     </td>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{u.total_analyses}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151', fontWeight: '700' }}>{u.total_analyses}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(u.signed_up)}</td>
                   </tr>
                 ))}
@@ -231,7 +231,7 @@ function Admin() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                   {['User', 'Session', 'Player', 'Play Type', 'Score', 'Grade', 'When'].map(h => (
                     <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
                   ))}
@@ -239,13 +239,13 @@ function Admin() {
               </thead>
               <tbody>
                 {stats.recentAnalyses.map((a, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #0a0c12' }}>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{a.email}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{a.session_name}</td>
+                  <tr key={i} style={{ borderBottom: '1px solid #f0f1f3' }}>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{a.email}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151' }}>{a.session_name}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#888' }}>{a.player_name || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{a.play_type || '—'}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{a.score}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#f97316' : '#ff4444' }}>{a.grade}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#374151', fontWeight: '700' }}>{a.score}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#ff6b00' : '#ff4444' }}>{a.grade}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(a.created_at)}</td>
                   </tr>
                 ))}

@@ -34,13 +34,13 @@ function Auth() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '40px', cursor: 'pointer' }} onClick={() => navigate('/')}>
           <img src="/logo192.png" alt="CourtIQ" style={{ width: '64px', height: '64px', objectFit: 'contain', marginBottom: '12px' }} />
-          <div style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', letterSpacing: '-1px' }}>CourtIQ</div>
+          <div style={{ fontSize: '32px', fontWeight: '900', color: '#111827', letterSpacing: '-1px' }}>CourtIQ</div>
           <div style={{ fontSize: '11px', color: '#555', letterSpacing: '3px', fontWeight: '700', marginTop: '4px' }}>AI FILM ANALYSIS</div>
         </div>
 
         <div className="auth-box">
           <div style={{ marginBottom: '8px' }}>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827' }}>
               {isLogin ? 'Welcome back' : 'Create account'}
             </div>
             <div style={{ fontSize: '13px', color: '#555', marginTop: '4px' }}>
@@ -49,7 +49,7 @@ function Auth() {
           </div>
 
           {error && (
-            <div style={{ background: '#2a0a0a', border: '1px solid #ff4444', borderRadius: '8px', padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500' }}>
+            <div style={{ background: '#fef2f2', border: '1px solid #ff4444', borderRadius: '8px', padding: '10px 14px', color: '#ff4444', fontSize: '13px', fontWeight: '500' }}>
               {error}
             </div>
           )}

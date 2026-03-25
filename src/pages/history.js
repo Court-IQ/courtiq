@@ -41,8 +41,8 @@ function History() {
   }
 
   const section = {
-    background: '#0f1117',
-    border: '1px solid #1a1d2e',
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
     borderRadius: '16px',
     padding: '24px',
   };
@@ -63,7 +63,7 @@ function History() {
     borderRadius: '6px',
     fontSize: '12px',
     fontWeight: '700',
-    background: verdict === goodValue ? '#0a2a0a' : '#2a0a0a',
+    background: verdict === goodValue ? '#ecfdf5' : '#fef2f2',
     color: verdict === goodValue ? '#4ade80' : '#ff4444',
   });
 
@@ -83,14 +83,14 @@ function History() {
           <div style={{ ...section, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div>
               <div style={sectionTitle}>Analysis</div>
-              <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>{selected.session_name}</div>
+              <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '4px' }}>{selected.session_name}</div>
               <div style={{ fontSize: '13px', color: '#555' }}>
                 {selected.player_name} #{selected.jersey_number} · {selected.position}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '52px', fontWeight: '900', color: '#22c55e', letterSpacing: '-2px', lineHeight: 1 }}>
+                <div style={{ fontSize: '52px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>
                   {selected.grade}
                 </div>
                 <div style={{ fontSize: '13px', color: '#555', marginTop: '4px' }}>{selected.score}/100</div>
@@ -98,7 +98,7 @@ function History() {
               <button
                 onClick={() => setSelected(null)}
                 style={{
-                  background: 'none', border: '1px solid #1a1d2e', color: '#555',
+                  background: 'none', border: '1px solid #e5e7eb', color: '#555',
                   padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600'
                 }}
               >
@@ -111,12 +111,12 @@ function History() {
           <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div style={section}>
               <div style={sectionTitle}>Offense</div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.positioning?.offense}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.positioning?.offense}</p>
             </div>
 
             <div style={section}>
               <div style={sectionTitle}>Defense</div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.positioning?.defense}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.positioning?.defense}</p>
             </div>
 
             <div style={section}>
@@ -124,7 +124,7 @@ function History() {
               <div style={verdictBadge(selected.summary?.shotQuality?.verdict, 'GOOD SHOT')}>
                 {selected.summary?.shotQuality?.verdict}
               </div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.shotQuality?.reason}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.shotQuality?.reason}</p>
             </div>
 
             <div style={section}>
@@ -132,27 +132,27 @@ function History() {
               <div style={verdictBadge(selected.summary?.decisionMaking?.verdict, 'RIGHT DECISION')}>
                 {selected.summary?.decisionMaking?.verdict}
               </div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.decisionMaking?.reason}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.decisionMaking?.reason}</p>
             </div>
 
             <div style={section}>
               <div style={sectionTitle}>What To Do Instead</div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.shotQuality?.whatToDoInstead}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.shotQuality?.whatToDoInstead}</p>
             </div>
 
             <div style={section}>
               <div style={sectionTitle}>Habit</div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.decisionMaking?.habit}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.decisionMaking?.habit}</p>
             </div>
 
             <div style={{ ...section, gridColumn: '1 / -1' }}>
               <div style={sectionTitle}>Coaching Tip</div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.coachingTip}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.coachingTip}</p>
             </div>
 
             <div style={{ ...section, gridColumn: '1 / -1' }}>
               <div style={sectionTitle}>Drill</div>
-              <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.drill}</p>
+              <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.drill}</p>
             </div>
           </div>
         </div>
@@ -162,11 +162,11 @@ function History() {
       {analyses.length === 0 ? (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          padding: '80px 40px', background: '#0f1117', border: '1px solid #1a1d2e',
+          padding: '80px 40px', background: '#ffffff', border: '1px solid #e5e7eb',
           borderRadius: '16px', textAlign: 'center'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>📽️</div>
-          <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>No analyses yet</div>
+          <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>No analyses yet</div>
           <div style={{ fontSize: '14px', color: '#555', marginBottom: '24px' }}>Upload your first game film to get started</div>
           <button className="upload-btn" onClick={() => navigate('/upload')}>Upload Film</button>
         </div>
@@ -190,7 +190,7 @@ function History() {
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDelete(a.id); }}
                   style={{
-                    background: 'none', border: '1px solid #2a0a0a', color: '#ff4444',
+                    background: 'none', border: '1px solid #fef2f2', color: '#ff4444',
                     padding: '3px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'
                   }}
                 >

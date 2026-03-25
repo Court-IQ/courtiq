@@ -37,7 +37,7 @@ function Sidebar({ onSignOut }) {
           top: '16px',
           left: '16px',
           zIndex: 1000,
-          background: '#22c55e',
+          background: '#ff6b00',
           border: 'none',
           borderRadius: '8px',
           padding: '10px 14px',
@@ -121,7 +121,7 @@ function App() {
   }
 
   if (loading) return (
-    <div style={{ color: 'white', padding: '20px', background: '#080a0f', height: '100vh' }}>Loading...</div>
+    <div style={{ color: '#333', padding: '20px', background: '#f5f6f8', height: '100vh' }}>Loading...</div>
   );
 
   // Not logged in — use BrowserRouter so Landing/Auth can use useNavigate

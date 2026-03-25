@@ -74,8 +74,8 @@ function Dashboard() {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '10px', padding: '12px 16px' }}>
-          <p style={{ color: '#22c55e', fontWeight: '800', margin: 0, fontSize: '16px' }}>{payload[0].value}/100</p>
+        <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px 16px' }}>
+          <p style={{ color: '#ff6b00', fontWeight: '800', margin: 0, fontSize: '16px' }}>{payload[0].value}/100</p>
           <p style={{ color: '#555', fontSize: '12px', margin: '4px 0 0' }}>{payload[0].payload.label}</p>
         </div>
       );
@@ -96,8 +96,8 @@ function Dashboard() {
       {/* Usage banner */}
       {usage && usage.plan === 'free' && usage.used >= usage.limit && (
         <div style={{
-          background: 'linear-gradient(135deg, #0a2a12 0%, #081a0e 100%)',
-          border: '1px solid #22c55e',
+          background: 'linear-gradient(135deg, #fff5eb 0%, #fff0e0 100%)',
+          border: '1px solid #ff6b00',
           borderRadius: '14px',
           padding: '20px 24px',
           marginBottom: '20px',
@@ -108,7 +108,7 @@ function Dashboard() {
           gap: '12px',
         }}>
           <div>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
               You've used all your free analyses this month
             </div>
             <div style={{ fontSize: '13px', color: '#888' }}>
@@ -137,7 +137,7 @@ function Dashboard() {
               });
               const data = await res.json();
               if (data.url) window.location.href = data.url;
-            }} style={{ whiteSpace: 'nowrap', padding: '12px 20px', background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>
+            }} style={{ whiteSpace: 'nowrap', padding: '12px 20px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>
               Elite $19.99/mo
             </button>
           </div>
@@ -145,8 +145,8 @@ function Dashboard() {
       )}
       {usage && usage.plan === 'free' && usage.used > 0 && usage.used < usage.limit && (
         <div style={{
-          background: '#0f1117',
-          border: '1px solid #1a1d2e',
+          background: '#ffffff',
+          border: '1px solid #e5e7eb',
           borderRadius: '14px',
           padding: '16px 24px',
           marginBottom: '20px',
@@ -157,7 +157,7 @@ function Dashboard() {
           gap: '12px',
         }}>
           <div style={{ fontSize: '14px', color: '#888' }}>
-            <span style={{ color: '#22c55e', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
+            <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
           </div>
           <a href="#pricing" onClick={async (e) => {
             e.preventDefault();
@@ -169,7 +169,7 @@ function Dashboard() {
             });
             const data = await res.json();
             if (data.url) window.location.href = data.url;
-          }} style={{ fontSize: '13px', color: '#22c55e', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
+          }} style={{ fontSize: '13px', color: '#ff6b00', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
             Upgrade for more
           </a>
         </div>
@@ -190,17 +190,17 @@ function Dashboard() {
       </div>
 
       {analyses.length >= 2 && (
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ marginBottom: '20px' }}>Progress Over Time</h2>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1a1d2e" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="name" stroke="#333" tick={{ fill: '#555', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} stroke="#333" tick={{ fill: '#555', fontSize: 12 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="score" stroke="#22c55e" strokeWidth={2.5}
-                dot={{ fill: '#22c55e', r: 4, strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: '#22c55e', strokeWidth: 0 }}
+              <Line type="monotone" dataKey="score" stroke="#ff6b00" strokeWidth={2.5}
+                dot={{ fill: '#ff6b00', r: 4, strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: '#ff6b00', strokeWidth: 0 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -209,18 +209,18 @@ function Dashboard() {
 
       {/* Play type breakdown */}
       {playTypeData.length > 0 && (
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
           <h2 style={{ marginBottom: '20px' }}>By Play Type</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {playTypeData.map(({ type, avg, count }) => (
               <div key={type}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#ccc', textTransform: 'capitalize' }}>{type}</span>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'capitalize' }}>{type}</span>
                   <span style={{ fontSize: '13px', color: '#555' }}>{avg}/100 · {count} session{count !== 1 ? 's' : ''}</span>
                 </div>
-                <div style={{ background: '#1a1d2e', borderRadius: '4px', height: '6px' }}>
+                <div style={{ background: '#e5e7eb', borderRadius: '4px', height: '6px' }}>
                   <div style={{
-                    background: avg >= 80 ? '#4ade80' : avg >= 65 ? '#f97316' : '#ff4444',
+                    background: avg >= 80 ? '#4ade80' : avg >= 65 ? '#ff6b00' : '#ff4444',
                     height: '6px', borderRadius: '4px', width: `${avg}%`, transition: 'width 0.5s ease'
                   }} />
                 </div>
@@ -233,9 +233,9 @@ function Dashboard() {
       <h2>Recent Analyses</h2>
 
       {analyses.length === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 40px', background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '16px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 40px', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '16px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏀</div>
-          <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>No analyses yet</div>
+          <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>No analyses yet</div>
           <div style={{ fontSize: '14px', color: '#555', marginBottom: '24px' }}>Upload your first game film to get started</div>
           <button className="upload-btn" onClick={() => navigate('/upload')}>Upload Film</button>
         </div>

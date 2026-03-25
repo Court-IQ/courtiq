@@ -93,17 +93,17 @@ export default function Upload() {
     width: '100%',
     padding: '12px 14px',
     borderRadius: '8px',
-    border: '1px solid #1a1d2e',
-    background: '#080a0f',
-    color: '#ffffff',
+    border: '1px solid #e5e7eb',
+    background: '#f5f6f8',
+    color: '#111827',
     fontSize: '14px',
     fontFamily: 'Inter, sans-serif',
     outline: 'none',
   };
 
   const section = {
-    background: '#0f1117',
-    border: '1px solid #1a1d2e',
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
     borderRadius: '16px',
     padding: '24px',
     marginBottom: '16px',
@@ -195,11 +195,11 @@ export default function Upload() {
           <label style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             justifyContent: 'center', gap: '8px', padding: '32px',
-            border: '2px dashed #1a1d2e', borderRadius: '12px', cursor: 'pointer',
+            border: '2px dashed #e5e7eb', borderRadius: '12px', cursor: 'pointer',
             transition: 'border-color 0.2s',
           }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = '#22c55e'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = '#e5e7eb'}
           >
             <span style={{ fontSize: '32px' }}>🎬</span>
             <span style={{ color: '#888', fontSize: '14px', fontWeight: '600' }}>
@@ -242,7 +242,7 @@ export default function Upload() {
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '48px', fontWeight: '900', color: '#22c55e', letterSpacing: '-2px', lineHeight: 1 }}>
+                <div style={{ fontSize: '48px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>
                   {result.grade}
                 </div>
                 <div style={{ fontSize: '13px', color: '#555', marginTop: '4px' }}>{result.score}/100</div>
@@ -254,12 +254,12 @@ export default function Upload() {
 
               <div style={section}>
                 <div style={sectionTitle}>Offense</div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.positioning?.offense}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.positioning?.offense}</p>
               </div>
 
               <div style={section}>
                 <div style={sectionTitle}>Defense</div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.positioning?.defense}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.positioning?.defense}</p>
               </div>
 
               <div style={section}>
@@ -267,12 +267,12 @@ export default function Upload() {
                 <div style={{
                   display: 'inline-block', marginBottom: '8px', padding: '3px 10px',
                   borderRadius: '6px', fontSize: '12px', fontWeight: '700',
-                  background: result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#0a2a0a' : '#2a0a0a',
+                  background: result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#ecfdf5' : '#fef2f2',
                   color: result.summary?.shotQuality?.verdict === 'GOOD SHOT' ? '#4ade80' : '#ff4444',
                 }}>
                   {result.summary?.shotQuality?.verdict}
                 </div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.shotQuality?.reason}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.shotQuality?.reason}</p>
               </div>
 
               <div style={section}>
@@ -280,32 +280,32 @@ export default function Upload() {
                 <div style={{
                   display: 'inline-block', marginBottom: '8px', padding: '3px 10px',
                   borderRadius: '6px', fontSize: '12px', fontWeight: '700',
-                  background: result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#0a2a0a' : '#2a0a0a',
+                  background: result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#ecfdf5' : '#fef2f2',
                   color: result.summary?.decisionMaking?.verdict === 'RIGHT DECISION' ? '#4ade80' : '#ff4444',
                 }}>
                   {result.summary?.decisionMaking?.verdict}
                 </div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.decisionMaking?.reason}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.decisionMaking?.reason}</p>
               </div>
 
               <div style={section}>
                 <div style={sectionTitle}>What To Do Instead</div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.shotQuality?.whatToDoInstead}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.shotQuality?.whatToDoInstead}</p>
               </div>
 
               <div style={section}>
                 <div style={sectionTitle}>Habit</div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.decisionMaking?.habit}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.decisionMaking?.habit}</p>
               </div>
 
               <div style={{ ...section, gridColumn: '1 / -1' }}>
                 <div style={sectionTitle}>Coaching Tip</div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.coachingTip}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.coachingTip}</p>
               </div>
 
               <div style={{ ...section, gridColumn: '1 / -1' }}>
                 <div style={sectionTitle}>Drill</div>
-                <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.drill}</p>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{result.summary?.drill}</p>
               </div>
 
             </div>

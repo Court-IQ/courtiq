@@ -56,7 +56,7 @@ function Landing() {
         <div className="landing-nav-logo" onClick={() => window.scrollTo(0, 0)} style={{ cursor: 'pointer' }}>
           <img src="/logo192.png" alt="CourtIQ" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           <span style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px' }}>
-            COURT<span style={{ color: '#22c55e' }}>IQ</span>
+            COURT<span style={{ color: '#ff6b00' }}>IQ</span>
           </span>
         </div>
         <div className="landing-nav-links">
@@ -75,7 +75,7 @@ function Landing() {
         <div className="landing-badge">AI-Powered Film Analysis</div>
         <h1 className="landing-hero-title">
           Your personal coach<br />
-          <span style={{ color: '#22c55e' }}>is watching film.</span>
+          <span style={{ color: '#ff6b00' }}>is watching film.</span>
         </h1>
         <p className="landing-hero-sub">
           Upload your game film and get elite-level breakdowns — positioning, decision making, shot quality, and a personalized plan to improve.
@@ -114,7 +114,7 @@ function Landing() {
           {steps.map(s => (
             <div key={s.num} className="landing-card" style={{ position: 'relative' }}>
               <div style={{ fontSize: '48px', fontWeight: '900', color: 'rgba(34,197,94,0.15)', position: 'absolute', top: '16px', right: '20px', letterSpacing: '-2px' }}>{s.num}</div>
-              <div style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '10px', marginTop: '8px' }}>{s.title}</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827', marginBottom: '10px', marginTop: '8px' }}>{s.title}</div>
               <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.7' }}>{s.desc}</div>
             </div>
           ))}
@@ -122,7 +122,7 @@ function Landing() {
       </div>
 
       {/* Features */}
-      <div className="landing-section" style={{ borderTop: '1px solid #1a1d2e' }}>
+      <div className="landing-section" style={{ borderTop: '1px solid #e5e7eb' }}>
         <div className="landing-section-header">
           <div className="landing-section-tag">Features</div>
           <h2 className="landing-section-title">Everything you need to level up</h2>
@@ -131,7 +131,7 @@ function Landing() {
           {features.map(f => (
             <div key={f.title} className="landing-card">
               <div style={{ fontSize: '32px', marginBottom: '14px' }}>{f.icon}</div>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>{f.title}</div>
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>{f.title}</div>
               <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.7' }}>{f.desc}</div>
             </div>
           ))}
@@ -139,7 +139,7 @@ function Landing() {
       </div>
 
       {/* Pricing */}
-      <div id="pricing" className="landing-section" style={{ borderTop: '1px solid #1a1d2e' }}>
+      <div id="pricing" className="landing-section" style={{ borderTop: '1px solid #e5e7eb' }}>
         <div className="landing-section-header">
           <div className="landing-section-tag">Pricing</div>
           <h2 className="landing-section-title">Pick your plan</h2>
@@ -151,16 +151,16 @@ function Landing() {
               {plan.highlighted && (
                 <div className="landing-pricing-badge">Most Popular</div>
               )}
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{plan.name}</div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#ff6b00', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{plan.name}</div>
               <div style={{ marginBottom: '4px' }}>
-                <span style={{ fontSize: '44px', fontWeight: '900', color: '#fff', letterSpacing: '-2px' }}>{plan.price}</span>
+                <span style={{ fontSize: '44px', fontWeight: '900', color: '#111827', letterSpacing: '-2px' }}>{plan.price}</span>
                 <span style={{ fontSize: '16px', color: '#555', fontWeight: '600' }}>{plan.period}</span>
               </div>
               <div style={{ fontSize: '14px', color: '#555', marginBottom: '24px' }}>{plan.desc}</div>
               <div style={{ flex: 1, marginBottom: '24px' }}>
                 {plan.features.map(f => (
-                  <div key={f} style={{ fontSize: '14px', color: '#aaa', padding: '8px 0', borderBottom: '1px solid #1a1d2e', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#22c55e', fontSize: '14px' }}>&#10003;</span> {f}
+                  <div key={f} style={{ fontSize: '14px', color: '#6b7280', padding: '8px 0', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#ff6b00', fontSize: '14px' }}>&#10003;</span> {f}
                   </div>
                 ))}
               </div>
@@ -193,7 +193,7 @@ function Landing() {
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '28px 20px', borderTop: '1px solid #1a1d2e', color: '#333', fontSize: '13px' }}>
+      <div style={{ textAlign: 'center', padding: '28px 20px', borderTop: '1px solid #e5e7eb', color: '#333', fontSize: '13px' }}>
         © 2026 CourtIQ · AI Film Analysis
       </div>
     </div>

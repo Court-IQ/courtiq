@@ -89,9 +89,9 @@ export default function Profile() {
     width: '100%',
     padding: '12px 14px',
     borderRadius: '8px',
-    border: '1px solid #1a1d2e',
-    background: '#080a0f',
-    color: '#ffffff',
+    border: '1px solid #e5e7eb',
+    background: '#f5f6f8',
+    color: '#111827',
     fontSize: '14px',
     fontFamily: 'Inter, sans-serif',
     outline: 'none',
@@ -109,8 +109,8 @@ export default function Profile() {
   };
 
   const section = {
-    background: '#0f1117',
-    border: '1px solid #1a1d2e',
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
     borderRadius: '16px',
     padding: '24px',
     marginBottom: '16px',
@@ -163,8 +163,8 @@ export default function Profile() {
               value={profile.full_name}
               onChange={e => handleChange('full_name', e.target.value)}
               style={input}
-              onFocus={e => e.target.style.borderColor = '#22c55e'}
-              onBlur={e => e.target.style.borderColor = '#1a1d2e'}
+              onFocus={e => e.target.style.borderColor = '#ff6b00'}
+              onBlur={e => e.target.style.borderColor = '#e5e7eb'}
             />
           </div>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '14px' }}>
@@ -176,8 +176,8 @@ export default function Profile() {
                 value={profile.height}
                 onChange={e => handleChange('height', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#22c55e'}
-                onBlur={e => e.target.style.borderColor = '#1a1d2e'}
+                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -188,8 +188,8 @@ export default function Profile() {
                 value={profile.weight}
                 onChange={e => handleChange('weight', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#22c55e'}
-                onBlur={e => e.target.style.borderColor = '#1a1d2e'}
+                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
           </div>
@@ -202,8 +202,8 @@ export default function Profile() {
                 value={profile.jersey_number}
                 onChange={e => handleChange('jersey_number', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#22c55e'}
-                onBlur={e => e.target.style.borderColor = '#1a1d2e'}
+                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -236,8 +236,8 @@ export default function Profile() {
                 value={profile.team_name}
                 onChange={e => handleChange('team_name', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#22c55e'}
-                onBlur={e => e.target.style.borderColor = '#1a1d2e'}
+                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -264,7 +264,7 @@ export default function Profile() {
           <div style={sectionTitle}>Account</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#ccc' }}>Current Plan</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Current Plan</div>
               <div style={{ fontSize: '13px', color: '#555', marginTop: '2px' }}>
                 {usage ? `${usage.plan.charAt(0).toUpperCase() + usage.plan.slice(1)} — ${usage.used}/${usage.limit} analyses used this month` : 'Loading...'}
               </div>
@@ -298,7 +298,7 @@ export default function Profile() {
                     const data = await res.json();
                     if (data.url) window.location.href = data.url;
                   }}
-                  style={{ padding: '8px 16px', fontSize: '12px', background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}
+                  style={{ padding: '8px 16px', fontSize: '12px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}
                 >
                   Elite $19.99/mo
                 </button>
