@@ -622,6 +622,104 @@ app.post("/api/webhook/stripe", express.raw({ type: 'application/json' }), async
   }
 });
 
+// ─── ADMIN ANALYTICS ─────────────────────────────────────────────
+
+const ADMIN_ID = '4b1e31f7-6366-440b-896f-ef858d9fdec2';
+
+app.post("/api/admin/stats", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (userId !== ADMIN_ID) return res.status(403).json({ error: "Not authorized" });
+
+    // Get all profiles
+    const { data: profiles } = await supabase.from('profiles').select('*');
+
+    // Get all analyses
+    const { data: analyses } = await supabase.from('analyses').select('*').order('created_at', { ascending: false });
+
+    // Get user emails via Supabase admin API
+    let users = [];
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const adminSupabase = createClient(
+        process.env.REACT_APP_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+      const { data } = await adminSupabase.auth.admin.listUsers();
+      users = data?.users || [];
+    }
+
+    // Merge data
+    const userMap = {};
+    (users || []).forEach(u => {
+      userMap[u.id] = { email: u.email, created_at: u.created_at };
+    });
+
+    const profileList = (profiles || []).map(p => ({
+      id: p.id,
+      email: userMap[p.id]?.email || 'unknown',
+      signed_up: userMap[p.id]?.created_at || p.created_at,
+      plan: p.plan || 'free',
+      analyses_used: p.analyses_used || 0,
+      full_name: p.full_name || '',
+      position: p.position || '',
+      team_name: p.team_name || '',
+    }));
+
+    // Also include users who have analyses but no profile
+    const profileIds = new Set(profileList.map(p => p.id));
+    const analysisUserIds = [...new Set((analyses || []).map(a => a.user_id))];
+    analysisUserIds.forEach(uid => {
+      if (!profileIds.has(uid)) {
+        profileList.push({
+          id: uid,
+          email: userMap[uid]?.email || 'unknown',
+          signed_up: userMap[uid]?.created_at || null,
+          plan: 'free',
+          analyses_used: 0,
+          full_name: '',
+          position: '',
+          team_name: '',
+        });
+      }
+    });
+
+    // Count analyses per user
+    const analysisCount = {};
+    (analyses || []).forEach(a => {
+      analysisCount[a.user_id] = (analysisCount[a.user_id] || 0) + 1;
+    });
+    profileList.forEach(p => {
+      p.total_analyses = analysisCount[p.id] || 0;
+    });
+
+    // Today's stats
+    const today = new Date().toISOString().split('T')[0];
+    const signupsToday = Object.values(userMap).filter(u => u.created_at && u.created_at.startsWith(today)).length;
+    const analysesToday = (analyses || []).filter(a => a.created_at && a.created_at.startsWith(today)).length;
+
+    res.json({
+      totalUsers: profileList.length,
+      totalAnalyses: (analyses || []).length,
+      signupsToday,
+      analysesToday,
+      users: profileList.sort((a, b) => new Date(b.signed_up || 0) - new Date(a.signed_up || 0)),
+      recentAnalyses: (analyses || []).slice(0, 20).map(a => ({
+        session_name: a.session_name,
+        player_name: a.player_name,
+        play_type: a.play_type,
+        score: a.score,
+        grade: a.grade,
+        created_at: a.created_at,
+        user_id: a.user_id,
+        email: userMap[a.user_id]?.email || 'unknown',
+      })),
+    });
+  } catch (err) {
+    console.error("Admin stats error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "CourtIQ backend is running!" });
 });

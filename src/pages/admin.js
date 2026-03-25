@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 const ADMIN_ID = '4b1e31f7-6366-440b-896f-ef858d9fdec2';
+const API_URL = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
 
 function Admin() {
   const navigate = useNavigate();
-  const [conversations, setConversations] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [reply, setReply] = useState('');
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+  const [tab, setTab] = useState('overview'); // overview, users, analyses
 
   useEffect(() => {
     checkAdmin();
@@ -23,136 +22,238 @@ function Admin() {
       navigate('/');
       return;
     }
-    fetchConversations();
+    fetchStats(user.id);
   }
 
-  async function fetchConversations() {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) console.error(error);
-    else {
-      const grouped = {};
-      data.forEach(msg => {
-        if (!grouped[msg.conversation_id]) {
-          grouped[msg.conversation_id] = {
-            conversation_id: msg.conversation_id,
-            user_id: msg.user_id,
-            messages: [],
-            lastMessage: msg.text,
-            lastTime: msg.created_at
-          };
-        }
-        grouped[msg.conversation_id].messages.push(msg);
+  async function fetchStats(userId) {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/stats`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
       });
-      setConversations(Object.values(grouped));
+      const data = await res.json();
+      setStats(data);
+    } catch (e) {
+      console.error('Admin fetch failed:', e);
     }
     setLoading(false);
   }
 
-  function selectConversation(convo) {
-    setSelected(convo);
-    setMessages(convo.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)));
+  function timeAgo(date) {
+    if (!date) return 'unknown';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return new Date(date).toLocaleDateString();
   }
 
-  async function sendReply() {
-    if (!reply.trim() || !selected) return;
-    const { error } = await supabase.from('messages').insert([{
-      user_id: selected.user_id,
-      role: 'coach',
-      text: reply.trim(),
-      conversation_id: selected.conversation_id
-    }]);
-    if (error) console.error(error);
-    else {
-      setReply('');
-      fetchConversations();
-      setMessages(prev => [...prev, { role: 'coach', text: reply.trim(), created_at: new Date() }]);
-    }
-  }
+  if (loading) return <div className="main" style={{ color: '#555' }}>Loading...</div>;
+  if (!stats) return <div className="main" style={{ color: '#555' }}>Failed to load admin data.</div>;
 
-  if (loading) return <div style={{ color: 'white', padding: '40px' }}>Loading...</div>;
+  const section = {
+    background: '#0f1117',
+    border: '1px solid #1a1d2e',
+    borderRadius: '16px',
+    padding: '24px',
+    marginBottom: '16px',
+  };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#0f1117', color: 'white' }}>
-      
-      {/* Conversation list */}
-      <div style={{ width: '300px', background: '#1a1d27', borderRight: '1px solid #333', overflowY: 'auto' }}>
-        <div style={{ padding: '20px', borderBottom: '1px solid #333' }}>
-          <h2 style={{ margin: 0 }}>🏀 CourtIQ Admin</h2>
-          <p style={{ color: '#888', fontSize: '12px', margin: '4px 0 0' }}>{conversations.length} conversations</p>
+    <div className="main">
+      <div className="top-bar">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>CourtIQ analytics and user data</p>
         </div>
-        {conversations.map((convo) => (
-          <div
-            key={convo.conversation_id}
-            onClick={() => selectConversation(convo)}
-            style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid #222',
-              cursor: 'pointer',
-              background: selected?.conversation_id === convo.conversation_id ? '#2a2d3a' : 'transparent'
-            }}
-          >
-            <div style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>
-              User: {convo.user_id.slice(0, 8)}...
-            </div>
-            <div style={{ fontSize: '14px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {convo.lastMessage}
-            </div>
-          </div>
-        ))}
-        {conversations.length === 0 && (
-          <p style={{ color: '#888', padding: '20px' }}>No conversations yet.</p>
-        )}
+        <button className="upload-btn" onClick={() => fetchStats(ADMIN_ID)} style={{ padding: '10px 20px' }}>
+          Refresh
+        </button>
       </div>
 
-      {/* Chat panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {selected ? (
-          <>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid #333', background: '#1a1d27' }}>
-              <h3 style={{ margin: 0 }}>User: {selected.user_id}</h3>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {messages.map((msg, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-start' : 'flex-end' }}>
-                  <div style={{
-                    maxWidth: '70%',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    background: msg.role === 'user' ? '#2a2d3a' : msg.role === 'coach' ? '#e85d24' : '#1a1d27',
-                    color: 'white',
-                    fontSize: '14px'
-                  }}>
-                    <div style={{ fontSize: '11px', color: msg.role === 'coach' ? 'rgba(255,255,255,0.7)' : '#888', marginBottom: '4px' }}>
-                      {msg.role === 'user' ? 'Player' : msg.role === 'coach' ? '👨‍🏫 You (Coach)' : '🤖 AI'}
-                    </div>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '16px 24px', borderTop: '1px solid #333', display: 'flex', gap: '12px' }}>
-              <input
-                type="text"
-                placeholder="Reply as coach..."
-                value={reply}
-                onChange={e => setReply(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendReply()}
-                style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: '1px solid #333', background: '#1a1d27', color: 'white', fontSize: '14px' }}
-              />
-              <button onClick={sendReply} style={{ background: '#e85d24', color: 'white', border: 'none', borderRadius: '8px', padding: '12px 24px', cursor: 'pointer', fontWeight: 'bold' }}>
-                Send
-              </button>
-            </div>
-          </>
-        ) : (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>
-            Select a conversation to view messages
+      {/* Stats */}
+      <div className="stats-row">
+        {[
+          ['Total Users', stats.totalUsers],
+          ['Total Analyses', stats.totalAnalyses],
+          ['Signups Today', stats.signupsToday],
+          ['Analyses Today', stats.analysesToday],
+        ].map(([label, val]) => (
+          <div className="stat-card" key={label}>
+            <div className="stat-label">{label}</div>
+            <div className="stat-value">{val}</div>
           </div>
-        )}
+        ))}
       </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        {['overview', 'users', 'analyses'].map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '8px',
+              border: tab === t ? 'none' : '1px solid #1a1d2e',
+              background: tab === t ? '#ff6b00' : 'transparent',
+              color: tab === t ? '#fff' : '#888',
+              fontSize: '13px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview Tab */}
+      {tab === 'overview' && (
+        <>
+          <div style={section}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
+              Recent Users
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                    {['Email', 'Name', 'Plan', 'Analyses', 'Signed Up'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.users.slice(0, 10).map(u => (
+                    <tr key={u.id} style={{ borderBottom: '1px solid #0a0c12' }}>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{u.email}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{u.full_name || '—'}</td>
+                      <td style={{ padding: '10px 12px' }}>
+                        <span style={{
+                          fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px',
+                          background: u.plan === 'elite' ? '#2a1000' : u.plan === 'pro' ? '#1a1000' : '#1a1d2e',
+                          color: u.plan === 'elite' ? '#ff6b00' : u.plan === 'pro' ? '#ff6b00' : '#555',
+                          textTransform: 'uppercase', letterSpacing: '1px',
+                        }}>{u.plan}</span>
+                      </td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{u.total_analyses}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(u.signed_up)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style={section}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
+              Recent Analyses
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                    {['User', 'Session', 'Play Type', 'Score', 'Grade', 'When'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.recentAnalyses.slice(0, 10).map((a, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #0a0c12' }}>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{a.email}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{a.session_name}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{a.play_type || '—'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{a.score}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#ff6b00' : '#ff4444' }}>{a.grade}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(a.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Users Tab */}
+      {tab === 'users' && (
+        <div style={section}>
+          <div style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
+            All Users ({stats.users.length})
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                  {['Email', 'Name', 'Team', 'Position', 'Plan', 'Analyses', 'Signed Up'].map(h => (
+                    <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {stats.users.map(u => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid #0a0c12' }}>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{u.email}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{u.full_name || '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#888' }}>{u.team_name || '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{u.position || '—'}</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <span style={{
+                        fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px',
+                        background: u.plan === 'elite' ? '#2a1000' : u.plan === 'pro' ? '#1a1000' : '#1a1d2e',
+                        color: u.plan === 'elite' ? '#ff6b00' : u.plan === 'pro' ? '#ff6b00' : '#555',
+                        textTransform: 'uppercase', letterSpacing: '1px',
+                      }}>{u.plan}</span>
+                    </td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{u.total_analyses}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(u.signed_up)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Analyses Tab */}
+      {tab === 'analyses' && (
+        <div style={section}>
+          <div style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
+            All Recent Analyses ({stats.recentAnalyses.length})
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #1a1d2e' }}>
+                  {['User', 'Session', 'Player', 'Play Type', 'Score', 'Grade', 'When'].map(h => (
+                    <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '11px', color: '#555', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recentAnalyses.map((a, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid #0a0c12' }}>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{a.email}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{a.session_name}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#888' }}>{a.player_name || '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{a.play_type || '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{a.score}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#ff6b00' : '#ff4444' }}>{a.grade}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(a.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
