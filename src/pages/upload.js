@@ -198,7 +198,7 @@ export default function Upload() {
             border: '2px dashed #1a1d2e', borderRadius: '12px', cursor: 'pointer',
             transition: 'border-color 0.2s',
           }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#22c55e'}
             onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
           >
             <span style={{ fontSize: '32px' }}>🎬</span>
@@ -242,7 +242,7 @@ export default function Upload() {
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '48px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>
+                <div style={{ fontSize: '48px', fontWeight: '900', color: '#22c55e', letterSpacing: '-2px', lineHeight: 1 }}>
                   {result.grade}
                 </div>
                 <div style={{ fontSize: '13px', color: '#555', marginTop: '4px' }}>{result.score}/100</div>

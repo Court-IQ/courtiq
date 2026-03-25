@@ -98,7 +98,7 @@ function Admin() {
               padding: '10px 20px',
               borderRadius: '8px',
               border: tab === t ? 'none' : '1px solid #1a1d2e',
-              background: tab === t ? '#ff6b00' : 'transparent',
+              background: tab === t ? '#22c55e' : 'transparent',
               color: tab === t ? '#fff' : '#888',
               fontSize: '13px',
               fontWeight: '700',
@@ -132,13 +132,13 @@ function Admin() {
                 <tbody>
                   {stats.users.slice(0, 10).map(u => (
                     <tr key={u.id} style={{ borderBottom: '1px solid #0a0c12' }}>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{u.email}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{u.email}</td>
                       <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{u.full_name || '—'}</td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
                           fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px',
-                          background: u.plan === 'elite' ? '#2a1000' : u.plan === 'pro' ? '#1a1000' : '#1a1d2e',
-                          color: u.plan === 'elite' ? '#ff6b00' : u.plan === 'pro' ? '#ff6b00' : '#555',
+                          background: u.plan === 'elite' ? '#0a2a12' : u.plan === 'pro' ? '#0a1a0e' : '#1a1d2e',
+                          color: u.plan === 'elite' ? '#22c55e' : u.plan === 'pro' ? '#22c55e' : '#555',
                           textTransform: 'uppercase', letterSpacing: '1px',
                         }}>{u.plan}</span>
                       </td>
@@ -167,11 +167,11 @@ function Admin() {
                 <tbody>
                   {stats.recentAnalyses.slice(0, 10).map((a, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #0a0c12' }}>
-                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{a.email}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{a.email}</td>
                       <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{a.session_name}</td>
                       <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{a.play_type || '—'}</td>
                       <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{a.score}</td>
-                      <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#ff6b00' : '#ff4444' }}>{a.grade}</td>
+                      <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#f97316' : '#ff4444' }}>{a.grade}</td>
                       <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(a.created_at)}</td>
                     </tr>
                   ))}
@@ -200,15 +200,15 @@ function Admin() {
               <tbody>
                 {stats.users.map(u => (
                   <tr key={u.id} style={{ borderBottom: '1px solid #0a0c12' }}>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{u.email}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{u.email}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{u.full_name || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#888' }}>{u.team_name || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{u.position || '—'}</td>
                     <td style={{ padding: '10px 12px' }}>
                       <span style={{
                         fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px',
-                        background: u.plan === 'elite' ? '#2a1000' : u.plan === 'pro' ? '#1a1000' : '#1a1d2e',
-                        color: u.plan === 'elite' ? '#ff6b00' : u.plan === 'pro' ? '#ff6b00' : '#555',
+                        background: u.plan === 'elite' ? '#0a2a12' : u.plan === 'pro' ? '#0a1a0e' : '#1a1d2e',
+                        color: u.plan === 'elite' ? '#22c55e' : u.plan === 'pro' ? '#22c55e' : '#555',
                         textTransform: 'uppercase', letterSpacing: '1px',
                       }}>{u.plan}</span>
                     </td>
@@ -240,12 +240,12 @@ function Admin() {
               <tbody>
                 {stats.recentAnalyses.map((a, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid #0a0c12' }}>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ff6b00', fontWeight: '600' }}>{a.email}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>{a.email}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc' }}>{a.session_name}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#888' }}>{a.player_name || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{a.play_type || '—'}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', color: '#ccc', fontWeight: '700' }}>{a.score}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#ff6b00' : '#ff4444' }}>{a.grade}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: a.grade?.startsWith('A') ? '#4ade80' : a.grade?.startsWith('B') ? '#f97316' : '#ff4444' }}>{a.grade}</td>
                     <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{timeAgo(a.created_at)}</td>
                   </tr>
                 ))}

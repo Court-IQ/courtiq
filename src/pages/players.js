@@ -34,7 +34,7 @@ function Players() {
   function getGradeColor(grade) {
     if (!grade) return '#555';
     if (grade.startsWith('A')) return '#4ade80';
-    if (grade.startsWith('B')) return '#ff6b00';
+    if (grade.startsWith('B')) return '#f97316';
     if (grade.startsWith('C')) return '#facc15';
     return '#ff4444';
   }
@@ -77,10 +77,10 @@ function Players() {
                   style={{
                     ...section,
                     cursor: 'pointer', transition: 'all 0.2s',
-                    borderColor: isSelected ? '#ff6b00' : '#1a1d2e',
+                    borderColor: isSelected ? '#22c55e' : '#1a1d2e',
                   }}
                   onClick={() => setSelected(isSelected ? null : player)}
-                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = '#ff6b00'; }}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = '#22c55e'; }}
                   onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = '#1a1d2e'; }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
@@ -102,7 +102,7 @@ function Players() {
 
                   {/* Score bar */}
                   <div style={{ background: '#1a1d2e', borderRadius: '4px', height: '4px' }}>
-                    <div style={{ background: 'linear-gradient(90deg, #ff6b00, #e85d24)', height: '4px', borderRadius: '4px', width: `${avg}%` }} />
+                    <div style={{ background: 'linear-gradient(90deg, #22c55e, #16a34a)', height: '4px', borderRadius: '4px', width: `${avg}%` }} />
                   </div>
                   <div style={{ fontSize: '12px', color: '#444', marginTop: '6px' }}>{isSelected ? 'Click to collapse' : 'Click to see analyses'}</div>
                 </div>
@@ -115,7 +115,7 @@ function Players() {
                         key={a.id}
                         onClick={() => navigate(`/analysis/${a.id}`)}
                         style={{ background: '#0a0c12', border: '1px solid #1a1d2e', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.2s' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = '#22c55e'}
                         onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

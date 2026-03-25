@@ -74,9 +74,9 @@ body {
 }
 
 .nav-item.active {
-  background: #ff6b00;
+  background: #22c55e;
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
 }
 
 /* MAIN CONTENT */
@@ -111,7 +111,7 @@ body {
 
 /* BUTTONS */
 .upload-btn {
-  background: #ff6b00;
+  background: #22c55e;
   color: white;
   border: none;
   padding: 14px 28px;
@@ -120,14 +120,14 @@ body {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.25);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.25);
   transition: all 0.2s;
   text-transform: uppercase;
 }
 
 .upload-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 107, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
 }
 
 .upload-btn:disabled {
@@ -164,7 +164,7 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #ff6b00, #e85d24);
+  background: linear-gradient(90deg, #22c55e, #16a34a);
 }
 
 .stat-label {
@@ -210,9 +210,9 @@ h2 {
 }
 
 .analysis-card:hover {
-  border-color: #ff6b00;
+  border-color: #22c55e;
   transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(255, 107, 0, 0.08);
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.08);
 }
 
 .analysis-title {
@@ -248,7 +248,7 @@ h2 {
 }
 
 .score-fill {
-  background: linear-gradient(90deg, #ff6b00, #e85d24);
+  background: linear-gradient(90deg, #22c55e, #16a34a);
   height: 4px;
   border-radius: 4px;
 }
@@ -308,7 +308,7 @@ h2 {
 }
 
 .dark-input:focus {
-  border-color: #ff6b00;
+  border-color: #22c55e;
 }
 
 .dark-input::placeholder {
@@ -353,7 +353,7 @@ h2 {
 }
 
 .auth-input:focus {
-  border-color: #ff6b00;
+  border-color: #22c55e;
 }
 
 .auth-error {
@@ -363,7 +363,7 @@ h2 {
 }
 
 .auth-switch {
-  color: #ff6b00;
+  color: #22c55e;
   cursor: pointer;
   text-align: center;
   font-size: 14px;
@@ -390,7 +390,7 @@ h2 {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff6b00;
+  background: #22c55e;
 }
 
 /* ─── LANDING PAGE ─────────────────────────────────────────────── */
@@ -462,19 +462,19 @@ h2 {
   transform: translate(-50%, -50%);
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(255,107,0,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .landing-badge {
   display: inline-block;
-  background: rgba(255,107,0,0.1);
-  border: 1px solid rgba(255,107,0,0.2);
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.2);
   border-radius: 20px;
   padding: 6px 16px;
   font-size: 12px;
   font-weight: 700;
-  color: #ff6b00;
+  color: #22c55e;
   letter-spacing: 1px;
   margin-bottom: 28px;
   text-transform: uppercase;
@@ -514,7 +514,7 @@ h2 {
 .landing-stat-val {
   font-size: 36px;
   font-weight: 900;
-  color: #ff6b00;
+  color: #22c55e;
   letter-spacing: -1px;
 }
 
@@ -541,7 +541,7 @@ h2 {
 .landing-section-tag {
   font-size: 12px;
   font-weight: 700;
-  color: #ff6b00;
+  color: #22c55e;
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-bottom: 12px;
@@ -570,7 +570,7 @@ h2 {
 }
 
 .landing-card:hover {
-  border-color: #ff6b00;
+  border-color: #22c55e;
 }
 
 .landing-pricing-card {
@@ -582,8 +582,8 @@ h2 {
 }
 
 .landing-pricing-highlight {
-  background: linear-gradient(135deg, #1a1000 0%, #0f1117 100%) !important;
-  border-color: #ff6b00 !important;
+  background: linear-gradient(135deg, #0a1a0e 0%, #0f1117 100%) !important;
+  border-color: #22c55e !important;
 }
 
 .landing-pricing-badge {
@@ -591,7 +591,7 @@ h2 {
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: #ff6b00;
+  background: #22c55e;
   color: #fff;
   font-size: 11px;
   font-weight: 700;

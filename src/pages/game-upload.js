@@ -322,7 +322,7 @@ export default function GameUpload() {
   function getGradeColor(grade) {
     if (!grade) return '#555';
     if (grade.startsWith('A')) return '#4ade80';
-    if (grade.startsWith('B')) return '#ff6b00';
+    if (grade.startsWith('B')) return '#f97316';
     if (grade.startsWith('C')) return '#facc15';
     return '#ff4444';
   }
@@ -348,7 +348,7 @@ export default function GameUpload() {
               const data = await res.json();
               if (data.url) window.location.href = data.url;
             }}
-            style={{ background: '#ff6b00', color: '#fff', border: 'none', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
           >
             Go Pro — $9.99/mo (15 analyses)
           </button>
@@ -363,7 +363,7 @@ export default function GameUpload() {
               const data = await res.json();
               if (data.url) window.location.href = data.url;
             }}
-            style={{ background: 'transparent', color: '#ff6b00', border: '1px solid #ff6b00', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: 'transparent', color: '#22c55e', border: '1px solid #22c55e', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
           >
             Go Elite — $19.99/mo (Unlimited)
           </button>
@@ -391,7 +391,7 @@ export default function GameUpload() {
           {usage && (
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '13px', color: '#888' }}>
-                <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.used}</span> / {usage.limit} analyses used
+                <span style={{ color: '#22c55e', fontWeight: '700' }}>{usage.used}</span> / {usage.limit} analyses used
               </div>
               <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>{usage.plan} plan</div>
             </div>
@@ -427,7 +427,7 @@ export default function GameUpload() {
               border: '2px dashed #1a1d2e', borderRadius: '12px', cursor: 'pointer',
               transition: 'border-color 0.2s',
             }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b00'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#22c55e'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1d2e'}
             >
               <span style={{ fontSize: '32px' }}>🎬</span>
@@ -530,7 +530,7 @@ export default function GameUpload() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px',
                   padding: '10px 14px', background: '#0f1117',
-                  border: `1px solid ${seg.playType !== 'skip' ? '#ff6b00' : '#1a1d2e'}`,
+                  border: `1px solid ${seg.playType !== 'skip' ? '#22c55e' : '#1a1d2e'}`,
                   borderRadius: '12px', cursor: 'pointer', transition: 'border-color 0.2s',
                 }}
               >
@@ -562,7 +562,7 @@ export default function GameUpload() {
                   style={{
                     flex: 1, padding: '8px 10px', borderRadius: '6px',
                     border: '1px solid #1a1d2e', background: '#080a0f',
-                    color: seg.playType === 'skip' ? '#555' : '#ff6b00',
+                    color: seg.playType === 'skip' ? '#555' : '#22c55e',
                     fontSize: '12px', fontFamily: 'Inter, sans-serif', outline: 'none',
                     fontWeight: '600', textTransform: 'capitalize',
                   }}
@@ -600,13 +600,13 @@ export default function GameUpload() {
         <div style={{ ...section }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
             <span style={{ color: '#888', fontSize: '14px' }}>Analyzing plays...</span>
-            <span style={{ color: '#ff6b00', fontSize: '14px', fontWeight: '700' }}>
+            <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '700' }}>
               {progress.current}/{progress.total}
             </span>
           </div>
           <div style={{ background: '#1a1d2e', borderRadius: '6px', height: '8px' }}>
             <div style={{
-              background: 'linear-gradient(90deg, #ff6b00, #e85d24)',
+              background: 'linear-gradient(90deg, #22c55e, #16a34a)',
               height: '8px', borderRadius: '6px',
               width: `${(progress.current / progress.total) * 100}%`,
               transition: 'width 0.5s ease',
@@ -617,11 +617,11 @@ export default function GameUpload() {
 
       {/* Game Summary */}
       {gameResult && (
-        <div style={{ ...section, borderColor: '#ff6b00' }}>
+        <div style={{ ...section, borderColor: '#22c55e' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div style={sectionTitle}>Game Summary</div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '48px', fontWeight: '900', color: '#ff6b00', lineHeight: 1 }}>
+              <div style={{ fontSize: '48px', fontWeight: '900', color: '#22c55e', lineHeight: 1 }}>
                 {gameResult.overallGrade}
               </div>
               <div style={{ fontSize: '13px', color: '#555' }}>{gameResult.overallScore}/100</div>
@@ -648,8 +648,8 @@ export default function GameUpload() {
           </div>
 
           {gameResult.keyCoachingPoints && gameResult.keyCoachingPoints.length > 0 && (
-            <div style={{ marginTop: '20px', padding: '16px', background: '#080a0f', borderRadius: '10px', borderLeft: '3px solid #ff6b00' }}>
-              <div style={{ fontSize: '11px', fontWeight: '700', color: '#ff6b00', letterSpacing: '1px', marginBottom: '8px' }}>KEY COACHING POINTS</div>
+            <div style={{ marginTop: '20px', padding: '16px', background: '#080a0f', borderRadius: '10px', borderLeft: '3px solid #22c55e' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#22c55e', letterSpacing: '1px', marginBottom: '8px' }}>KEY COACHING POINTS</div>
               {gameResult.keyCoachingPoints.map((tip, i) => (
                 <p key={i} style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>{i + 1}. {tip}</p>
               ))}
@@ -715,7 +715,7 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {seg.status === 'analyzing' && (
-            <span style={{ color: '#ff6b00', fontSize: '13px', fontWeight: '600' }}>Analyzing...</span>
+            <span style={{ color: '#22c55e', fontSize: '13px', fontWeight: '600' }}>Analyzing...</span>
           )}
           {seg.status === 'error' && (
             <span style={{ color: '#ff4444', fontSize: '13px', fontWeight: '600' }}>Failed</span>
@@ -768,7 +768,7 @@ function SegmentCard({ seg, section, sectionTitle, getGradeColor, formatTime }) 
               </div>
               <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.decisionMaking?.reason}</p>
             </div>
-            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px', gridColumn: '1 / -1', borderLeft: '3px solid #ff6b00' }}>
+            <div style={{ background: '#080a0f', borderRadius: '10px', padding: '16px', gridColumn: '1 / -1', borderLeft: '3px solid #22c55e' }}>
               <div style={sectionTitle}>Coaching Tip</div>
               <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.6' }}>{seg.result.summary?.coachingTip}</p>
             </div>

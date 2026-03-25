@@ -149,7 +149,7 @@ function Brain() {
           {entries.map((e, i) => (
             <div key={i} style={{ background: '#080a0f', border: '1px solid #1a1d2e', borderRadius: '10px', padding: '16px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
-                <span style={{ background: '#ff6b00', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>{e.category}</span>
+                <span style={{ background: '#22c55e', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>{e.category}</span>
                 {e.playType && <span style={{ background: '#1a1d2e', color: '#888', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.playType}</span>}
                 {e.verdict && <span style={{ background: '#0a2a0a', color: '#4ade80', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{e.verdict}</span>}
               </div>

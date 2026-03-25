@@ -37,7 +37,7 @@ function Sidebar({ onSignOut }) {
           top: '16px',
           left: '16px',
           zIndex: 1000,
-          background: '#ff6b00',
+          background: '#22c55e',
           border: 'none',
           borderRadius: '8px',
           padding: '10px 14px',
@@ -64,7 +64,7 @@ function Sidebar({ onSignOut }) {
 
       <div className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="logo">
-          <span style={{ fontSize: '24px' }}>🏀</span>
+          <img src="/logo192.png" alt="CourtIQ" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
           <div>
             <div className="logo-title">CourtIQ</div>
             <div className="logo-sub">AI FILM ANALYSIS</div>

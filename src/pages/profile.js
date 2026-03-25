@@ -163,7 +163,7 @@ export default function Profile() {
               value={profile.full_name}
               onChange={e => handleChange('full_name', e.target.value)}
               style={input}
-              onFocus={e => e.target.style.borderColor = '#ff6b00'}
+              onFocus={e => e.target.style.borderColor = '#22c55e'}
               onBlur={e => e.target.style.borderColor = '#1a1d2e'}
             />
           </div>
@@ -176,7 +176,7 @@ export default function Profile() {
                 value={profile.height}
                 onChange={e => handleChange('height', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onFocus={e => e.target.style.borderColor = '#22c55e'}
                 onBlur={e => e.target.style.borderColor = '#1a1d2e'}
               />
             </div>
@@ -188,7 +188,7 @@ export default function Profile() {
                 value={profile.weight}
                 onChange={e => handleChange('weight', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onFocus={e => e.target.style.borderColor = '#22c55e'}
                 onBlur={e => e.target.style.borderColor = '#1a1d2e'}
               />
             </div>
@@ -202,7 +202,7 @@ export default function Profile() {
                 value={profile.jersey_number}
                 onChange={e => handleChange('jersey_number', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onFocus={e => e.target.style.borderColor = '#22c55e'}
                 onBlur={e => e.target.style.borderColor = '#1a1d2e'}
               />
             </div>
@@ -236,7 +236,7 @@ export default function Profile() {
                 value={profile.team_name}
                 onChange={e => handleChange('team_name', e.target.value)}
                 style={input}
-                onFocus={e => e.target.style.borderColor = '#ff6b00'}
+                onFocus={e => e.target.style.borderColor = '#22c55e'}
                 onBlur={e => e.target.style.borderColor = '#1a1d2e'}
               />
             </div>
@@ -298,7 +298,7 @@ export default function Profile() {
                     const data = await res.json();
                     if (data.url) window.location.href = data.url;
                   }}
-                  style={{ padding: '8px 16px', fontSize: '12px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}
+                  style={{ padding: '8px 16px', fontSize: '12px', background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}
                 >
                   Elite $19.99/mo
                 </button>

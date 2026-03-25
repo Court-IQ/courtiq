@@ -132,7 +132,7 @@ function Chat() {
               maxWidth: '75%',
               padding: '12px 16px',
               borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: msg.role === 'user' ? '#ff6b00' : '#0f1117',
+              background: msg.role === 'user' ? '#22c55e' : '#0f1117',
               border: msg.role === 'user' ? 'none' : '1px solid #1a1d2e',
               color: 'white',
               fontSize: '15px',

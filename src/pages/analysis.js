@@ -61,7 +61,7 @@ function Analysis() {
       <div style={{ ...section, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div>
           <div style={sectionTitle}>Overall Score</div>
-          <div style={{ fontSize: '56px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>{analysis.grade}</div>
+          <div style={{ fontSize: '56px', fontWeight: '900', color: '#22c55e', letterSpacing: '-2px', lineHeight: 1 }}>{analysis.grade}</div>
           <div style={{ fontSize: '13px', color: '#555', marginTop: '6px' }}>{analysis.score}/100</div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -111,7 +111,7 @@ function Analysis() {
           <p style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.7' }}>{analysis.summary?.decisionMaking?.habit}</p>
         </div>
 
-        <div style={{ ...section, gridColumn: '1 / -1', borderLeft: '3px solid #ff6b00' }}>
+        <div style={{ ...section, gridColumn: '1 / -1', borderLeft: '3px solid #22c55e' }}>
           <div style={sectionTitle}>Coaching Tip</div>
           <p style={{ color: '#fff', fontSize: '15px', lineHeight: '1.7', fontWeight: '500' }}>{analysis.summary?.coachingTip}</p>
         </div>

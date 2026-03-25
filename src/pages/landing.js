@@ -54,9 +54,9 @@ function Landing() {
       {/* Nav */}
       <nav className="landing-nav">
         <div className="landing-nav-logo" onClick={() => window.scrollTo(0, 0)} style={{ cursor: 'pointer' }}>
-          <span style={{ fontSize: '22px' }}>🏀</span>
+          <img src="/logo192.png" alt="CourtIQ" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           <span style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px' }}>
-            COURT<span style={{ color: '#ff6b00' }}>IQ</span>
+            COURT<span style={{ color: '#22c55e' }}>IQ</span>
           </span>
         </div>
         <div className="landing-nav-links">
@@ -75,7 +75,7 @@ function Landing() {
         <div className="landing-badge">AI-Powered Film Analysis</div>
         <h1 className="landing-hero-title">
           Your personal coach<br />
-          <span style={{ color: '#ff6b00' }}>is watching film.</span>
+          <span style={{ color: '#22c55e' }}>is watching film.</span>
         </h1>
         <p className="landing-hero-sub">
           Upload your game film and get elite-level breakdowns — positioning, decision making, shot quality, and a personalized plan to improve.
@@ -113,7 +113,7 @@ function Landing() {
         <div className="landing-grid-3">
           {steps.map(s => (
             <div key={s.num} className="landing-card" style={{ position: 'relative' }}>
-              <div style={{ fontSize: '48px', fontWeight: '900', color: 'rgba(255,107,0,0.15)', position: 'absolute', top: '16px', right: '20px', letterSpacing: '-2px' }}>{s.num}</div>
+              <div style={{ fontSize: '48px', fontWeight: '900', color: 'rgba(34,197,94,0.15)', position: 'absolute', top: '16px', right: '20px', letterSpacing: '-2px' }}>{s.num}</div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '10px', marginTop: '8px' }}>{s.title}</div>
               <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.7' }}>{s.desc}</div>
             </div>
@@ -151,7 +151,7 @@ function Landing() {
               {plan.highlighted && (
                 <div className="landing-pricing-badge">Most Popular</div>
               )}
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#ff6b00', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{plan.name}</div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{plan.name}</div>
               <div style={{ marginBottom: '4px' }}>
                 <span style={{ fontSize: '44px', fontWeight: '900', color: '#fff', letterSpacing: '-2px' }}>{plan.price}</span>
                 <span style={{ fontSize: '16px', color: '#555', fontWeight: '600' }}>{plan.period}</span>
@@ -160,7 +160,7 @@ function Landing() {
               <div style={{ flex: 1, marginBottom: '24px' }}>
                 {plan.features.map(f => (
                   <div key={f} style={{ fontSize: '14px', color: '#aaa', padding: '8px 0', borderBottom: '1px solid #1a1d2e', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#ff6b00', fontSize: '14px' }}>&#10003;</span> {f}
+                    <span style={{ color: '#22c55e', fontSize: '14px' }}>&#10003;</span> {f}
                   </div>
                 ))}
               </div>

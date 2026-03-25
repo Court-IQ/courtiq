@@ -33,7 +33,7 @@ function Auth() {
       <div style={{ width: '100%', maxWidth: '420px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '40px', cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏀</div>
+          <img src="/logo192.png" alt="CourtIQ" style={{ width: '64px', height: '64px', objectFit: 'contain', marginBottom: '12px' }} />
           <div style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', letterSpacing: '-1px' }}>CourtIQ</div>
           <div style={{ fontSize: '11px', color: '#555', letterSpacing: '3px', fontWeight: '700', marginTop: '4px' }}>AI FILM ANALYSIS</div>
         </div>

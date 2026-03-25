@@ -75,7 +75,7 @@ function Dashboard() {
     if (active && payload && payload.length) {
       return (
         <div style={{ background: '#0f1117', border: '1px solid #1a1d2e', borderRadius: '10px', padding: '12px 16px' }}>
-          <p style={{ color: '#ff6b00', fontWeight: '800', margin: 0, fontSize: '16px' }}>{payload[0].value}/100</p>
+          <p style={{ color: '#22c55e', fontWeight: '800', margin: 0, fontSize: '16px' }}>{payload[0].value}/100</p>
           <p style={{ color: '#555', fontSize: '12px', margin: '4px 0 0' }}>{payload[0].payload.label}</p>
         </div>
       );
@@ -96,8 +96,8 @@ function Dashboard() {
       {/* Usage banner */}
       {usage && usage.plan === 'free' && usage.used >= usage.limit && (
         <div style={{
-          background: 'linear-gradient(135deg, #2a1000 0%, #1a0800 100%)',
-          border: '1px solid #ff6b00',
+          background: 'linear-gradient(135deg, #0a2a12 0%, #081a0e 100%)',
+          border: '1px solid #22c55e',
           borderRadius: '14px',
           padding: '20px 24px',
           marginBottom: '20px',
@@ -137,7 +137,7 @@ function Dashboard() {
               });
               const data = await res.json();
               if (data.url) window.location.href = data.url;
-            }} style={{ whiteSpace: 'nowrap', padding: '12px 20px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>
+            }} style={{ whiteSpace: 'nowrap', padding: '12px 20px', background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>
               Elite $19.99/mo
             </button>
           </div>
@@ -157,7 +157,7 @@ function Dashboard() {
           gap: '12px',
         }}>
           <div style={{ fontSize: '14px', color: '#888' }}>
-            <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
+            <span style={{ color: '#22c55e', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
           </div>
           <a href="#pricing" onClick={async (e) => {
             e.preventDefault();
@@ -169,7 +169,7 @@ function Dashboard() {
             });
             const data = await res.json();
             if (data.url) window.location.href = data.url;
-          }} style={{ fontSize: '13px', color: '#ff6b00', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
+          }} style={{ fontSize: '13px', color: '#22c55e', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
             Upgrade for more
           </a>
         </div>
@@ -198,9 +198,9 @@ function Dashboard() {
               <XAxis dataKey="name" stroke="#333" tick={{ fill: '#555', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} stroke="#333" tick={{ fill: '#555', fontSize: 12 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="score" stroke="#ff6b00" strokeWidth={2.5}
-                dot={{ fill: '#ff6b00', r: 4, strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: '#ff6b00', strokeWidth: 0 }}
+              <Line type="monotone" dataKey="score" stroke="#22c55e" strokeWidth={2.5}
+                dot={{ fill: '#22c55e', r: 4, strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: '#22c55e', strokeWidth: 0 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -220,7 +220,7 @@ function Dashboard() {
                 </div>
                 <div style={{ background: '#1a1d2e', borderRadius: '4px', height: '6px' }}>
                   <div style={{
-                    background: avg >= 80 ? '#4ade80' : avg >= 65 ? '#ff6b00' : '#ff4444',
+                    background: avg >= 80 ? '#4ade80' : avg >= 65 ? '#f97316' : '#ff4444',
                     height: '6px', borderRadius: '4px', width: `${avg}%`, transition: 'width 0.5s ease'
                   }} />
                 </div>

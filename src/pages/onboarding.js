@@ -77,7 +77,7 @@ export default function Onboarding({ onComplete }) {
                 width: i === step ? '24px' : '8px',
                 height: '8px',
                 borderRadius: '4px',
-                background: i === step ? '#ff6b00' : '#1a1d2e',
+                background: i === step ? '#22c55e' : '#1a1d2e',
                 transition: 'all 0.3s',
               }}
             />

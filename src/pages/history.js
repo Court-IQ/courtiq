@@ -90,7 +90,7 @@ function History() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '52px', fontWeight: '900', color: '#ff6b00', letterSpacing: '-2px', lineHeight: 1 }}>
+                <div style={{ fontSize: '52px', fontWeight: '900', color: '#22c55e', letterSpacing: '-2px', lineHeight: 1 }}>
                   {selected.grade}
                 </div>
                 <div style={{ fontSize: '13px', color: '#555', marginTop: '4px' }}>{selected.score}/100</div>
