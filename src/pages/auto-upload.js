@@ -8,6 +8,7 @@ export default function AutoUpload() {
   const [sessionName, setSessionName] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [jerseyNumber, setJerseyNumber] = useState('');
+  const [jerseyColor, setJerseyColor] = useState('white');
   const [position, setPosition] = useState('point guard');
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
@@ -72,6 +73,7 @@ export default function AutoUpload() {
     formData.append('sessionName', sessionName);
     formData.append('playerName', playerName);
     formData.append('jerseyNumber', jerseyNumber);
+    formData.append('jerseyColor', jerseyColor);
     formData.append('position', position);
     formData.append('userId', user.id);
 
@@ -210,8 +212,24 @@ export default function AutoUpload() {
                 placeholder="Jersey #"
                 value={jerseyNumber}
                 onChange={e => setJerseyNumber(e.target.value)}
-                style={{ ...input, width: '120px', flexShrink: 0 }}
+                style={{ ...input, width: '100px', flexShrink: 0 }}
               />
+              <select
+                value={jerseyColor}
+                onChange={e => setJerseyColor(e.target.value)}
+                style={{ ...input, width: '130px', flexShrink: 0 }}
+              >
+                <option value="white">White</option>
+                <option value="black">Black</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="navy">Navy</option>
+                <option value="green">Green</option>
+                <option value="yellow">Yellow</option>
+                <option value="orange">Orange</option>
+                <option value="purple">Purple</option>
+                <option value="gray">Gray</option>
+              </select>
             </div>
             <select value={position} onChange={e => setPosition(e.target.value)} style={input}>
               <option>point guard</option>
@@ -221,7 +239,7 @@ export default function AutoUpload() {
               <option>center</option>
             </select>
             <p style={{ color: '#888', fontSize: '12px', marginTop: '10px', marginBottom: 0 }}>
-              Gemini will track #{jerseyNumber || '?'} throughout the entire video automatically.
+              Gemini will track the player in the <strong>{jerseyColor} #{jerseyNumber || '?'}</strong> jersey throughout the entire video.
             </p>
           </div>
 

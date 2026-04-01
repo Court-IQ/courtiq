@@ -661,7 +661,7 @@ app.post("/api/admin/stats", async (req, res) => {
 // ─── AUTO ANALYSIS (Gemini 2.5 Flash) ────────────────────────────
 
 app.post("/api/auto-analyze", upload.single("video"), (req, res) => {
-  const { sessionName, playerName, jerseyNumber, position, userId } = req.body;
+  const { sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   const file = req.file;
 
   if (!file) return res.status(400).json({ error: "No video file provided" });
@@ -670,11 +670,11 @@ app.post("/api/auto-analyze", upload.single("video"), (req, res) => {
   res.json({ success: true, status: "processing" });
 
   // Fire and forget — Node.js keeps running after response is sent
-  runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, position, userId })
+  runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || 'unknown color', position, userId })
     .catch(err => console.error("Background auto-analysis failed:", err));
 });
 
-async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, position, userId }) {
+async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
   const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
 
@@ -750,9 +750,11 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, po
 Watch this ENTIRE game film. Find EVERY possession where the player wearing jersey #${jerseyNumber} actively handles the ball — catches a pass, dribbles, shoots, drives, or makes a key off-ball play worth analyzing.
 
 Player info:
-- Jersey: #${jerseyNumber}
+- Jersey: ${jerseyColor} #${jerseyNumber}
 - Name: ${playerName || "the focus player"}
 - Position: ${position}
+
+IMPORTANT: Only track the player in the ${jerseyColor} #${jerseyNumber} jersey. If the opposing team also has a #${jerseyNumber}, ignore them — they will be wearing a different color.
 
 BASKETBALL BRAIN CONTEXT (apply this expert knowledge to your analysis):
 ${brainContext || 'No additional context.'}

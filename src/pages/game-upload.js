@@ -9,6 +9,7 @@ export default function GameUpload() {
   const [position, setPosition] = useState('point guard');
   const [playerName, setPlayerName] = useState('');
   const [jerseyNumber, setJerseyNumber] = useState('');
+  const [jerseyColor, setJerseyColor] = useState('white');
   const [segments, setSegments] = useState([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [gameResult, setGameResult] = useState(null);
@@ -362,7 +363,19 @@ export default function GameUpload() {
             <div style={sectionTitle}>Player Info</div>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               <input type="text" placeholder="Player name" value={playerName} onChange={e => setPlayerName(e.target.value)} style={input} />
-              <input type="text" placeholder="Jersey #" value={jerseyNumber} onChange={e => setJerseyNumber(e.target.value)} style={{ ...input, width: '120px', flexShrink: 0 }} />
+              <input type="text" placeholder="Jersey #" value={jerseyNumber} onChange={e => setJerseyNumber(e.target.value)} style={{ ...input, width: '100px', flexShrink: 0 }} />
+              <select value={jerseyColor} onChange={e => setJerseyColor(e.target.value)} style={{ ...input, width: '130px', flexShrink: 0 }}>
+                <option value="white">White</option>
+                <option value="black">Black</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="navy">Navy</option>
+                <option value="green">Green</option>
+                <option value="yellow">Yellow</option>
+                <option value="orange">Orange</option>
+                <option value="purple">Purple</option>
+                <option value="gray">Gray</option>
+              </select>
             </div>
             <select value={position} onChange={e => setPosition(e.target.value)} style={input}>
               <option>point guard</option>
