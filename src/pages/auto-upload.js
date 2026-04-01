@@ -78,39 +78,21 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      // Step 1: Get a direct upload URL from the server (API key stays on server)
-      const initRes = await fetch(`${API_URL}/api/auto-analyze/init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mimeType: file.type || 'video/mp4', fileSize: file.size, sessionName }),
-      });
-      const initData = await initRes.json();
-      if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
+      const formData = new FormData();
+      formData.append('video', file);
+      formData.append('sessionName', sessionName);
+      formData.append('playerName', playerName);
+      formData.append('jerseyNumber', jerseyNumber);
+      formData.append('jerseyColor', jerseyColor);
+      formData.append('position', position);
+      formData.append('userId', user.id);
 
-      // Step 2: Upload video directly from browser to Google (bypasses Railway memory)
-      setStatusMsg('Uploading video directly to Google...');
-      const uploadRes = await fetch(initData.uploadUrl, {
+      const response = await fetch(`${API_URL}/api/auto-analyze`, {
         method: 'POST',
-        headers: {
-          'Content-Length': file.size,
-          'X-Goog-Upload-Offset': '0',
-          'X-Goog-Upload-Command': 'upload, finalize',
-        },
-        body: file,
+        body: formData,
       });
-      if (!uploadRes.ok) throw new Error('Direct upload to Google failed');
-      const uploadData = await uploadRes.json();
-      const fileName = uploadData?.file?.name;
-      if (!fileName) throw new Error('No file name returned from Google');
-
-      // Step 3: Tell Railway to run the analysis (it already has the file)
-      const runRes = await fetch(`${API_URL}/api/auto-analyze/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id }),
-      });
-      const data = await runRes.json();
-      if (!data.success) throw new Error(data.error || 'Failed to start analysis');
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Upload failed');
 
       // Poll Supabase until the game summary appears
       let attempts = 0;
