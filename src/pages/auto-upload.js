@@ -78,35 +78,53 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      // Step 1: Get a signed upload URL from server (browser uploads directly to Supabase)
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB per chunk
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+      // Step 1: Init upload session on server
       setStatusMsg('Preparing upload...');
-      const urlRes = await fetch(`${API_URL}/api/storage/upload-url`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: file.name, userId: user.id }),
-      });
-      const urlData = await urlRes.json();
-      if (!urlData.success) throw new Error(urlData.error || 'Failed to get upload URL');
-
-      // Step 2: Upload directly to Supabase — Railway never touches the video
-      setStatusMsg('Uploading video to storage...');
-      const { error: uploadError } = await supabase.storage
-        .from('game-films')
-        .uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: file.type || 'video/mp4' });
-      if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
-
-      // Step 3: Tell server to stream from Supabase → Gemini and analyze
-      setStatusMsg('Sending to Gemini for analysis...');
-      const runRes = await fetch(`${API_URL}/api/auto-analyze/from-storage`, {
+      const initRes = await fetch(`${API_URL}/api/chunk/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filePath: urlData.path, mimeType: file.type || 'video/mp4',
+          fileSize: file.size, mimeType: file.type || 'video/mp4',
           sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id,
         }),
       });
-      const data = await runRes.json();
-      if (!data.success) throw new Error(data.error || 'Failed to start analysis');
+      const initData = await initRes.json();
+      if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
+
+      // Step 2: Send file in 5MB chunks — Railway never holds more than 5MB at once
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end);
+        const isLast = i === totalChunks - 1;
+        const pct = Math.round(((i + 1) / totalChunks) * 100);
+
+        setStatusMsg(`Uploading... ${pct}%`);
+        setProgress((i / totalChunks) * 70);
+
+        const formData = new FormData();
+        formData.append('sessionId', initData.sessionId);
+        formData.append('chunk', chunk, `chunk-${i}`);
+        formData.append('isLast', isLast.toString());
+
+        const uploadRes = await fetch(`${API_URL}/api/chunk/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success) throw new Error(uploadData.error || 'Chunk upload failed');
+
+        if (isLast) {
+          // Analysis is running in background — move to polling
+          setStatusMsg('Upload complete! Gemini is watching your film...');
+          setProgress(75);
+        }
+      }
+
+      const data = { success: true };
 
       // Poll Supabase until the game summary appears
       let attempts = 0;

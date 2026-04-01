@@ -668,6 +668,93 @@ app.post("/api/admin/stats", async (req, res) => {
   }
 });
 
+// ─── CHUNKED UPLOAD TO GEMINI ────────────────────────────────────
+// Browser sends 5MB chunks → Railway forwards each to Gemini → never >5MB in RAM
+
+const chunkSessions = new Map(); // sessionId → { uploadUrl, offset, mimeType, ...metadata }
+const chunkUpload = multer({ dest: "/tmp/", limits: { fileSize: 10 * 1024 * 1024 } });
+
+// Step 1: Init a Gemini resumable upload session
+app.post("/api/chunk/init", async (req, res) => {
+  const { fileSize, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
+  try {
+    const initRes = await fetch(
+      `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Upload-Protocol": "resumable",
+          "X-Goog-Upload-Command": "start",
+          "X-Goog-Upload-Header-Content-Length": fileSize,
+          "X-Goog-Upload-Header-Content-Type": mimeType || "video/mp4",
+        },
+        body: JSON.stringify({ file: { display_name: sessionName || "Game Film" } }),
+      }
+    );
+    const uploadUrl = initRes.headers.get("x-goog-upload-url");
+    if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
+
+    const sessionId = `${userId}-${Date.now()}`;
+    chunkSessions.set(sessionId, {
+      uploadUrl, offset: 0, mimeType: mimeType || "video/mp4",
+      sessionName, playerName, jerseyNumber, jerseyColor, position, userId,
+    });
+    res.json({ success: true, sessionId });
+  } catch (err) {
+    console.error("Chunk init error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Step 2: Receive one chunk, forward to Gemini
+app.post("/api/chunk/upload", chunkUpload.single("chunk"), async (req, res) => {
+  const { sessionId, isLast } = req.body;
+  const chunkFile = req.file;
+  if (!chunkFile) return res.status(400).json({ error: "No chunk" });
+
+  const session = chunkSessions.get(sessionId);
+  if (!session) return res.status(400).json({ error: "Invalid session — server may have restarted, please retry" });
+
+  try {
+    const chunkBuffer = fs.readFileSync(chunkFile.path);
+    try { fs.unlinkSync(chunkFile.path); } catch (e) {}
+
+    const command = isLast === "true" ? "upload, finalize" : "upload";
+    const uploadRes = await fetch(session.uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Length": chunkBuffer.length,
+        "X-Goog-Upload-Offset": session.offset,
+        "X-Goog-Upload-Command": command,
+        "Content-Type": session.mimeType,
+      },
+      body: chunkBuffer,
+    });
+
+    session.offset += chunkBuffer.length;
+
+    if (isLast === "true") {
+      const fileData = await uploadRes.json();
+      const fileName = fileData?.file?.name;
+      chunkSessions.delete(sessionId);
+      if (!fileName) throw new Error("Gemini finalize failed — no file name returned");
+
+      const { sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = session;
+      runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId })
+        .catch(err => console.error("Analysis failed:", err));
+
+      res.json({ success: true, status: "processing" });
+    } else {
+      res.json({ success: true, offset: session.offset });
+    }
+  } catch (err) {
+    console.error("Chunk upload error:", err);
+    try { fs.unlinkSync(chunkFile?.path); } catch (e) {}
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ─── SUPABASE STORAGE UPLOAD ─────────────────────────────────────
 
 // Generate a signed URL so the browser can upload directly to Supabase (bypasses Railway)
