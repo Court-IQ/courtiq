@@ -9,6 +9,7 @@ import Brain from './pages/brain';
 import Analysis from './pages/analysis';
 import Players from './pages/players';
 import GameUpload from './pages/game-upload';
+import AutoUpload from './pages/auto-upload';
 import Profile from './pages/profile';
 import Landing from './pages/landing';
 import Onboarding from './pages/onboarding';
@@ -22,6 +23,7 @@ function Sidebar({ onSignOut }) {
 
   const navItems = [
     { label: 'Dashboard', path: '/' },
+    { label: 'Auto Analysis', path: '/auto' },
     { label: 'Upload', path: '/upload' },
     { label: 'History', path: '/history' },
     { label: 'Profile', path: '/profile' },
@@ -148,6 +150,7 @@ function App() {
         <Sidebar onSignOut={handleSignOut} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/auto" element={<AutoUpload />} />
           <Route path="/upload" element={<GameUpload />} />
           <Route path="/history" element={<History />} />
           <Route path="/players" element={<Players />} />

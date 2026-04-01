@@ -82,7 +82,7 @@ function History() {
           {/* Header */}
           <div style={{ ...section, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div>
-              <div style={sectionTitle}>Analysis</div>
+              <div style={sectionTitle}>{selected.play_type === 'game summary' ? 'Game Report' : 'Analysis'}</div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '4px' }}>{selected.session_name}</div>
               <div style={{ fontSize: '13px', color: '#555' }}>
                 {selected.player_name} #{selected.jersey_number} · {selected.position}
@@ -107,7 +107,38 @@ function History() {
             </div>
           </div>
 
-          {/* Result boxes */}
+          {/* Game Summary Detail */}
+          {selected.play_type === 'game summary' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={section}>
+                <div style={sectionTitle}>Game Narrative</div>
+                <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.7' }}>{selected.summary?.gameNarrative}</p>
+              </div>
+              <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={section}>
+                  <div style={{ ...sectionTitle, color: '#4ade80' }}>Strengths</div>
+                  {(selected.summary?.strengths || []).map((s, i) => (
+                    <p key={i} style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>+ {s}</p>
+                  ))}
+                </div>
+                <div style={section}>
+                  <div style={{ ...sectionTitle, color: '#ff4444' }}>Weaknesses</div>
+                  {(selected.summary?.weaknesses || []).map((w, i) => (
+                    <p key={i} style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>- {w}</p>
+                  ))}
+                </div>
+              </div>
+              {selected.summary?.keyCoachingPoints?.length > 0 && (
+                <div style={{ ...section, borderLeft: '3px solid #ff6b00' }}>
+                  <div style={sectionTitle}>Key Coaching Points</div>
+                  {selected.summary.keyCoachingPoints.map((tip, i) => (
+                    <p key={i} style={{ color: '#374151', fontSize: '13px', lineHeight: '1.6', marginBottom: '4px' }}>{i + 1}. {tip}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+          /* Individual Play Detail */
           <div className="result-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div style={section}>
               <div style={sectionTitle}>Offense</div>
@@ -155,6 +186,7 @@ function History() {
               <p style={{ color: '#374151', fontSize: '14px', lineHeight: '1.6' }}>{selected.summary?.drill}</p>
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -177,8 +209,14 @@ function History() {
               className="analysis-card"
               key={a.id}
               onClick={() => setSelected(a)}
+              style={a.play_type === 'game summary' ? { borderColor: '#ff6b00' } : {}}
             >
-              <div className="analysis-title">{a.session_name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                {a.play_type === 'game summary' && (
+                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#ff6b00', background: '#fff5eb', padding: '2px 6px', borderRadius: '4px', letterSpacing: '1px' }}>GAME</span>
+                )}
+                <div className="analysis-title" style={{ margin: 0 }}>{a.session_name}</div>
+              </div>
               <div className="analysis-meta">{timeAgo(a.created_at)} · {a.position} · #{a.jersey_number} {a.player_name}</div>
               <div className="grade">{a.grade}</div>
               <div className="score-bar">

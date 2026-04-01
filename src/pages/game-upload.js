@@ -13,7 +13,6 @@ export default function GameUpload() {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [gameResult, setGameResult] = useState(null);
   const [usage, setUsage] = useState(null);
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const videoRef = useRef(null);
   const tagVideoRef = useRef(null);
 
@@ -169,12 +168,6 @@ export default function GameUpload() {
     const tagged = segments.filter(s => s.playType !== 'skip');
     if (tagged.length === 0) return alert('Tag at least one segment with a play type');
 
-    // Check usage limits
-    if (usage && !usage.canAnalyze) {
-      setShowUpgrade(true);
-      return;
-    }
-
     // Create a dedicated video element for frame extraction so it survives phase changes
     const extractionVideo = document.createElement('video');
     extractionVideo.src = videoURL;
@@ -280,6 +273,19 @@ export default function GameUpload() {
       const summaryData = await summaryResponse.json();
       if (summaryData.success) {
         setGameResult(summaryData.result);
+        // Save game summary to Supabase
+        const { data: { user } } = await supabase.auth.getUser();
+        await supabase.from('analyses').insert([{
+          session_name: sessionName,
+          player_name: playerName,
+          jersey_number: jerseyNumber,
+          position,
+          play_type: 'game summary',
+          score: summaryData.result.overallScore,
+          grade: summaryData.result.overallGrade,
+          summary: summaryData.result,
+          user_id: user.id,
+        }]);
       }
     } catch (err) {
       console.error('Game summary failed:', err);
@@ -327,62 +333,10 @@ export default function GameUpload() {
     return '#ff4444';
   }
 
-  // ─── UPGRADE MODAL ────────────────────────────────────────────────
-  const UpgradeModal = () => (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '20px', padding: '40px', maxWidth: '480px', width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏀</div>
-        <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '8px', textTransform: 'none' }}>You've used all your free analyses</h2>
-        <p style={{ color: '#666', fontSize: '14px', marginBottom: '28px', lineHeight: '1.6' }}>
-          Free accounts get 2 analyses per month. Upgrade to keep improving.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-          <button
-            onClick={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              const res = await fetch(`${API_URL_BASE}/api/create-checkout`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, plan: 'pro' }),
-              });
-              const data = await res.json();
-              if (data.url) window.location.href = data.url;
-            }}
-            style={{ background: '#ff6b00', color: '#111827', border: 'none', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
-          >
-            Go Pro — $9.99/mo (15 analyses)
-          </button>
-          <button
-            onClick={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              const res = await fetch(`${API_URL_BASE}/api/create-checkout`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, plan: 'elite' }),
-              });
-              const data = await res.json();
-              if (data.url) window.location.href = data.url;
-            }}
-            style={{ background: 'transparent', color: '#ff6b00', border: '1px solid #ff6b00', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
-          >
-            Go Elite — $19.99/mo (Unlimited)
-          </button>
-        </div>
-        <button
-          onClick={() => setShowUpgrade(false)}
-          style={{ background: 'none', border: 'none', color: '#555', fontSize: '13px', cursor: 'pointer' }}
-        >
-          Maybe later
-        </button>
-      </div>
-    </div>
-  );
-
   // ─── PHASE 1: SETUP ──────────────────────────────────────────────
   if (phase === 1) {
     return (
       <div className="main">
-        {showUpgrade && <UpgradeModal />}
         <div className="top-bar">
           <div>
             <h1>Full Game Analysis</h1>
@@ -476,7 +430,6 @@ export default function GameUpload() {
   if (phase === 2) {
     return (
       <div className="main">
-        {showUpgrade && <UpgradeModal />}
         <div className="top-bar">
           <div>
             <h1>Tag Plays</h1>

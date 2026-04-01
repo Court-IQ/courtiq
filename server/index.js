@@ -1,8 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const { createClient } = require("@supabase/supabase-js");
-const Stripe = require("stripe");
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const multer = require("multer");
+const fs = require("fs");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleAIFileManager } = require("@google/generative-ai/server");
+
+const upload = multer({ dest: "/tmp/", limits: { fileSize: 4 * 1024 * 1024 * 1024 } });
 
 
 
@@ -133,7 +137,7 @@ You are analyzing ${framesToAnalyze.length} sequential frames from a ${playType}
 
 STRICT RULES:
 - Only describe what you can DIRECTLY SEE. No assumptions.
-- Every statement must reference something visible in the frames.
+- Every statement must reference something visible in the- frames.
 - Be brutally honest. High school players should rarely score above 85.
 - Your feedback must be specific to THIS play, not generic basketball tips.
 
@@ -502,9 +506,9 @@ Return ONLY valid JSON, no markdown:
   }
 });
 
-// ─── STRIPE & USAGE ──────────────────────────────────────────────
+// ─── USAGE ───────────────────────────────────────────────────────
 
-const PLAN_LIMITS = { free: 2, pro: 15, elite: 999999 };
+const PLAN_LIMITS = { free: 999999, pro: 999999, elite: 999999 };
 
 // Get or create user profile
 async function getProfile(userId) {
@@ -553,72 +557,6 @@ app.post("/api/increment-usage", async (req, res) => {
   } catch (err) {
     console.error("Increment usage error:", err);
     res.status(500).json({ error: err.message });
-  }
-});
-
-// Create Stripe checkout session
-app.post("/api/create-checkout", async (req, res) => {
-  try {
-    const { userId, plan } = req.body;
-    if (!userId || !plan) return res.status(400).json({ error: "Missing userId or plan" });
-
-    const prices = {
-      pro: { amount: 999, name: 'CourtIQ Pro' },
-      elite: { amount: 1999, name: 'CourtIQ Elite' },
-    };
-
-    const selected = prices[plan];
-    if (!selected) return res.status(400).json({ error: "Invalid plan" });
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
-      client_reference_id: userId,
-      metadata: { plan, userId },
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          recurring: { interval: 'month' },
-          product_data: { name: selected.name },
-          unit_amount: selected.amount,
-        },
-        quantity: 1,
-      }],
-      success_url: `${req.headers.origin || 'https://courtiq.up.railway.app'}/?upgraded=true`,
-      cancel_url: `${req.headers.origin || 'https://courtiq.up.railway.app'}/`,
-    });
-
-    res.json({ url: session.url });
-  } catch (err) {
-    console.error("Stripe checkout error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Stripe webhook
-app.post("/api/webhook/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
-  try {
-    const event = req.body;
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const userId = session.client_reference_id || session.metadata?.userId;
-      const plan = session.metadata?.plan;
-
-      if (userId && plan) {
-        await supabase.from('profiles').update({
-          plan,
-          stripe_customer_id: session.customer,
-          analyses_used: 0,
-        }).eq('id', userId);
-        console.log(`💰 User ${userId} upgraded to ${plan}`);
-      }
-    }
-
-    res.json({ received: true });
-  } catch (err) {
-    console.error("Webhook error:", err);
-    res.status(400).json({ error: err.message });
   }
 });
 
@@ -717,6 +655,179 @@ app.post("/api/admin/stats", async (req, res) => {
   } catch (err) {
     console.error("Admin stats error:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── AUTO ANALYSIS (Gemini 2.5 Flash) ────────────────────────────
+
+app.post("/api/auto-analyze", upload.single("video"), async (req, res) => {
+  // Long timeout — full game analysis takes 2-5 minutes
+  req.setTimeout(600000);
+  res.setTimeout(600000);
+
+  const { sessionName, playerName, jerseyNumber, position, userId } = req.body;
+  const file = req.file;
+
+  if (!file) return res.status(400).json({ error: "No video file provided" });
+
+  const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+
+  try {
+    // 1. Upload video to Gemini Files API
+    console.log("📤 Uploading to Gemini Files API...");
+    const uploadResult = await fileManager.uploadFile(file.path, {
+      mimeType: file.mimetype || "video/mp4",
+      displayName: sessionName || "Game Film",
+    });
+
+    // 2. Poll until Gemini finishes processing the video
+    console.log("⏳ Waiting for Gemini to process video...");
+    let geminiFile = await fileManager.getFile(uploadResult.file.name);
+    let attempts = 0;
+    while (geminiFile.state === "PROCESSING" && attempts < 60) {
+      await new Promise((r) => setTimeout(r, 5000));
+      geminiFile = await fileManager.getFile(uploadResult.file.name);
+      attempts++;
+    }
+
+    if (geminiFile.state !== "ACTIVE") {
+      throw new Error(`File processing failed. State: ${geminiFile.state}`);
+    }
+
+    // 3. Run analysis
+    console.log("🏀 Gemini is watching the film...");
+    const model = geminiAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      generationConfig: { responseMimeType: "application/json" },
+    });
+
+    const prompt = `You are CourtIQ, an elite basketball coach and film analyst with 20+ years of experience.
+
+Watch this ENTIRE game film. Find EVERY possession where the player wearing jersey #${jerseyNumber} actively handles the ball — catches a pass, dribbles, shoots, drives, or makes a key off-ball play worth analyzing.
+
+Player info:
+- Jersey: #${jerseyNumber}
+- Name: ${playerName || "the focus player"}
+- Position: ${position}
+
+For EACH possession you find, provide a complete coaching analysis.
+
+Scoring (be strict — high school players rarely score above 85):
+93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-72=C-, 65-69=D+, 60-64=D, below 60=F
+
+Play types to use ONLY: post move, mid-range jumper, 3 pointer, drive to basket, floater, pick and roll, fast break, catch and shoot, pull up jumper, defensive play
+
+Return valid JSON:
+{
+  "plays": [
+    {
+      "startTime": "2:34",
+      "endTime": "2:47",
+      "playType": "drive to basket",
+      "score": 78,
+      "grade": "B-",
+      "summary": {
+        "positioning": {
+          "offense": "Specific description of player position, footwork, body control. Reference court location.",
+          "defense": "Where the defender is at the key moment, how close, any help defense."
+        },
+        "shotQuality": {
+          "verdict": "GOOD SHOT or BAD SHOT",
+          "reason": "Specific reason — defender distance, player balance, shot location.",
+          "whatToDoInstead": "If BAD SHOT: what should they have done. If GOOD SHOT: what made it a good selection."
+        },
+        "decisionMaking": {
+          "verdict": "RIGHT DECISION or WRONG DECISION",
+          "reason": "What did the player read correctly or miss?",
+          "habit": "One pattern or habit this player has — good or bad."
+        },
+        "coachingTip": "One specific actionable tip. Start with an action verb.",
+        "drill": "Name a specific drill and explain how to run it to fix what you saw."
+      }
+    }
+  ],
+  "overallScore": 76,
+  "overallGrade": "B-",
+  "gameNarrative": "2-3 sentence overall assessment referencing specific patterns observed.",
+  "strengths": ["specific strength 1", "specific strength 2"],
+  "weaknesses": ["specific weakness 1", "specific weakness 2"],
+  "keyCoachingPoints": ["actionable tip 1", "actionable tip 2", "actionable tip 3"]
+}`;
+
+    const geminiResult = await model.generateContent([
+      { fileData: { fileUri: geminiFile.uri, mimeType: geminiFile.mimeType } },
+      { text: prompt },
+    ]);
+
+    const analysis = JSON.parse(geminiResult.response.text());
+
+    // Normalize grades using the same scale as the rest of the app
+    const getGrade = (score) => {
+      if (score >= 93) return "A";
+      if (score >= 90) return "A-";
+      if (score >= 87) return "B+";
+      if (score >= 83) return "B";
+      if (score >= 80) return "B-";
+      if (score >= 77) return "C+";
+      if (score >= 73) return "C";
+      if (score >= 70) return "C-";
+      if (score >= 65) return "D+";
+      if (score >= 60) return "D";
+      return "F";
+    };
+
+    analysis.plays = (analysis.plays || []).map((play) => ({
+      ...play,
+      grade: getGrade(play.score || 70),
+    }));
+    analysis.overallGrade = getGrade(analysis.overallScore || 70);
+
+    // 4. Save to Supabase
+    if (userId) {
+      for (const play of analysis.plays) {
+        await supabase.from("analyses").insert([{
+          session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
+          player_name: playerName,
+          jersey_number: jerseyNumber,
+          position,
+          play_type: play.playType,
+          score: play.score,
+          grade: play.grade,
+          summary: play.summary,
+          user_id: userId,
+        }]);
+      }
+
+      await supabase.from("analyses").insert([{
+        session_name: sessionName,
+        player_name: playerName,
+        jersey_number: jerseyNumber,
+        position,
+        play_type: "game summary",
+        score: analysis.overallScore,
+        grade: analysis.overallGrade,
+        summary: {
+          gameNarrative: analysis.gameNarrative,
+          strengths: analysis.strengths,
+          weaknesses: analysis.weaknesses,
+          keyCoachingPoints: analysis.keyCoachingPoints,
+        },
+        user_id: userId,
+      }]);
+    }
+
+    // 5. Clean up
+    try { fs.unlinkSync(file.path); } catch (e) {}
+    try { await fileManager.deleteFile(uploadResult.file.name); } catch (e) {}
+
+    console.log(`✅ Auto-analysis complete: ${analysis.plays?.length} plays found`);
+    res.json({ success: true, result: analysis });
+
+  } catch (err) {
+    console.error("Auto-analyze error:", err);
+    try { fs.unlinkSync(file.path); } catch (e) {}
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
