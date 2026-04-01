@@ -660,16 +660,57 @@ app.post("/api/admin/stats", async (req, res) => {
 
 // ─── AUTO ANALYSIS (Gemini 2.5 Flash) ────────────────────────────
 
+// Step 1: Browser requests a direct upload session to Google (Railway never touches the video)
+app.post("/api/auto-analyze/init", async (req, res) => {
+  try {
+    const { mimeType, fileSize, sessionName } = req.body;
+
+    const initResponse = await fetch(
+      `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Upload-Protocol": "resumable",
+          "X-Goog-Upload-Command": "start",
+          "X-Goog-Upload-Header-Content-Length": fileSize,
+          "X-Goog-Upload-Header-Content-Type": mimeType || "video/mp4",
+        },
+        body: JSON.stringify({ file: { display_name: sessionName || "Game Film" } }),
+      }
+    );
+
+    const uploadUrl = initResponse.headers.get("x-goog-upload-url");
+    if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
+
+    res.json({ success: true, uploadUrl });
+  } catch (err) {
+    console.error("Upload init error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Step 2: Browser has uploaded file directly to Google, now run the analysis
+app.post("/api/auto-analyze/run", (req, res) => {
+  const { fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
+
+  if (!fileName) return res.status(400).json({ error: "No fileName provided" });
+
+  res.json({ success: true, status: "processing" });
+
+  runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown color", position, userId })
+    .catch(err => console.error("Background auto-analysis failed:", err));
+});
+
+// Fallback: old route for direct server upload (kept for compatibility)
 app.post("/api/auto-analyze", upload.single("video"), (req, res) => {
   const { sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   const file = req.file;
 
   if (!file) return res.status(400).json({ error: "No video file provided" });
 
-  // Respond immediately — Railway won't timeout, processing continues in background
   res.json({ success: true, status: "processing" });
 
-  // Fire and forget — Node.js keeps running after response is sent
   runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || 'unknown color', position, userId })
     .catch(err => console.error("Background auto-analysis failed:", err));
 });
@@ -677,20 +718,6 @@ app.post("/api/auto-analyze", upload.single("video"), (req, res) => {
 async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
   const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
-
-  const getGrade = (score) => {
-    if (score >= 93) return "A";
-    if (score >= 90) return "A-";
-    if (score >= 87) return "B+";
-    if (score >= 83) return "B";
-    if (score >= 80) return "B-";
-    if (score >= 77) return "C+";
-    if (score >= 73) return "C";
-    if (score >= 70) return "C-";
-    if (score >= 65) return "D+";
-    if (score >= 60) return "D";
-    return "F";
-  };
 
   try {
     // 1. Upload video to Gemini Files API
@@ -714,38 +741,81 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, je
       throw new Error(`File processing failed. State: ${geminiFile.state}`);
     }
 
-    // 3. Pull Brain context from Pinecone
-    let brainContext = '';
-    try {
-      const { Pinecone } = require('@pinecone-database/pinecone');
-      const OpenAI = require('openai');
-      const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-      const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const brainIndex = pinecone.index('courtiq-brain');
+    // 3–5. Shared: Brain context + Gemini analysis + save to Supabase
+    await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
 
-      const queryEmbedding = await openaiClient.embeddings.create({
-        model: 'text-embedding-ada-002',
-        input: `${position} basketball game analysis coaching positioning decision making shot quality`,
-      });
-      const brainResults = await brainIndex.query({
-        vector: queryEmbedding.data[0].embedding,
-        topK: 10,
-        includeMetadata: true,
-      });
-      brainContext = brainResults.matches.map(m => m.metadata.text).join('\n\n');
-      console.log('🧠 Brain context loaded:', brainContext.slice(0, 100));
-    } catch (e) {
-      console.log('Brain search failed, continuing without it:', e.message);
+    // 6. Clean up
+    try { fs.unlinkSync(file.path); } catch (e) {}
+    try { await fileManager.deleteFile(uploadResult.file.name); } catch (e) {}
+
+    console.log(`✅ Auto-analysis complete`);
+
+  } catch (err) {
+    console.error("runAutoAnalysis error:", err);
+    try { fs.unlinkSync(file.path); } catch (e) {}
+    // Save error record so frontend stops polling
+    if (userId) {
+      await supabase.from("analyses").insert([{
+        session_name: sessionName,
+        player_name: playerName,
+        jersey_number: jerseyNumber,
+        position,
+        play_type: "game summary",
+        score: 0,
+        grade: "F",
+        summary: { error: err.message },
+        user_id: userId,
+      }]).catch(() => {});
     }
+  }
+}
 
-    // 4. Run Gemini analysis
-    console.log("🏀 Gemini is watching the film...");
-    const model = geminiAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: { responseMimeType: "application/json" },
+// Shared: Brain context + Gemini prompt + save to Supabase
+async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
+  const getGrade = (score) => {
+    if (score >= 93) return "A";
+    if (score >= 90) return "A-";
+    if (score >= 87) return "B+";
+    if (score >= 83) return "B";
+    if (score >= 80) return "B-";
+    if (score >= 77) return "C+";
+    if (score >= 73) return "C";
+    if (score >= 70) return "C-";
+    if (score >= 65) return "D+";
+    if (score >= 60) return "D";
+    return "F";
+  };
+
+  // Pull Brain context from Pinecone
+  let brainContext = '';
+  try {
+    const { Pinecone } = require('@pinecone-database/pinecone');
+    const OpenAI = require('openai');
+    const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+    const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const brainIndex = pinecone.index('courtiq-brain');
+    const queryEmbedding = await openaiClient.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: `${position} basketball game analysis coaching positioning decision making shot quality`,
     });
+    const brainResults = await brainIndex.query({
+      vector: queryEmbedding.data[0].embedding,
+      topK: 10,
+      includeMetadata: true,
+    });
+    brainContext = brainResults.matches.map(m => m.metadata.text).join('\n\n');
+    console.log('🧠 Brain context loaded:', brainContext.slice(0, 100));
+  } catch (e) {
+    console.log('Brain search failed, continuing without it:', e.message);
+  }
 
-    const prompt = `You are CourtIQ, an elite basketball coach and film analyst with 20+ years of experience.
+  console.log("🏀 Gemini is watching the film...");
+  const model = geminiAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    generationConfig: { responseMimeType: "application/json" },
+  });
+
+  const prompt = `You are CourtIQ, an elite basketball coach and film analyst with 20+ years of experience.
 
 Watch this ENTIRE game film. Find EVERY possession where the player wearing jersey #${jerseyNumber} actively handles the ball — catches a pass, dribbles, shoots, drives, or makes a key off-ball play worth analyzing.
 
@@ -803,79 +873,68 @@ Return valid JSON:
   "keyCoachingPoints": ["actionable tip 1", "actionable tip 2", "actionable tip 3"]
 }`;
 
-    const geminiResult = await model.generateContent([
-      { fileData: { fileUri: geminiFile.uri, mimeType: geminiFile.mimeType } },
-      { text: prompt },
-    ]);
+  const geminiResult = await model.generateContent([
+    { fileData: { fileUri: geminiFile.uri, mimeType: geminiFile.mimeType } },
+    { text: prompt },
+  ]);
 
-    const analysis = JSON.parse(geminiResult.response.text());
+  const analysis = JSON.parse(geminiResult.response.text());
+  analysis.plays = (analysis.plays || []).map(p => ({ ...p, grade: getGrade(p.score || 70) }));
+  analysis.overallGrade = getGrade(analysis.overallScore || 70);
 
-    analysis.plays = (analysis.plays || []).map((play) => ({
-      ...play,
-      grade: getGrade(play.score || 70),
-    }));
-    analysis.overallGrade = getGrade(analysis.overallScore || 70);
-
-    // 5. Save to Supabase
-    if (userId) {
-      // Save individual plays
-      for (const play of analysis.plays) {
-        await supabase.from("analyses").insert([{
-          session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
-          player_name: playerName,
-          jersey_number: jerseyNumber,
-          position,
-          play_type: play.playType,
-          score: play.score,
-          grade: play.grade,
-          summary: play.summary,
-          user_id: userId,
-        }]);
-      }
-
-      // Save game summary — include plays so frontend can read everything from one record
+  if (userId) {
+    for (const play of analysis.plays) {
       await supabase.from("analyses").insert([{
-        session_name: sessionName,
-        player_name: playerName,
-        jersey_number: jerseyNumber,
-        position,
-        play_type: "game summary",
-        score: analysis.overallScore,
-        grade: analysis.overallGrade,
-        summary: {
-          gameNarrative: analysis.gameNarrative,
-          strengths: analysis.strengths,
-          weaknesses: analysis.weaknesses,
-          keyCoachingPoints: analysis.keyCoachingPoints,
-          plays: analysis.plays,
-          overallScore: analysis.overallScore,
-          overallGrade: analysis.overallGrade,
-        },
-        user_id: userId,
+        session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
+        player_name: playerName, jersey_number: jerseyNumber, position,
+        play_type: play.playType, score: play.score, grade: play.grade,
+        summary: play.summary, user_id: userId,
       }]);
     }
+    await supabase.from("analyses").insert([{
+      session_name: sessionName, player_name: playerName,
+      jersey_number: jerseyNumber, position, play_type: "game summary",
+      score: analysis.overallScore, grade: analysis.overallGrade,
+      summary: {
+        gameNarrative: analysis.gameNarrative, strengths: analysis.strengths,
+        weaknesses: analysis.weaknesses, keyCoachingPoints: analysis.keyCoachingPoints,
+        plays: analysis.plays, overallScore: analysis.overallScore, overallGrade: analysis.overallGrade,
+      },
+      user_id: userId,
+    }]);
+  }
 
-    // 6. Clean up
-    try { fs.unlinkSync(file.path); } catch (e) {}
-    try { await fileManager.deleteFile(uploadResult.file.name); } catch (e) {}
+  console.log(`✅ analyzeAndSave complete: ${analysis.plays?.length} plays`);
+}
 
-    console.log(`✅ Auto-analysis complete: ${analysis.plays?.length} plays found`);
+// Used when browser uploads directly to Google — skips the file upload step
+async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
+  const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
 
+  try {
+    // Poll until file is ready
+    console.log("⏳ Waiting for Gemini file to be ready:", fileName);
+    let geminiFile = await fileManager.getFile(fileName);
+    let attempts = 0;
+    while (geminiFile.state === "PROCESSING" && attempts < 60) {
+      await new Promise((r) => setTimeout(r, 5000));
+      geminiFile = await fileManager.getFile(fileName);
+      attempts++;
+    }
+    if (geminiFile.state !== "ACTIVE") throw new Error(`File not ready. State: ${geminiFile.state}`);
+
+    // Reuse the same analysis + save logic
+    await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
+
+    try { await fileManager.deleteFile(fileName); } catch (e) {}
   } catch (err) {
-    console.error("runAutoAnalysis error:", err);
-    try { fs.unlinkSync(file.path); } catch (e) {}
-    // Save error record so frontend stops polling
+    console.error("runAutoAnalysisFromFile error:", err);
     if (userId) {
       await supabase.from("analyses").insert([{
-        session_name: sessionName,
-        player_name: playerName,
-        jersey_number: jerseyNumber,
-        position,
-        play_type: "game summary",
-        score: 0,
-        grade: "F",
-        summary: { error: err.message },
-        user_id: userId,
+        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
+        position, play_type: "game summary", score: 0, grade: "F",
+        summary: { error: err.message }, user_id: userId,
       }]).catch(() => {});
     }
   }

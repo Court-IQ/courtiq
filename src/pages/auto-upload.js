@@ -78,13 +78,39 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      // Send video to server — it responds immediately, processes in background
-      const response = await fetch(`${API_URL}/api/auto-analyze`, {
+      // Step 1: Get a direct upload URL from the server (API key stays on server)
+      const initRes = await fetch(`${API_URL}/api/auto-analyze/init`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mimeType: file.type || 'video/mp4', fileSize: file.size, sessionName }),
       });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Upload failed');
+      const initData = await initRes.json();
+      if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
+
+      // Step 2: Upload video directly from browser to Google (bypasses Railway memory)
+      setStatusMsg('Uploading video directly to Google...');
+      const uploadRes = await fetch(initData.uploadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Length': file.size,
+          'X-Goog-Upload-Offset': '0',
+          'X-Goog-Upload-Command': 'upload, finalize',
+        },
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error('Direct upload to Google failed');
+      const uploadData = await uploadRes.json();
+      const fileName = uploadData?.file?.name;
+      if (!fileName) throw new Error('No file name returned from Google');
+
+      // Step 3: Tell Railway to run the analysis (it already has the file)
+      const runRes = await fetch(`${API_URL}/api/auto-analyze/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id }),
+      });
+      const data = await runRes.json();
+      if (!data.success) throw new Error(data.error || 'Failed to start analysis');
 
       // Poll Supabase until the game summary appears
       let attempts = 0;
