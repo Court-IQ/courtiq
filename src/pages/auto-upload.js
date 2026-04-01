@@ -78,21 +78,35 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      const formData = new FormData();
-      formData.append('video', file);
-      formData.append('sessionName', sessionName);
-      formData.append('playerName', playerName);
-      formData.append('jerseyNumber', jerseyNumber);
-      formData.append('jerseyColor', jerseyColor);
-      formData.append('position', position);
-      formData.append('userId', user.id);
-
-      const response = await fetch(`${API_URL}/api/auto-analyze`, {
+      // Step 1: Get a signed upload URL from server (browser uploads directly to Supabase)
+      setStatusMsg('Preparing upload...');
+      const urlRes = await fetch(`${API_URL}/api/storage/upload-url`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name, userId: user.id }),
       });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Upload failed');
+      const urlData = await urlRes.json();
+      if (!urlData.success) throw new Error(urlData.error || 'Failed to get upload URL');
+
+      // Step 2: Upload directly to Supabase — Railway never touches the video
+      setStatusMsg('Uploading video to storage...');
+      const { error: uploadError } = await supabase.storage
+        .from('game-films')
+        .uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: file.type || 'video/mp4' });
+      if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+
+      // Step 3: Tell server to stream from Supabase → Gemini and analyze
+      setStatusMsg('Sending to Gemini for analysis...');
+      const runRes = await fetch(`${API_URL}/api/auto-analyze/from-storage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filePath: urlData.path, mimeType: file.type || 'video/mp4',
+          sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id,
+        }),
+      });
+      const data = await runRes.json();
+      if (!data.success) throw new Error(data.error || 'Failed to start analysis');
 
       // Poll Supabase until the game summary appears
       let attempts = 0;

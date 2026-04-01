@@ -16,6 +16,16 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
+// Admin Supabase client (service role — server only)
+const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.REACT_APP_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null;
+
+// Ensure game-films bucket exists
+if (adminSupabase) {
+  adminSupabase.storage.createBucket('game-films', { public: false }).catch(() => {});
+}
+
 // const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const supabase = createClient(
@@ -657,6 +667,106 @@ app.post("/api/admin/stats", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── SUPABASE STORAGE UPLOAD ─────────────────────────────────────
+
+// Generate a signed URL so the browser can upload directly to Supabase (bypasses Railway)
+app.post("/api/storage/upload-url", async (req, res) => {
+  try {
+    const { fileName, userId } = req.body;
+    if (!adminSupabase) return res.status(500).json({ error: "Storage not configured" });
+
+    const filePath = `${userId}/${Date.now()}-${fileName.replace(/\s/g, '_')}`;
+    const { data, error } = await adminSupabase.storage
+      .from("game-films")
+      .createSignedUploadUrl(filePath);
+
+    if (error) throw error;
+    res.json({ success: true, signedUrl: data.signedUrl, path: data.path, token: data.token });
+  } catch (err) {
+    console.error("Upload URL error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Trigger analysis from a file already in Supabase Storage
+app.post("/api/auto-analyze/from-storage", (req, res) => {
+  const { filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
+  if (!filePath) return res.status(400).json({ error: "No filePath provided" });
+
+  res.json({ success: true, status: "processing" });
+
+  runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId })
+    .catch(err => console.error("Storage auto-analysis failed:", err));
+});
+
+async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
+  try {
+    // 1. Get a signed download URL from Supabase
+    const { data: urlData, error: urlError } = await adminSupabase.storage
+      .from("game-films")
+      .createSignedUrl(filePath, 3600);
+    if (urlError) throw urlError;
+
+    // 2. Download from Supabase as a stream
+    console.log("⬇️  Streaming from Supabase...");
+    const downloadRes = await fetch(urlData.signedUrl);
+    if (!downloadRes.ok) throw new Error("Failed to download from Supabase");
+    const contentLength = downloadRes.headers.get("content-length");
+    const contentType = mimeType || downloadRes.headers.get("content-type") || "video/mp4";
+
+    // 3. Create Gemini resumable upload session
+    const initRes = await fetch(
+      `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Upload-Protocol": "resumable",
+          "X-Goog-Upload-Command": "start",
+          "X-Goog-Upload-Header-Content-Length": contentLength,
+          "X-Goog-Upload-Header-Content-Type": contentType,
+        },
+        body: JSON.stringify({ file: { display_name: sessionName || "Game Film" } }),
+      }
+    );
+    const uploadUrl = initRes.headers.get("x-goog-upload-url");
+    if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
+
+    // 4. Stream from Supabase directly to Gemini — Railway holds only a small buffer
+    console.log("📤 Streaming to Gemini...");
+    const geminiUploadRes = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Length": contentLength,
+        "X-Goog-Upload-Offset": "0",
+        "X-Goog-Upload-Command": "upload, finalize",
+        "Content-Type": contentType,
+      },
+      body: downloadRes.body,
+      duplex: "half",
+    });
+    const fileData = await geminiUploadRes.json();
+    const fileName = fileData?.file?.name;
+    if (!fileName) throw new Error("Gemini upload failed — no file name returned");
+
+    // 5. Wait for Gemini to process + run analysis
+    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
+
+    // 6. Clean up Supabase file
+    await adminSupabase.storage.from("game-films").remove([filePath]).catch(() => {});
+
+  } catch (err) {
+    console.error("runAutoAnalysisFromStorage error:", err);
+    if (userId) {
+      await supabase.from("analyses").insert([{
+        session_name: sessionName, player_name: playerName,
+        jersey_number: jerseyNumber, position, play_type: "game summary",
+        score: 0, grade: "F", summary: { error: err.message }, user_id: userId,
+      }]).catch(() => {});
+    }
+  }
+}
 
 // ─── AUTO ANALYSIS (Gemini 2.5 Flash) ────────────────────────────
 
