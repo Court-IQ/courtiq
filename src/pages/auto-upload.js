@@ -76,20 +76,49 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
+      // Send video to server — it responds immediately, processes in background
       const response = await fetch(`${API_URL}/api/auto-analyze`, {
         method: 'POST',
         body: formData,
       });
-
       const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Upload failed');
 
-      if (data.success) {
-        setProgress(100);
-        setResult(data.result);
-        setPhase(3);
-      } else {
-        throw new Error(data.error || 'Analysis failed');
-      }
+      // Poll Supabase until the game summary appears
+      let attempts = 0;
+      const maxAttempts = 120; // 10 minutes at 5s intervals
+      const poll = setInterval(async () => {
+        attempts++;
+
+        const { data: record } = await supabase
+          .from('analyses')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('play_type', 'game summary')
+          .eq('session_name', sessionName)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (record) {
+          clearInterval(poll);
+          if (record.summary?.error) {
+            setError(record.summary.error);
+            setPhase(1);
+            return;
+          }
+          setProgress(100);
+          setResult(record.summary);
+          setPhase(3);
+        }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          setError('Analysis timed out after 10 minutes. Please try again with a shorter clip.');
+          setPhase(1);
+        }
+      }, 5000);
+
     } catch (err) {
       setError(err.message);
       setPhase(1);
@@ -288,6 +317,8 @@ export default function AutoUpload() {
 
   // ─── PHASE 3: RESULTS ─────────────────────────────────────────────
   const plays = result?.plays || [];
+  const overallGrade = result?.overallGrade;
+  const overallScore = result?.overallScore;
 
   return (
     <div className="main">
@@ -315,9 +346,9 @@ export default function AutoUpload() {
             <div style={sectionTitle}>Game Summary</div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '52px', fontWeight: '900', color: '#ff6b00', lineHeight: 1 }}>
-                {result.overallGrade}
+                {overallGrade}
               </div>
-              <div style={{ fontSize: '13px', color: '#555' }}>{result.overallScore}/100</div>
+              <div style={{ fontSize: '13px', color: '#555' }}>{overallScore}/100</div>
             </div>
           </div>
 

@@ -660,18 +660,37 @@ app.post("/api/admin/stats", async (req, res) => {
 
 // ─── AUTO ANALYSIS (Gemini 2.5 Flash) ────────────────────────────
 
-app.post("/api/auto-analyze", upload.single("video"), async (req, res) => {
-  // Long timeout — full game analysis takes 2-5 minutes
-  req.setTimeout(600000);
-  res.setTimeout(600000);
-
+app.post("/api/auto-analyze", upload.single("video"), (req, res) => {
   const { sessionName, playerName, jerseyNumber, position, userId } = req.body;
   const file = req.file;
 
   if (!file) return res.status(400).json({ error: "No video file provided" });
 
+  // Respond immediately — Railway won't timeout, processing continues in background
+  res.json({ success: true, status: "processing" });
+
+  // Fire and forget — Node.js keeps running after response is sent
+  runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, position, userId })
+    .catch(err => console.error("Background auto-analysis failed:", err));
+});
+
+async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, position, userId }) {
   const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+
+  const getGrade = (score) => {
+    if (score >= 93) return "A";
+    if (score >= 90) return "A-";
+    if (score >= 87) return "B+";
+    if (score >= 83) return "B";
+    if (score >= 80) return "B-";
+    if (score >= 77) return "C+";
+    if (score >= 73) return "C";
+    if (score >= 70) return "C-";
+    if (score >= 65) return "D+";
+    if (score >= 60) return "D";
+    return "F";
+  };
 
   try {
     // 1. Upload video to Gemini Files API
@@ -719,7 +738,7 @@ app.post("/api/auto-analyze", upload.single("video"), async (req, res) => {
       console.log('Brain search failed, continuing without it:', e.message);
     }
 
-    // 4. Run analysis
+    // 4. Run Gemini analysis
     console.log("🏀 Gemini is watching the film...");
     const model = geminiAI.getGenerativeModel({
       model: "gemini-2.5-flash",
@@ -789,29 +808,15 @@ Return valid JSON:
 
     const analysis = JSON.parse(geminiResult.response.text());
 
-    // Normalize grades using the same scale as the rest of the app
-    const getGrade = (score) => {
-      if (score >= 93) return "A";
-      if (score >= 90) return "A-";
-      if (score >= 87) return "B+";
-      if (score >= 83) return "B";
-      if (score >= 80) return "B-";
-      if (score >= 77) return "C+";
-      if (score >= 73) return "C";
-      if (score >= 70) return "C-";
-      if (score >= 65) return "D+";
-      if (score >= 60) return "D";
-      return "F";
-    };
-
     analysis.plays = (analysis.plays || []).map((play) => ({
       ...play,
       grade: getGrade(play.score || 70),
     }));
     analysis.overallGrade = getGrade(analysis.overallScore || 70);
 
-    // 4. Save to Supabase
+    // 5. Save to Supabase
     if (userId) {
+      // Save individual plays
       for (const play of analysis.plays) {
         await supabase.from("analyses").insert([{
           session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
@@ -826,6 +831,7 @@ Return valid JSON:
         }]);
       }
 
+      // Save game summary — include plays so frontend can read everything from one record
       await supabase.from("analyses").insert([{
         session_name: sessionName,
         player_name: playerName,
@@ -839,24 +845,39 @@ Return valid JSON:
           strengths: analysis.strengths,
           weaknesses: analysis.weaknesses,
           keyCoachingPoints: analysis.keyCoachingPoints,
+          plays: analysis.plays,
+          overallScore: analysis.overallScore,
+          overallGrade: analysis.overallGrade,
         },
         user_id: userId,
       }]);
     }
 
-    // 5. Clean up
+    // 6. Clean up
     try { fs.unlinkSync(file.path); } catch (e) {}
     try { await fileManager.deleteFile(uploadResult.file.name); } catch (e) {}
 
     console.log(`✅ Auto-analysis complete: ${analysis.plays?.length} plays found`);
-    res.json({ success: true, result: analysis });
 
   } catch (err) {
-    console.error("Auto-analyze error:", err);
+    console.error("runAutoAnalysis error:", err);
     try { fs.unlinkSync(file.path); } catch (e) {}
-    res.status(500).json({ success: false, error: err.message });
+    // Save error record so frontend stops polling
+    if (userId) {
+      await supabase.from("analyses").insert([{
+        session_name: sessionName,
+        player_name: playerName,
+        jersey_number: jerseyNumber,
+        position,
+        play_type: "game summary",
+        score: 0,
+        grade: "F",
+        summary: { error: err.message },
+        user_id: userId,
+      }]).catch(() => {});
+    }
   }
-});
+}
 
 app.get("/health", (req, res) => {
   res.json({ status: "CourtIQ backend is running!" });
