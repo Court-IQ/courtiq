@@ -265,7 +265,14 @@ export default function AutoUpload() {
               ) : (
                 <span style={{ color: '#aaa', fontSize: '12px' }}>MP4, MOV, AVI · Full game, half, or quarter</span>
               )}
-              <input type="file" accept="video/*" onChange={e => setFile(e.target.files[0])} style={{ display: 'none' }} />
+              <input type="file" accept="video/*" onChange={e => {
+                const f = e.target.files[0];
+                if (f && f.size > 500 * 1024 * 1024) {
+                  alert('Video is over 500MB. Please compress it first or upload a shorter clip. Large files will cause memory errors on the server.');
+                  return;
+                }
+                setFile(f);
+              }} style={{ display: 'none' }} />
             </label>
           </div>
 

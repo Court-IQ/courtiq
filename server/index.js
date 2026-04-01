@@ -6,7 +6,7 @@ const fs = require("fs");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { GoogleAIFileManager } = require("@google/generative-ai/server");
 
-const upload = multer({ dest: "/tmp/", limits: { fileSize: 4 * 1024 * 1024 * 1024 } });
+const upload = multer({ dest: "/tmp/", limits: { fileSize: 500 * 1024 * 1024 } }); // 500MB max
 
 
 
