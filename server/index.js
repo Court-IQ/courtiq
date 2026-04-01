@@ -695,7 +695,31 @@ app.post("/api/auto-analyze", upload.single("video"), async (req, res) => {
       throw new Error(`File processing failed. State: ${geminiFile.state}`);
     }
 
-    // 3. Run analysis
+    // 3. Pull Brain context from Pinecone
+    let brainContext = '';
+    try {
+      const { Pinecone } = require('@pinecone-database/pinecone');
+      const OpenAI = require('openai');
+      const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+      const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const brainIndex = pinecone.index('courtiq-brain');
+
+      const queryEmbedding = await openaiClient.embeddings.create({
+        model: 'text-embedding-ada-002',
+        input: `${position} basketball game analysis coaching positioning decision making shot quality`,
+      });
+      const brainResults = await brainIndex.query({
+        vector: queryEmbedding.data[0].embedding,
+        topK: 10,
+        includeMetadata: true,
+      });
+      brainContext = brainResults.matches.map(m => m.metadata.text).join('\n\n');
+      console.log('🧠 Brain context loaded:', brainContext.slice(0, 100));
+    } catch (e) {
+      console.log('Brain search failed, continuing without it:', e.message);
+    }
+
+    // 4. Run analysis
     console.log("🏀 Gemini is watching the film...");
     const model = geminiAI.getGenerativeModel({
       model: "gemini-2.5-flash",
@@ -710,6 +734,9 @@ Player info:
 - Jersey: #${jerseyNumber}
 - Name: ${playerName || "the focus player"}
 - Position: ${position}
+
+BASKETBALL BRAIN CONTEXT (apply this expert knowledge to your analysis):
+${brainContext || 'No additional context.'}
 
 For EACH possession you find, provide a complete coaching analysis.
 
