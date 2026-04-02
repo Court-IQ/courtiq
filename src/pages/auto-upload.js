@@ -78,7 +78,7 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB per chunk
+      const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB per chunk (keeps well under Railway's proxy limit)
       const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
       // Step 1: Init upload session on server
@@ -91,7 +91,10 @@ export default function AutoUpload() {
           sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id,
         }),
       });
-      const initData = await initRes.json();
+      const initText = await initRes.text();
+      let initData;
+      try { initData = JSON.parse(initText); }
+      catch (e) { throw new Error(`Init rejected by server: ${initText.slice(0, 120)}`); }
       if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
 
       // Step 2: Send file in 5MB chunks — Railway never holds more than 5MB at once
@@ -114,7 +117,10 @@ export default function AutoUpload() {
           method: 'POST',
           body: formData,
         });
-        const uploadData = await uploadRes.json();
+        const uploadText = await uploadRes.text();
+        let uploadData;
+        try { uploadData = JSON.parse(uploadText); }
+        catch (e) { throw new Error(`Upload rejected by server: ${uploadText.slice(0, 120)}`); }
         if (!uploadData.success) throw new Error(uploadData.error || 'Chunk upload failed');
 
         if (isLast) {
