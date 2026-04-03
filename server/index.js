@@ -674,7 +674,8 @@ app.post("/api/admin/stats", async (req, res) => {
 const chunkSessions = new Map(); // sessionId → { uploadUrl, offset, mimeType, ...metadata }
 const chunkUpload = multer({ dest: "/tmp/", limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Step 1: Init a Gemini resumable upload session
+// Step 1: Init a Gemini resumable upload session — return uploadUrl to browser
+// Browser will upload chunks directly to Gemini (bypasses Railway proxy limits entirely)
 app.post("/api/chunk/init", async (req, res) => {
   const { fileSize, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   try {
@@ -695,12 +696,8 @@ app.post("/api/chunk/init", async (req, res) => {
     const uploadUrl = initRes.headers.get("x-goog-upload-url");
     if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
 
-    const sessionId = `${userId}-${Date.now()}`;
-    chunkSessions.set(sessionId, {
-      uploadUrl, offset: 0, mimeType: mimeType || "video/mp4",
-      sessionName, playerName, jerseyNumber, jerseyColor, position, userId,
-    });
-    res.json({ success: true, sessionId });
+    // Return uploadUrl to browser so it can upload directly to Gemini
+    res.json({ success: true, uploadUrl });
   } catch (err) {
     console.error("Chunk init error:", err);
     res.status(500).json({ success: false, error: err.message });

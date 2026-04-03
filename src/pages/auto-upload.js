@@ -78,26 +78,29 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB per chunk (keeps well under Railway's proxy limit)
+      const CHUNK_SIZE = 32 * 1024 * 1024; // 32MB chunks direct to Gemini (bypasses Railway)
+      const mimeType = file.type || 'video/mp4';
       const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
-      // Step 1: Init upload session on server
+      // Step 1: Railway creates a Gemini resumable upload session and returns the uploadUrl
       setStatusMsg('Preparing upload...');
       const initRes = await fetch(`${API_URL}/api/chunk/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileSize: file.size, mimeType: file.type || 'video/mp4',
-          sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id,
-        }),
+        body: JSON.stringify({ fileSize: file.size, mimeType, sessionName, userId: user.id }),
       });
       const initText = await initRes.text();
       let initData;
       try { initData = JSON.parse(initText); }
-      catch (e) { throw new Error(`Init rejected by server: ${initText.slice(0, 120)}`); }
+      catch (e) { throw new Error(`Server error: ${initText.slice(0, 120)}`); }
       if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
 
-      // Step 2: Send file in 5MB chunks — Railway never holds more than 5MB at once
+      const { uploadUrl } = initData;
+
+      // Step 2: Browser uploads chunks DIRECTLY to Gemini — Railway never touches the video
+      let offset = 0;
+      let geminiFileName = null;
+
       for (let i = 0; i < totalChunks; i++) {
         const start = i * CHUNK_SIZE;
         const end = Math.min(start + CHUNK_SIZE, file.size);
@@ -105,27 +108,41 @@ export default function AutoUpload() {
         const isLast = i === totalChunks - 1;
         const pct = Math.round(((i + 1) / totalChunks) * 100);
 
-        setStatusMsg(`Uploading... ${pct}%`);
+        setStatusMsg(`Uploading to Gemini... ${pct}%`);
         setProgress((i / totalChunks) * 70);
 
-        const uploadRes = await fetch(
-          `${API_URL}/api/chunk/upload?sessionId=${initData.sessionId}&isLast=${isLast}`,
-          { method: 'POST', body: chunk, headers: { 'Content-Type': 'application/octet-stream' } }
-        );
-        const uploadText = await uploadRes.text();
-        let uploadData;
-        try { uploadData = JSON.parse(uploadText); }
-        catch (e) { throw new Error(`Upload rejected: ${uploadText.slice(0, 120)}`); }
-        if (!uploadData.success) throw new Error(uploadData.error || 'Chunk upload failed');
+        const command = isLast ? 'upload, finalize' : 'upload';
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': mimeType,
+            'Content-Length': chunk.size,
+            'X-Goog-Upload-Offset': offset,
+            'X-Goog-Upload-Command': command,
+          },
+          body: chunk,
+        });
 
         if (isLast) {
-          // Analysis is running in background — move to polling
-          setStatusMsg('Upload complete! Gemini is watching your film...');
-          setProgress(75);
+          const fileData = await uploadRes.json();
+          geminiFileName = fileData?.file?.name;
+          if (!geminiFileName) throw new Error('Gemini did not return a file name after upload');
         }
+
+        offset += chunk.size;
       }
 
-      const data = { success: true };
+      setStatusMsg('Upload complete! Starting analysis...');
+      setProgress(75);
+
+      // Step 3: Tell Railway to run analysis on the uploaded Gemini file
+      await fetch(`${API_URL}/api/auto-analyze/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: geminiFileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id }),
+      });
+
+      setStatusMsg('Gemini is watching your film...');
 
       // Poll Supabase until the game summary appears
       let attempts = 0;
