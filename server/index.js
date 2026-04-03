@@ -707,19 +707,18 @@ app.post("/api/chunk/init", async (req, res) => {
   }
 });
 
-// Step 2: Receive one chunk, forward to Gemini
-app.post("/api/chunk/upload", chunkUpload.single("chunk"), async (req, res) => {
-  const { sessionId, isLast } = req.body;
-  const chunkFile = req.file;
-  if (!chunkFile) return res.status(400).json({ error: "No chunk" });
+// Step 2: Receive one chunk as raw binary, forward to Gemini
+// sessionId and isLast come from query params — no multipart overhead
+app.post("/api/chunk/upload", express.raw({ type: "*/*", limit: "2mb" }), async (req, res) => {
+  const { sessionId, isLast } = req.query;
+  const chunkBuffer = req.body;
+
+  if (!chunkBuffer || !chunkBuffer.length) return res.status(400).json({ error: "No chunk data" });
 
   const session = chunkSessions.get(sessionId);
   if (!session) return res.status(400).json({ error: "Invalid session — server may have restarted, please retry" });
 
   try {
-    const chunkBuffer = fs.readFileSync(chunkFile.path);
-    try { fs.unlinkSync(chunkFile.path); } catch (e) {}
-
     const command = isLast === "true" ? "upload, finalize" : "upload";
     const uploadRes = await fetch(session.uploadUrl, {
       method: "POST",
@@ -750,7 +749,6 @@ app.post("/api/chunk/upload", chunkUpload.single("chunk"), async (req, res) => {
     }
   } catch (err) {
     console.error("Chunk upload error:", err);
-    try { fs.unlinkSync(chunkFile?.path); } catch (e) {}
     res.status(500).json({ success: false, error: err.message });
   }
 });

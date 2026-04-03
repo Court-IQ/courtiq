@@ -108,19 +108,14 @@ export default function AutoUpload() {
         setStatusMsg(`Uploading... ${pct}%`);
         setProgress((i / totalChunks) * 70);
 
-        const formData = new FormData();
-        formData.append('sessionId', initData.sessionId);
-        formData.append('chunk', chunk, `chunk-${i}`);
-        formData.append('isLast', isLast.toString());
-
-        const uploadRes = await fetch(`${API_URL}/api/chunk/upload`, {
-          method: 'POST',
-          body: formData,
-        });
+        const uploadRes = await fetch(
+          `${API_URL}/api/chunk/upload?sessionId=${initData.sessionId}&isLast=${isLast}`,
+          { method: 'POST', body: chunk, headers: { 'Content-Type': 'application/octet-stream' } }
+        );
         const uploadText = await uploadRes.text();
         let uploadData;
         try { uploadData = JSON.parse(uploadText); }
-        catch (e) { throw new Error(`Upload rejected by server: ${uploadText.slice(0, 120)}`); }
+        catch (e) { throw new Error(`Upload rejected: ${uploadText.slice(0, 120)}`); }
         if (!uploadData.success) throw new Error(uploadData.error || 'Chunk upload failed');
 
         if (isLast) {
