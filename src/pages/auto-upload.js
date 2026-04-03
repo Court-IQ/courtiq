@@ -78,16 +78,19 @@ export default function AutoUpload() {
     formData.append('userId', user.id);
 
     try {
-      const CHUNK_SIZE = 32 * 1024 * 1024; // 32MB chunks direct to Gemini (bypasses Railway)
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks through Railway (streamed, not buffered)
       const mimeType = file.type || 'video/mp4';
       const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
-      // Step 1: Railway creates a Gemini resumable upload session and returns the uploadUrl
+      // Step 1: Init session on Railway
       setStatusMsg('Preparing upload...');
       const initRes = await fetch(`${API_URL}/api/chunk/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileSize: file.size, mimeType, sessionName, userId: user.id }),
+        body: JSON.stringify({
+          fileSize: file.size, mimeType,
+          sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id,
+        }),
       });
       const initText = await initRes.text();
       let initData;
@@ -95,12 +98,7 @@ export default function AutoUpload() {
       catch (e) { throw new Error(`Server error: ${initText.slice(0, 120)}`); }
       if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
 
-      const { uploadUrl } = initData;
-
-      // Step 2: Browser uploads chunks DIRECTLY to Gemini — Railway never touches the video
-      let offset = 0;
-      let geminiFileName = null;
-
+      // Step 2: Send chunks to Railway — Railway streams each one straight to Gemini (zero buffering)
       for (let i = 0; i < totalChunks; i++) {
         const start = i * CHUNK_SIZE;
         const end = Math.min(start + CHUNK_SIZE, file.size);
@@ -108,41 +106,24 @@ export default function AutoUpload() {
         const isLast = i === totalChunks - 1;
         const pct = Math.round(((i + 1) / totalChunks) * 100);
 
-        setStatusMsg(`Uploading to Gemini... ${pct}%`);
+        setStatusMsg(`Uploading... ${pct}%`);
         setProgress((i / totalChunks) * 70);
 
-        const command = isLast ? 'upload, finalize' : 'upload';
-        const uploadRes = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': mimeType,
-            'Content-Length': chunk.size,
-            'X-Goog-Upload-Offset': offset,
-            'X-Goog-Upload-Command': command,
-          },
-          body: chunk,
-        });
+        const uploadRes = await fetch(
+          `${API_URL}/api/chunk/upload?sessionId=${initData.sessionId}&isLast=${isLast}`,
+          { method: 'POST', body: chunk, headers: { 'Content-Type': mimeType } }
+        );
+        const uploadText = await uploadRes.text();
+        let uploadData;
+        try { uploadData = JSON.parse(uploadText); }
+        catch (e) { throw new Error(`Upload error: ${uploadText.slice(0, 120)}`); }
+        if (!uploadData.success) throw new Error(uploadData.error || 'Chunk upload failed');
 
         if (isLast) {
-          const fileData = await uploadRes.json();
-          geminiFileName = fileData?.file?.name;
-          if (!geminiFileName) throw new Error('Gemini did not return a file name after upload');
+          setStatusMsg('Upload complete! Gemini is watching your film...');
+          setProgress(75);
         }
-
-        offset += chunk.size;
       }
-
-      setStatusMsg('Upload complete! Starting analysis...');
-      setProgress(75);
-
-      // Step 3: Tell Railway to run analysis on the uploaded Gemini file
-      await fetch(`${API_URL}/api/auto-analyze/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: geminiFileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id }),
-      });
-
-      setStatusMsg('Gemini is watching your film...');
 
       // Poll Supabase until the game summary appears
       let attempts = 0;

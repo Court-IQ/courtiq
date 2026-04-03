@@ -674,8 +674,7 @@ app.post("/api/admin/stats", async (req, res) => {
 const chunkSessions = new Map(); // sessionId → { uploadUrl, offset, mimeType, ...metadata }
 const chunkUpload = multer({ dest: "/tmp/", limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Step 1: Init a Gemini resumable upload session — return uploadUrl to browser
-// Browser will upload chunks directly to Gemini (bypasses Railway proxy limits entirely)
+// Step 1: Init a Gemini resumable upload session
 app.post("/api/chunk/init", async (req, res) => {
   const { fileSize, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   try {
@@ -696,39 +695,47 @@ app.post("/api/chunk/init", async (req, res) => {
     const uploadUrl = initRes.headers.get("x-goog-upload-url");
     if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
 
-    // Return uploadUrl to browser so it can upload directly to Gemini
-    res.json({ success: true, uploadUrl });
+    const sessionId = `${userId}-${Date.now()}`;
+    chunkSessions.set(sessionId, {
+      uploadUrl, offset: 0, mimeType: mimeType || "video/mp4",
+      sessionName, playerName, jerseyNumber, jerseyColor, position, userId,
+    });
+    res.json({ success: true, sessionId });
   } catch (err) {
     console.error("Chunk init error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Step 2: Receive one chunk as raw binary, forward to Gemini
-// sessionId and isLast come from query params — no multipart overhead
-app.post("/api/chunk/upload", express.raw({ type: "*/*", limit: "2mb" }), async (req, res) => {
+// Step 2: Stream chunk directly from browser → Railway → Gemini with zero buffering.
+// Body is NOT read into memory — req is piped straight to Gemini as a WHATWG ReadableStream.
+// This bypasses every Railway/Cloudflare body-size limit because nothing is buffered.
+app.post("/api/chunk/upload", async (req, res) => {
   const { sessionId, isLast } = req.query;
-  const chunkBuffer = req.body;
-
-  if (!chunkBuffer || !chunkBuffer.length) return res.status(400).json({ error: "No chunk data" });
-
   const session = chunkSessions.get(sessionId);
   if (!session) return res.status(400).json({ error: "Invalid session — server may have restarted, please retry" });
 
+  const contentLength = req.headers["content-length"];
+  if (!contentLength) return res.status(400).json({ error: "Content-Length header missing" });
+
   try {
     const command = isLast === "true" ? "upload, finalize" : "upload";
+    const { Readable } = require("stream");
+
+    // Pipe req stream straight to Gemini — Railway never holds the video in memory
     const uploadRes = await fetch(session.uploadUrl, {
       method: "POST",
       headers: {
-        "Content-Length": chunkBuffer.length,
+        "Content-Length": contentLength,
         "X-Goog-Upload-Offset": session.offset,
         "X-Goog-Upload-Command": command,
         "Content-Type": session.mimeType,
       },
-      body: chunkBuffer,
+      body: Readable.toWeb(req),
+      duplex: "half",
     });
 
-    session.offset += chunkBuffer.length;
+    session.offset += parseInt(contentLength);
 
     if (isLast === "true") {
       const fileData = await uploadRes.json();
