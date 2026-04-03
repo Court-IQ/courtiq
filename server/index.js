@@ -757,6 +757,85 @@ app.post("/api/chunk/upload", async (req, res) => {
   }
 });
 
+// ─── URL-BASED ANALYSIS ──────────────────────────────────────────
+// Railway fetches the video from a URL (Google Drive, Dropbox, etc.)
+// and pipes it straight to Gemini. No body size limit because this is
+// an outgoing request FROM Railway, not an incoming upload TO Railway.
+app.post("/api/auto-analyze/from-url", async (req, res) => {
+  const { videoUrl, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
+  if (!videoUrl) return res.status(400).json({ success: false, error: "No videoUrl provided" });
+
+  // Convert Google Drive share links to direct download links
+  let directUrl = videoUrl;
+  const driveMatch = videoUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (driveMatch) {
+    directUrl = `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
+  }
+  // Convert Dropbox share links to direct download
+  if (videoUrl.includes('dropbox.com') && videoUrl.includes('dl=0')) {
+    directUrl = videoUrl.replace('dl=0', 'dl=1');
+  }
+
+  // Respond immediately — analysis runs in background
+  res.json({ success: true, status: "processing" });
+
+  try {
+    console.log("Fetching video from URL:", directUrl);
+    const videoRes = await fetch(directUrl, { redirect: 'follow' });
+    if (!videoRes.ok) throw new Error(`Failed to fetch video: ${videoRes.status} ${videoRes.statusText}`);
+
+    const contentLength = videoRes.headers.get("content-length");
+    const contentType = videoRes.headers.get("content-type") || "video/mp4";
+
+    // Create Gemini resumable upload session
+    const initRes = await fetch(
+      `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Upload-Protocol": "resumable",
+          "X-Goog-Upload-Command": "start",
+          ...(contentLength && { "X-Goog-Upload-Header-Content-Length": contentLength }),
+          "X-Goog-Upload-Header-Content-Type": contentType,
+        },
+        body: JSON.stringify({ file: { display_name: sessionName || "Game Film" } }),
+      }
+    );
+    const uploadUrl = initRes.headers.get("x-goog-upload-url");
+    if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
+
+    // Pipe video stream directly to Gemini
+    const uploadRes = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        ...(contentLength && { "Content-Length": contentLength }),
+        "X-Goog-Upload-Command": "upload, finalize",
+        "X-Goog-Upload-Offset": "0",
+        "Content-Type": contentType,
+      },
+      body: videoRes.body,
+      duplex: "half",
+    });
+
+    const fileData = await uploadRes.json();
+    const fileName = fileData?.file?.name;
+    if (!fileName) throw new Error("Gemini did not return a file name");
+
+    console.log("Video uploaded to Gemini:", fileName);
+    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId });
+  } catch (err) {
+    console.error("from-url error:", err);
+    if (userId) {
+      await supabase.from("analyses").insert([{
+        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
+        position, play_type: "game summary", score: 0, grade: "F",
+        summary: { error: err.message }, user_id: userId,
+      }]).catch(() => {});
+    }
+  }
+});
+
 // ─── SUPABASE STORAGE UPLOAD ─────────────────────────────────────
 
 // Generate a signed URL so the browser can upload directly to Supabase (bypasses Railway)
