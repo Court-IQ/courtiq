@@ -780,13 +780,28 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
   // Respond immediately — analysis runs in background
   res.json({ success: true, status: "processing" });
 
+  const saveError = async (msg) => {
+    console.error("from-url error:", msg);
+    if (userId) {
+      await supabase.from("analyses").insert([{
+        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
+        position, play_type: "game summary", score: 0, grade: "F",
+        summary: { error: msg }, user_id: userId,
+      }]).catch(() => {});
+    }
+  };
+
   try {
+    // 2-minute timeout on the Drive fetch
+    const fetchController = new AbortController();
+    const fetchTimeout = setTimeout(() => fetchController.abort(), 2 * 60 * 1000);
+
     console.log("Fetching video from URL:", directUrl);
-    let videoRes = await fetch(directUrl, { redirect: 'follow' });
+    let videoRes = await fetch(directUrl, { redirect: 'follow', signal: fetchController.signal });
+    clearTimeout(fetchTimeout);
     if (!videoRes.ok) throw new Error(`Failed to fetch video: ${videoRes.status} ${videoRes.statusText}`);
 
     // Google Drive returns an HTML virus-scan warning page for large files.
-    // Detect it and follow the confirm link.
     const contentType0 = videoRes.headers.get("content-type") || "";
     if (driveFileId && contentType0.includes("text/html")) {
       const html = await videoRes.text();
@@ -802,6 +817,7 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
 
     const contentLength = videoRes.headers.get("content-length");
     const contentType = videoRes.headers.get("content-type") || "video/mp4";
+    console.log(`Video: ${contentType}, size: ${contentLength ? Math.round(contentLength/1024/1024)+'MB' : 'unknown'}`);
 
     // Create Gemini resumable upload session
     const initRes = await fetch(
@@ -819,9 +835,16 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
       }
     );
     const uploadUrl = initRes.headers.get("x-goog-upload-url");
-    if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
+    if (!uploadUrl) {
+      const initBody = await initRes.text();
+      throw new Error(`Failed to create Gemini upload session: ${initBody.slice(0, 200)}`);
+    }
 
-    // Pipe video stream directly to Gemini
+    console.log("Piping video to Gemini...");
+    // 25-minute timeout on the upload+analysis pipeline
+    const uploadController = new AbortController();
+    const uploadTimeout = setTimeout(() => uploadController.abort(), 25 * 60 * 1000);
+
     const uploadRes = await fetch(uploadUrl, {
       method: "POST",
       headers: {
@@ -832,23 +855,19 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
       },
       body: videoRes.body,
       duplex: "half",
+      signal: uploadController.signal,
     });
+    clearTimeout(uploadTimeout);
 
     const fileData = await uploadRes.json();
     const fileName = fileData?.file?.name;
-    if (!fileName) throw new Error("Gemini did not return a file name");
+    if (!fileName) throw new Error(`Gemini upload failed: ${JSON.stringify(fileData).slice(0, 200)}`);
 
     console.log("Video uploaded to Gemini:", fileName);
     await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId });
   } catch (err) {
-    console.error("from-url error:", err);
-    if (userId) {
-      await supabase.from("analyses").insert([{
-        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
-        position, play_type: "game summary", score: 0, grade: "F",
-        summary: { error: err.message }, user_id: userId,
-      }]).catch(() => {});
-    }
+    const msg = err.name === 'AbortError' ? 'Request timed out — video may be too large or Drive link is invalid' : err.message;
+    await saveError(msg);
   }
 });
 
