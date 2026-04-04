@@ -149,6 +149,11 @@ export default function AutoUpload() {
           .maybeSingle();
 
         if (record) {
+          // Show live status updates from server while processing
+          if (record.summary?.status && !record.summary?.plays) {
+            setStatusMsg(record.summary.status);
+            return;
+          }
           clearInterval(poll);
           if (record.summary?.error) {
             setError(record.summary.error);
@@ -162,7 +167,7 @@ export default function AutoUpload() {
 
         if (attempts >= maxAttempts) {
           clearInterval(poll);
-          setError('Analysis timed out after 10 minutes. Please try again with a shorter clip.');
+          setError('Analysis timed out after 20 minutes. Try a shorter clip or check your URL is accessible.');
           setPhase(1);
         }
       }, 5000);
