@@ -768,8 +768,9 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
   // Convert Google Drive share links to direct download links
   let directUrl = videoUrl;
   const driveMatch = videoUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-  if (driveMatch) {
-    directUrl = `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
+  const driveFileId = driveMatch ? driveMatch[1] : null;
+  if (driveFileId) {
+    directUrl = `https://drive.google.com/uc?export=download&id=${driveFileId}&confirm=t`;
   }
   // Convert Dropbox share links to direct download
   if (videoUrl.includes('dropbox.com') && videoUrl.includes('dl=0')) {
@@ -781,8 +782,23 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
 
   try {
     console.log("Fetching video from URL:", directUrl);
-    const videoRes = await fetch(directUrl, { redirect: 'follow' });
+    let videoRes = await fetch(directUrl, { redirect: 'follow' });
     if (!videoRes.ok) throw new Error(`Failed to fetch video: ${videoRes.status} ${videoRes.statusText}`);
+
+    // Google Drive returns an HTML virus-scan warning page for large files.
+    // Detect it and follow the confirm link.
+    const contentType0 = videoRes.headers.get("content-type") || "";
+    if (driveFileId && contentType0.includes("text/html")) {
+      const html = await videoRes.text();
+      const confirmMatch = html.match(/confirm=([^&"]+)/);
+      if (confirmMatch) {
+        const confirmUrl = `https://drive.google.com/uc?export=download&id=${driveFileId}&confirm=${confirmMatch[1]}`;
+        videoRes = await fetch(confirmUrl, { redirect: 'follow' });
+        if (!videoRes.ok) throw new Error(`Drive confirm fetch failed: ${videoRes.status}`);
+      } else {
+        throw new Error("Google Drive returned an HTML page. Make sure sharing is set to 'Anyone with the link'.");
+      }
+    }
 
     const contentLength = videoRes.headers.get("content-length");
     const contentType = videoRes.headers.get("content-type") || "video/mp4";
