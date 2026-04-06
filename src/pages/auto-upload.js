@@ -134,7 +134,7 @@ export default function AutoUpload() {
 
       // Poll Supabase until the game summary appears
       let attempts = 0;
-      const maxAttempts = 240; // 20 minutes at 5s intervals
+      const maxAttempts = 420; // 35 minutes at 5s intervals
       const poll = setInterval(async () => {
         attempts++;
 

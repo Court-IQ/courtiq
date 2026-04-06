@@ -779,13 +779,34 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
   // Respond immediately — analysis runs in background
   res.json({ success: true, status: "processing" });
 
-  const saveError = async (msg) => {
-    console.error("from-url error:", msg);
-    await supabase.from("analyses").insert([{
+  const db = adminSupabase || supabase;
+
+  // Save status row immediately so frontend has something to poll
+  let statusId = null;
+  try {
+    const { data: statusRow } = await db.from("analyses").insert([{
       session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
       position, play_type: "game summary", score: 0, grade: "F",
-      summary: { error: msg }, user_id: userId,
-    }]).catch(e => console.error("saveError insert failed:", e.message));
+      summary: { status: "Fetching video..." }, user_id: userId,
+    }]).select('id').single();
+    statusId = statusRow?.id;
+    console.log("Status row created:", statusId);
+  } catch (e) {
+    console.log("Could not create status row:", e.message);
+  }
+
+  const saveError = async (msg) => {
+    console.error("from-url error:", msg);
+    if (statusId) {
+      await db.from("analyses").update({ summary: { error: msg } }).eq('id', statusId)
+        .catch(e => console.error("saveError update failed:", e.message));
+    } else {
+      await db.from("analyses").insert([{
+        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
+        position, play_type: "game summary", score: 0, grade: "F",
+        summary: { error: msg }, user_id: userId,
+      }]).catch(e => console.error("saveError insert failed:", e.message));
+    }
   };
 
   try {
@@ -815,6 +836,10 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     const contentType = videoRes.headers.get("content-type") || "video/mp4";
     const sizeMB = contentLength ? Math.round(contentLength / 1024 / 1024) : "unknown";
     console.log(`Got video: ${contentType}, ${sizeMB}MB`);
+
+    if (statusId) {
+      await db.from("analyses").update({ summary: { status: `Uploading ${sizeMB}MB to Gemini...` } }).eq('id', statusId).catch(() => {});
+    }
 
     const initRes = await fetch(
       `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
@@ -857,7 +882,11 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     if (!fileName) throw new Error(`Gemini upload failed: ${JSON.stringify(fileData).slice(0, 200)}`);
 
     console.log("Uploaded to Gemini:", fileName);
-    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId });
+    if (statusId) {
+      await db.from("analyses").update({ summary: { status: "Gemini is watching your film..." } }).eq('id', statusId).catch(() => {});
+    }
+
+    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId, statusId });
   } catch (err) {
     const msg = err.name === "AbortError" ? "Timed out fetching video — check your URL is publicly accessible" : err.message;
     await saveError(msg);
@@ -1077,7 +1106,7 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, je
 }
 
 // Shared: Brain context + Gemini prompt + save to Supabase
-async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
+async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId }) {
   const getGrade = (score) => {
     if (score >= 93) return "A";
     if (score >= 90) return "A-";
@@ -1189,15 +1218,16 @@ Return valid JSON:
   analysis.overallGrade = getGrade(analysis.overallScore || 70);
 
   if (userId) {
+    const db = adminSupabase || supabase;
     for (const play of analysis.plays) {
-      await supabase.from("analyses").insert([{
+      await db.from("analyses").insert([{
         session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
         player_name: playerName, jersey_number: jerseyNumber, position,
         play_type: play.playType, score: play.score, grade: play.grade,
         summary: play.summary, user_id: userId,
       }]);
     }
-    await supabase.from("analyses").insert([{
+    const gameSummary = {
       session_name: sessionName, player_name: playerName,
       jersey_number: jerseyNumber, position, play_type: "game summary",
       score: analysis.overallScore, grade: analysis.overallGrade,
@@ -1207,18 +1237,32 @@ Return valid JSON:
         plays: analysis.plays, overallScore: analysis.overallScore, overallGrade: analysis.overallGrade,
       },
       user_id: userId,
-    }]);
+    };
+    if (statusId) {
+      await db.from("analyses").update(gameSummary).eq('id', statusId);
+    } else {
+      await db.from("analyses").insert([gameSummary]);
+    }
   }
 
   console.log(`✅ analyzeAndSave complete: ${analysis.plays?.length} plays`);
 }
 
 // Used when browser uploads directly to Google — skips the file upload step
-async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
+async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId }) {
   const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+  const db = adminSupabase || supabase;
+
+  const updateStatus = async (status) => {
+    if (statusId) {
+      await db.from("analyses").update({ summary: { status } }).eq('id', statusId).catch(() => {});
+    }
+  };
 
   try {
+    await updateStatus("Gemini is processing your video...");
+
     // Poll until file is ready
     console.log("⏳ Waiting for Gemini file to be ready:", fileName);
     let geminiFile = await fileManager.getFile(fileName);
@@ -1230,14 +1274,18 @@ async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jers
     }
     if (geminiFile.state !== "ACTIVE") throw new Error(`File not ready. State: ${geminiFile.state}`);
 
+    await updateStatus("Analyzing every possession...");
+
     // Reuse the same analysis + save logic
-    await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
+    await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId });
 
     try { await fileManager.deleteFile(fileName); } catch (e) {}
   } catch (err) {
     console.error("runAutoAnalysisFromFile error:", err);
-    if (userId) {
-      await supabase.from("analyses").insert([{
+    if (statusId) {
+      await db.from("analyses").update({ summary: { error: err.message } }).eq('id', statusId).catch(() => {});
+    } else if (userId) {
+      await db.from("analyses").insert([{
         session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
         position, play_type: "game summary", score: 0, grade: "F",
         summary: { error: err.message }, user_id: userId,
