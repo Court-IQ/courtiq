@@ -1128,7 +1128,7 @@ async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, j
 
   console.log("🏀 Gemini is watching the film...");
   const model = geminiAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-pro",
     generationConfig: { responseMimeType: "application/json" },
   });
 
