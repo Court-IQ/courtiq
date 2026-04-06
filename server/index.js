@@ -1132,9 +1132,109 @@ async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, j
     generationConfig: { responseMimeType: "application/json" },
   });
 
+  // ── PASS 1: Verify player visibility ──────────────────────────
+  console.log("👁️ Pass 1: Checking if Gemini can see #" + jerseyNumber);
+  const verifyPrompt = `Watch this basketball video carefully. I need you to identify which jersey numbers you can CLEARLY READ on the ${jerseyColor} team.
+
+RULES:
+- ONLY list numbers you can actually see printed on jerseys in the video.
+- Do NOT guess or infer numbers. If you cannot clearly read the number, do not include it.
+- For each number you can read, give ONE timestamp where it is most clearly visible.
+
+Also tell me: can you clearly identify and track the player wearing ${jerseyColor} #${jerseyNumber} throughout this video?
+
+Return valid JSON:
+{
+  "visibleNumbers": [
+    { "number": "11", "timestamp": "0:04" },
+    { "number": "13", "timestamp": "0:07" }
+  ],
+  "canSeeTargetPlayer": true,
+  "targetPlayerConfidence": "high",
+  "note": "Brief explanation of how clearly you can see #${jerseyNumber}"
+}
+
+targetPlayerConfidence must be one of: "high" (can clearly read the number multiple times), "medium" (can see it a few times but not always), "low" (can barely make it out), "none" (cannot find this number in the video)`;
+
+  const verifyResult = await model.generateContent([
+    { fileData: { fileUri: geminiFile.uri, mimeType: geminiFile.mimeType } },
+    { text: verifyPrompt },
+  ]);
+
+  const verifyRaw = verifyResult.response.text();
+  console.log("👁️ Visibility check:", verifyRaw.slice(0, 500));
+
+  let visibility;
+  try {
+    visibility = JSON.parse(verifyRaw);
+  } catch (e) {
+    const match = verifyRaw.match(/\{[\s\S]*\}/);
+    if (match) {
+      visibility = JSON.parse(match[0].replace(/[\u0000-\u001F]+/g, " ").replace(/,\s*}/g, "}").replace(/,\s*]/g, "]"));
+    } else {
+      visibility = { canSeeTargetPlayer: false, targetPlayerConfidence: "none", visibleNumbers: [] };
+    }
+  }
+
+  console.log(`👁️ Can see #${jerseyNumber}: ${visibility.canSeeTargetPlayer}, confidence: ${visibility.targetPlayerConfidence}`);
+
+  // If Gemini can't find the player, return early with a helpful error
+  if (visibility.targetPlayerConfidence === "none" || (!visibility.canSeeTargetPlayer && visibility.targetPlayerConfidence !== "medium")) {
+    const visibleNums = (visibility.visibleNumbers || []).map(v => `#${v.number}`).join(', ');
+    const errorMsg = `Could not clearly identify #${jerseyNumber} in ${jerseyColor} in this video. ` +
+      (visibleNums ? `Jersey numbers I could read on the ${jerseyColor} team: ${visibleNums}. ` : '') +
+      `Try uploading film with a closer camera angle where jersey numbers are clearly visible, or check that the jersey color and number are correct.`;
+
+    // Save this as a "no player found" result, not an error
+    const noPlayerResult = {
+      plays: [],
+      overallScore: 0,
+      overallGrade: "N/A",
+      gameNarrative: errorMsg,
+      strengths: [],
+      weaknesses: [],
+      keyCoachingPoints: [],
+      playerNotFound: true,
+      visibleNumbers: visibility.visibleNumbers || [],
+    };
+
+    if (userId) {
+      const db = adminSupabase || supabase;
+      const gameSummary = {
+        session_name: sessionName, player_name: playerName,
+        jersey_number: jerseyNumber, position, play_type: "game summary",
+        score: 0, grade: "N/A",
+        summary: noPlayerResult,
+        user_id: userId,
+      };
+      try {
+        if (statusId) {
+          const { error } = await db.from("analyses").update(gameSummary).eq('id', statusId);
+          if (error) console.error("No-player update error:", error.message);
+        } else {
+          const { error } = await db.from("analyses").insert([gameSummary]);
+          if (error) console.error("No-player insert error:", error.message);
+        }
+      } catch (e) {
+        console.error("No-player save crashed:", e.message);
+      }
+    }
+    console.log(`⚠️ Player #${jerseyNumber} not found in video. Analysis skipped.`);
+    return;
+  }
+
+  // ── PASS 2: Full analysis (only runs if player is visible) ────
+  console.log("🏀 Pass 2: Running full analysis for #" + jerseyNumber);
+
   const prompt = `You are CourtIQ, an elite basketball coach and film analyst with 20+ years of experience.
 
-Watch this ENTIRE game film. Find EVERY possession where the player wearing jersey #${jerseyNumber} actively handles the ball — catches a pass, dribbles, shoots, drives, or makes a key off-ball play worth analyzing.
+CRITICAL RULES — READ BEFORE ANALYZING:
+1. You have CONFIRMED you can see player #${jerseyNumber} in ${jerseyColor} in this video.
+2. ONLY analyze possessions where you can CLEARLY SEE #${jerseyNumber} actively involved.
+3. Every description must reference what you ACTUALLY SEE in the video — specific court locations, specific movements, specific defender positions.
+4. Do NOT fabricate, guess, or fill in details you cannot see. If you're unsure about something, say so.
+5. If a possession is unclear, SKIP IT. Only include plays you are confident about.
+6. Timestamps must correspond to what is actually happening at that moment in the video.
 
 Player info:
 - Jersey: ${jerseyColor} #${jerseyNumber}
@@ -1146,7 +1246,7 @@ IMPORTANT: Only track the player in the ${jerseyColor} #${jerseyNumber} jersey. 
 BASKETBALL BRAIN CONTEXT (apply this expert knowledge to your analysis):
 ${brainContext || 'No additional context.'}
 
-For EACH possession you find, provide a complete coaching analysis.
+For EACH possession where #${jerseyNumber} is CLEARLY VISIBLE and actively involved, provide a coaching analysis.
 
 Scoring (be strict — high school players rarely score above 85):
 93-100=A, 90-92=A-, 87-89=B+, 83-86=B, 80-82=B-, 77-79=C+, 73-76=C, 70-72=C-, 65-69=D+, 60-64=D, below 60=F
@@ -1162,33 +1262,36 @@ Return valid JSON:
       "playType": "drive to basket",
       "score": 78,
       "grade": "B-",
+      "confidence": "high",
       "summary": {
         "positioning": {
-          "offense": "Specific description of player position, footwork, body control. Reference court location.",
-          "defense": "Where the defender is at the key moment, how close, any help defense."
+          "offense": "Specific description of what you SEE — player's court position, footwork, body control. Name the location (left wing, top of key, right block, etc).",
+          "defense": "What you SEE — where the defender is, how close at the key moment, help defense position."
         },
         "shotQuality": {
           "verdict": "GOOD SHOT or BAD SHOT",
-          "reason": "Specific reason — defender distance, player balance, shot location.",
-          "whatToDoInstead": "If BAD SHOT: what should they have done. If GOOD SHOT: what made it a good selection."
+          "reason": "Based on what you SEE — defender distance, player balance, shot location.",
+          "whatToDoInstead": "If BAD SHOT: what should they have done based on what the defense was showing. If GOOD SHOT: what made it good."
         },
         "decisionMaking": {
           "verdict": "RIGHT DECISION or WRONG DECISION",
-          "reason": "What did the player read correctly or miss?",
-          "habit": "One pattern or habit this player has — good or bad."
+          "reason": "What did the player read correctly or miss? Reference what you SAW.",
+          "habit": "One pattern or habit — good or bad."
         },
-        "coachingTip": "One specific actionable tip. Start with an action verb.",
+        "coachingTip": "One specific actionable tip based on what you SAW. Start with an action verb.",
         "drill": "Name a specific drill and explain how to run it to fix what you saw."
       }
     }
   ],
   "overallScore": 76,
   "overallGrade": "B-",
-  "gameNarrative": "2-3 sentence overall assessment referencing specific patterns observed.",
-  "strengths": ["specific strength 1", "specific strength 2"],
-  "weaknesses": ["specific weakness 1", "specific weakness 2"],
-  "keyCoachingPoints": ["actionable tip 1", "actionable tip 2", "actionable tip 3"]
-}`;
+  "gameNarrative": "2-3 sentence overall assessment referencing specific patterns you OBSERVED.",
+  "strengths": ["specific strength you SAW", "specific strength you SAW"],
+  "weaknesses": ["specific weakness you SAW", "specific weakness you SAW"],
+  "keyCoachingPoints": ["actionable tip based on what you SAW 1", "actionable tip 2", "actionable tip 3"]
+}
+
+If you can only find 1-2 possessions where #${jerseyNumber} is clearly visible, that is fine. Quality over quantity. Do NOT invent plays to fill the report.`;
 
   const geminiResult = await model.generateContent([
     { fileData: { fileUri: geminiFile.uri, mimeType: geminiFile.mimeType } },
@@ -1202,7 +1305,6 @@ Return valid JSON:
   try {
     analysis = JSON.parse(rawText);
   } catch (e) {
-    // Try to extract JSON from response
     const match = rawText.match(/\{[\s\S]*\}/);
     if (match) {
       const cleaned = match[0]
@@ -1214,6 +1316,9 @@ Return valid JSON:
       throw new Error("Gemini returned invalid JSON: " + rawText.slice(0, 200));
     }
   }
+
+  // Filter out low-confidence plays
+  analysis.plays = (analysis.plays || []).filter(p => p.confidence !== "low");
 
   analysis.plays = (analysis.plays || []).map(p => ({ ...p, grade: getGrade(p.score || 70) }));
   analysis.overallGrade = getGrade(analysis.overallScore || 70);
