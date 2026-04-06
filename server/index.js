@@ -779,26 +779,16 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
   // Respond immediately — analysis runs in background
   res.json({ success: true, status: "processing" });
 
-  // Save progress to Supabase so the frontend always sees what's happening
-  const saveStatus = async (msg) => {
-    await supabase.from("analyses").upsert([{
-      session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
-      position, play_type: "game summary", score: 0, grade: "?",
-      summary: { status: msg }, user_id: userId,
-    }], { onConflict: 'user_id,session_name,play_type' }).catch(() => {});
-  };
-
   const saveError = async (msg) => {
     console.error("from-url error:", msg);
-    await supabase.from("analyses").upsert([{
+    await supabase.from("analyses").insert([{
       session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
       position, play_type: "game summary", score: 0, grade: "F",
       summary: { error: msg }, user_id: userId,
-    }], { onConflict: 'user_id,session_name,play_type' }).catch(() => {});
+    }]).catch(e => console.error("saveError insert failed:", e.message));
   };
 
   try {
-    await saveStatus("Fetching video from URL...");
     console.log("Fetching video from URL:", directUrl);
 
     const fetchController = new AbortController();
@@ -825,8 +815,6 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     const contentType = videoRes.headers.get("content-type") || "video/mp4";
     const sizeMB = contentLength ? Math.round(contentLength / 1024 / 1024) : "unknown";
     console.log(`Got video: ${contentType}, ${sizeMB}MB`);
-
-    await saveStatus(`Uploading ${sizeMB}MB video to Gemini...`);
 
     const initRes = await fetch(
       `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
@@ -868,7 +856,6 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     const fileName = fileData?.file?.name;
     if (!fileName) throw new Error(`Gemini upload failed: ${JSON.stringify(fileData).slice(0, 200)}`);
 
-    await saveStatus("Gemini is analyzing your film...");
     console.log("Uploaded to Gemini:", fileName);
     await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId });
   } catch (err) {
