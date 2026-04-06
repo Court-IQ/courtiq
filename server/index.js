@@ -784,11 +784,12 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
   // Save status row immediately so frontend has something to poll
   let statusId = null;
   try {
-    const { data: statusRow } = await db.from("analyses").insert([{
+    const { data: statusRow, error: insertErr } = await db.from("analyses").insert({
       session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
       position, play_type: "game summary", score: 0, grade: "F",
       summary: { status: "Fetching video..." }, user_id: userId,
-    }]).select('id').single();
+    }).select('id').single();
+    if (insertErr) console.error("Status row insert error:", insertErr.message, insertErr.code, insertErr.details);
     statusId = statusRow?.id;
     console.log("Status row created:", statusId);
   } catch (e) {
@@ -833,7 +834,9 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     }
 
     const contentLength = videoRes.headers.get("content-length");
-    const contentType = videoRes.headers.get("content-type") || "video/mp4";
+    let contentType = videoRes.headers.get("content-type") || "video/mp4";
+    // Google Drive often sends application/octet-stream — Gemini rejects that
+    if (!contentType.startsWith("video/")) contentType = "video/mp4";
     const sizeMB = contentLength ? Math.round(contentLength / 1024 / 1024) : "unknown";
     console.log(`Got video: ${contentType}, ${sizeMB}MB`);
 
