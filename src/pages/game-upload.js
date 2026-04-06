@@ -17,7 +17,7 @@ export default function GameUpload() {
   const videoRef = useRef(null);
   const tagVideoRef = useRef(null);
 
-  const API_URL_BASE = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
+  const API_URL_BASE = 'https://courtiq-n8wl.onrender.com';
 
   useEffect(() => {
     async function init() {

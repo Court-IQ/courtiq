@@ -90,7 +90,7 @@ function Chat() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/chat', {
+      const response = await fetch('https://courtiq-n8wl.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage, analyses })

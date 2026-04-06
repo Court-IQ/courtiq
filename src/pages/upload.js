@@ -59,7 +59,7 @@ export default function Upload() {
       if (video.duration > 30) return alert('Please upload a clip under 30 seconds for best results.');
       const frames = await extractFrames(video, 5);
 
-      const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/analyze', {
+      const response = await fetch('https://courtiq-n8wl.onrender.com/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ frames, sessionName, position, playerName, jerseyNumber, playType, mode: 'pro' })

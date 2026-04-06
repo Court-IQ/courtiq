@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 const ADMIN_ID = '4b1e31f7-6366-440b-896f-ef858d9fdec2';
-const API_URL = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
+const API_URL = 'https://courtiq-n8wl.onrender.com';
 
 function Admin() {
   const navigate = useNavigate();

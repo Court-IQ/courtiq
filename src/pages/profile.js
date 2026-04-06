@@ -16,7 +16,7 @@ export default function Profile() {
   });
   const [usage, setUsage] = useState(null);
 
-  const API_URL = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
+  const API_URL = 'https://courtiq-n8wl.onrender.com';
 
   useEffect(() => {
     loadProfile();
@@ -262,48 +262,11 @@ export default function Profile() {
         {/* Account Info */}
         <div style={section}>
           <div style={sectionTitle}>Account</div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Current Plan</div>
-              <div style={{ fontSize: '13px', color: '#555', marginTop: '2px' }}>
-                {usage ? `${usage.plan.charAt(0).toUpperCase() + usage.plan.slice(1)} — ${usage.used}/${usage.limit} analyses used this month` : 'Loading...'}
-              </div>
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Usage</div>
+            <div style={{ fontSize: '13px', color: '#555', marginTop: '2px' }}>
+              {usage ? `${usage.used} analyses used this month` : 'Loading...'}
             </div>
-            {usage && usage.plan === 'free' && (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  className="upload-btn"
-                  onClick={async () => {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const res = await fetch(`${API_URL}/api/create-checkout`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ userId: user.id, plan: 'pro' }),
-                    });
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-                  }}
-                  style={{ padding: '8px 16px', fontSize: '12px' }}
-                >
-                  Pro $9.99/mo
-                </button>
-                <button
-                  onClick={async () => {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const res = await fetch(`${API_URL}/api/create-checkout`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ userId: user.id, plan: 'elite' }),
-                    });
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-                  }}
-                  style={{ padding: '8px 16px', fontSize: '12px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontFamily: 'Inter, sans-serif' }}
-                >
-                  Elite $19.99/mo
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -17,7 +17,7 @@ function Dashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     try {
-      const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/check-usage', {
+      const res = await fetch('https://courtiq-n8wl.onrender.com/api/check-usage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id }),
@@ -93,94 +93,11 @@ function Dashboard() {
         <button className="upload-btn" onClick={() => navigate('/upload')}>Upload Film</button>
       </div>
 
-      {/* Usage banner */}
-      {usage && usage.plan === 'free' && usage.used >= usage.limit && (
-        <div style={{
-          background: 'linear-gradient(135deg, #fff5eb 0%, #fff0e0 100%)',
-          border: '1px solid #ff6b00',
-          borderRadius: '14px',
-          padding: '20px 24px',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}>
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
-              You've used all your free analyses this month
-            </div>
-            <div style={{ fontSize: '13px', color: '#888' }}>
-              Upgrade to Pro for 15 analyses/month or Elite for unlimited.
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="upload-btn" onClick={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/create-checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, plan: 'pro' }),
-              });
-              const data = await res.json();
-              if (data.url) window.location.href = data.url;
-            }} style={{ whiteSpace: 'nowrap' }}>
-              Pro $9.99/mo
-            </button>
-            <button onClick={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/create-checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, plan: 'elite' }),
-              });
-              const data = await res.json();
-              if (data.url) window.location.href = data.url;
-            }} style={{ whiteSpace: 'nowrap', padding: '12px 20px', background: 'transparent', border: '1px solid #ff6b00', color: '#ff6b00', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', fontFamily: 'Inter, sans-serif' }}>
-              Elite $19.99/mo
-            </button>
-          </div>
-        </div>
-      )}
-      {usage && usage.plan === 'free' && usage.used > 0 && usage.used < usage.limit && (
-        <div style={{
-          background: '#ffffff',
-          border: '1px solid #e5e7eb',
-          borderRadius: '14px',
-          padding: '16px 24px',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}>
-          <div style={{ fontSize: '14px', color: '#888' }}>
-            <span style={{ color: '#ff6b00', fontWeight: '700' }}>{usage.limit - usage.used}</span> free analysis{usage.limit - usage.used === 1 ? '' : 'es'} remaining this month
-          </div>
-          <a href="#pricing" onClick={async (e) => {
-            e.preventDefault();
-            const { data: { user } } = await supabase.auth.getUser();
-            const res = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/create-checkout', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.id, plan: 'pro' }),
-            });
-            const data = await res.json();
-            if (data.url) window.location.href = data.url;
-          }} style={{ fontSize: '13px', color: '#ff6b00', fontWeight: '600', textDecoration: 'none', cursor: 'pointer' }}>
-            Upgrade for more
-          </a>
-        </div>
-      )}
-
       <div className="stats-row">
         {[
           ['Total Sessions', analyses.length],
-          ['Plan', usage ? usage.plan.toUpperCase() : '...'],
           ['Avg Score', avgScore],
-          ['Analyses Left', usage ? (usage.limit - usage.used) : '...'],
+          ['This Month', usage ? usage.used : '...'],
         ].map(([label, val]) => (
           <div className="stat-card" key={label}>
             <div className="stat-label">{label}</div>

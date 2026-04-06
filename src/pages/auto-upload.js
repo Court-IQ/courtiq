@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 
-const API_URL = 'https://tranquil-nourishment-production-4ff8.up.railway.app';
+const API_URL = 'https://courtiq-n8wl.onrender.com';
 
 export default function AutoUpload() {
   const [phase, setPhase] = useState(1); // 1=setup, 2=processing, 3=results

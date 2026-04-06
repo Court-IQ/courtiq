@@ -19,7 +19,7 @@ function Brain() {
     setError('');
 
     try {
-      const response = await fetch('https://tranquil-nourishment-production-4ff8.up.railway.app/api/brain', {
+      const response = await fetch('https://courtiq-n8wl.onrender.com/api/brain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, category, playType, verdict })

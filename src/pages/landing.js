@@ -18,36 +18,6 @@ function Landing() {
     { icon: '📈', title: 'Track Improvement', desc: 'See your scores over time. Know exactly what you are getting better at and what still needs work.' },
   ];
 
-  const plans = [
-    {
-      name: 'Free',
-      price: '$0',
-      period: '/mo',
-      desc: 'Try it out',
-      features: ['2 video analyses per month', 'AI coaching chat', 'Basic feedback & grades'],
-      cta: 'Get Started Free',
-      highlighted: false,
-    },
-    {
-      name: 'Pro',
-      price: '$9.99',
-      period: '/mo',
-      desc: 'For serious players',
-      features: ['15 analyses per month', 'Full game breakdowns', 'Detailed coaching reports', 'Progress tracking', 'Basketball Brain access'],
-      cta: 'Go Pro',
-      highlighted: true,
-    },
-    {
-      name: 'Elite',
-      price: '$19.99',
-      period: '/mo',
-      desc: 'Unlimited everything',
-      features: ['Unlimited analyses', 'Priority processing', 'Advanced breakdowns', 'Shareable coach reports', 'Everything in Pro'],
-      cta: 'Go Elite',
-      highlighted: false,
-    },
-  ];
-
   return (
     <div className="landing-page">
 
@@ -61,7 +31,6 @@ function Landing() {
         </div>
         <div className="landing-nav-links">
           <a href="#how-it-works" className="landing-nav-link">How It Works</a>
-          <a href="#pricing" className="landing-nav-link">Pricing</a>
         </div>
         <div className="landing-nav-buttons">
           <button onClick={() => navigate('/auth')} className="landing-btn-ghost">Sign In</button>
@@ -133,44 +102,6 @@ function Landing() {
               <div style={{ fontSize: '32px', marginBottom: '14px' }}>{f.icon}</div>
               <div style={{ fontSize: '16px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>{f.title}</div>
               <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.7' }}>{f.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Pricing */}
-      <div id="pricing" className="landing-section" style={{ borderTop: '1px solid #e5e7eb' }}>
-        <div className="landing-section-header">
-          <div className="landing-section-tag">Pricing</div>
-          <h2 className="landing-section-title">Pick your plan</h2>
-          <p style={{ color: '#555', fontSize: '16px', marginTop: '12px' }}>Start free. Upgrade when you're ready.</p>
-        </div>
-        <div className="landing-grid-3 landing-pricing-grid">
-          {plans.map(plan => (
-            <div key={plan.name} className={`landing-card landing-pricing-card ${plan.highlighted ? 'landing-pricing-highlight' : ''}`}>
-              {plan.highlighted && (
-                <div className="landing-pricing-badge">Most Popular</div>
-              )}
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#ff6b00', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{plan.name}</div>
-              <div style={{ marginBottom: '4px' }}>
-                <span style={{ fontSize: '44px', fontWeight: '900', color: '#111827', letterSpacing: '-2px' }}>{plan.price}</span>
-                <span style={{ fontSize: '16px', color: '#555', fontWeight: '600' }}>{plan.period}</span>
-              </div>
-              <div style={{ fontSize: '14px', color: '#555', marginBottom: '24px' }}>{plan.desc}</div>
-              <div style={{ flex: 1, marginBottom: '24px' }}>
-                {plan.features.map(f => (
-                  <div key={f} style={{ fontSize: '14px', color: '#6b7280', padding: '8px 0', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#ff6b00', fontSize: '14px' }}>&#10003;</span> {f}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => navigate('/auth?signup=true')}
-                className={plan.highlighted ? 'upload-btn' : 'landing-btn-ghost'}
-                style={{ width: '100%', padding: '14px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700', fontSize: '14px' }}
-              >
-                {plan.cta}
-              </button>
             </div>
           ))}
         </div>
