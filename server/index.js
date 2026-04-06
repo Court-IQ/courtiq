@@ -797,18 +797,23 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
   }
 
   const saveError = async (msg) => {
-    console.error("from-url error:", msg);
+  console.error("from-url error:", msg);
+  try {
     if (statusId) {
-      await db.from("analyses").update({ summary: { error: msg } }).eq('id', statusId)
-        .catch(e => console.error("saveError update failed:", e.message));
+      const { error: updateErr } = await db.from("analyses").update({ summary: { error: msg } }).eq('id', statusId);
+      if (updateErr) console.error("saveError update failed:", updateErr.message);
     } else {
-      await db.from("analyses").insert([{
+      const { error: insertErr } = await db.from("analyses").insert({
         session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
         position, play_type: "game summary", score: 0, grade: "F",
         summary: { error: msg }, user_id: userId,
-      }]).catch(e => console.error("saveError insert failed:", e.message));
+      });
+      if (insertErr) console.error("saveError insert failed:", insertErr.message);
     }
-  };
+  } catch(e) {
+    console.error("saveError crashed:", e.message);
+  }
+};
 
   try {
     console.log("Fetching video from URL:", directUrl);
