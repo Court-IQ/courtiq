@@ -6,9 +6,7 @@ const fs = require("fs");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { GoogleAIFileManager } = require("@google/generative-ai/server");
 
-const upload = multer({ dest: "/tmp/", limits: { fileSize: 500 * 1024 * 1024 } }); // 500MB max
-
-
+const upload = multer({ dest: "/tmp/", limits: { fileSize: 500 * 1024 * 1024 } });
 
 require("dotenv").config({ path: "../.env" });
 
@@ -23,10 +21,8 @@ const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 // Ensure game-films bucket exists
 if (adminSupabase) {
-  adminSupabase.storage.createBucket('game-films', { public: false }).catch(() => {});
+  adminSupabase.storage.createBucket('game-films', { public: false }).then(() => {}).catch(() => {});
 }
-
-// const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
@@ -44,32 +40,29 @@ app.post("/api/analyze", async (req, res) => {
     const framesToAnalyze = frames.slice(0, 15);
 
     const { Pinecone } = require('@pinecone-database/pinecone');
-const OpenAI = require('openai');
-const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const brainIndex = pinecone.index('courtiq-brain');
-
+    const OpenAI = require('openai');
+    const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+    const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const brainIndex = pinecone.index('courtiq-brain');
 
     let brainContext = '';
-try {
-  const queryEmbedding = await openaiClient.embeddings.create({
-    model: 'text-embedding-ada-002',
-    input: `${playType} ${position} basketball analysis`
-  });
-  const brainResults = await brainIndex.query({
-    vector: queryEmbedding.data[0].embedding,
-    topK: 5,
-    includeMetadata: true
-  });
-  brainContext = brainResults.matches
-    .map(m => m.metadata.text)
-    .join('\n\n');
-  console.log('🏀 Brain context found:', brainContext.slice(0, 100));
-} catch(e) {
-  console.log('Brain search failed, continuing without it:', e.message);
-}
-
-
+    try {
+      const queryEmbedding = await openaiClient.embeddings.create({
+        model: 'text-embedding-ada-002',
+        input: `${playType} ${position} basketball analysis`
+      });
+      const brainResults = await brainIndex.query({
+        vector: queryEmbedding.data[0].embedding,
+        topK: 5,
+        includeMetadata: true
+      });
+      brainContext = brainResults.matches
+        .map(m => m.metadata.text)
+        .join('\n\n');
+      console.log('🏀 Brain context found:', brainContext.slice(0, 100));
+    } catch(e) {
+      console.log('Brain search failed, continuing without it:', e.message);
+    }
 
     const frameContents = framesToAnalyze.map((frame, i) => ([
       {
@@ -147,7 +140,7 @@ You are analyzing ${framesToAnalyze.length} sequential frames from a ${playType}
 
 STRICT RULES:
 - Only describe what you can DIRECTLY SEE. No assumptions.
-- Every statement must reference something visible in the- frames.
+- Every statement must reference something visible in the frames.
 - Be brutally honest. High school players should rarely score above 85.
 - Your feedback must be specific to THIS play, not generic basketball tips.
 
@@ -198,7 +191,6 @@ below 65 = D/F — fundamentally wrong play`;
     let response;
 
     if (mode === 'pro') {
-      // GPT-4o for higher quality analysis
       response = await openaiClient.chat.completions.create({
         model: "gpt-4o",
         max_tokens: 2000,
@@ -217,7 +209,6 @@ below 65 = D/F — fundamentally wrong play`;
         ]
       });
     } else {
-      // Default to GPT-4o as well
       response = await openaiClient.chat.completions.create({
         model: "gpt-4o",
         max_tokens: 2000,
@@ -311,7 +302,12 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { message, analyses } = req.body;
 
-    // Search the Brain for relevant basketball knowledge
+    const { Pinecone } = require('@pinecone-database/pinecone');
+    const OpenAI = require('openai');
+    const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+    const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const brainIndex = pinecone.index('courtiq-brain');
+
     let brainKnowledge = '';
     try {
       const chatEmbedding = await openaiClient.embeddings.create({
@@ -424,6 +420,10 @@ app.post("/api/game-summary", async (req, res) => {
     const { sessionName, playerName, position, segments } = req.body;
     if (!segments || segments.length === 0) return res.status(400).json({ error: "No segments provided" });
 
+    const { Pinecone } = require('@pinecone-database/pinecone');
+    const OpenAI = require('openai');
+    const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
     const segmentSummaries = segments.map((s, i) => {
       const sum = s.summary || {};
       return `--- Play ${i + 1}: ${s.playType} (${s.timeRange}) ---
@@ -520,14 +520,12 @@ Return ONLY valid JSON, no markdown:
 
 const PLAN_LIMITS = { free: 999999, pro: 999999, elite: 999999 };
 
-// Get or create user profile
 async function getProfile(userId) {
   let { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
   if (!data) {
     await supabase.from('profiles').insert([{ id: userId, plan: 'free', analyses_used: 0, analyses_reset_date: new Date().toISOString() }]);
     ({ data } = await supabase.from('profiles').select('*').eq('id', userId).single());
   }
-  // Reset monthly count if needed
   const resetDate = new Date(data.analyses_reset_date);
   const now = new Date();
   if (now.getMonth() !== resetDate.getMonth() || now.getFullYear() !== resetDate.getFullYear()) {
@@ -537,7 +535,6 @@ async function getProfile(userId) {
   return data;
 }
 
-// Check if user can analyze
 app.post("/api/check-usage", async (req, res) => {
   try {
     const { userId } = req.body;
@@ -556,7 +553,6 @@ app.post("/api/check-usage", async (req, res) => {
   }
 });
 
-// Increment usage after analysis
 app.post("/api/increment-usage", async (req, res) => {
   try {
     const { userId } = req.body;
@@ -579,24 +575,16 @@ app.post("/api/admin/stats", async (req, res) => {
     const { userId } = req.body;
     if (userId !== ADMIN_ID) return res.status(403).json({ error: "Not authorized" });
 
-    // Get all profiles
     const { data: profiles } = await supabase.from('profiles').select('*');
-
-    // Get all analyses
     const { data: analyses } = await supabase.from('analyses').select('*').order('created_at', { ascending: false });
 
-    // Get user emails via Supabase admin API
     let users = [];
     if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const adminSupabase = createClient(
-        process.env.REACT_APP_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
-      const { data } = await adminSupabase.auth.admin.listUsers();
+      const adminSB = createClient(process.env.REACT_APP_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+      const { data } = await adminSB.auth.admin.listUsers();
       users = data?.users || [];
     }
 
-    // Merge data
     const userMap = {};
     (users || []).forEach(u => {
       userMap[u.id] = { email: u.email, created_at: u.created_at };
@@ -613,7 +601,6 @@ app.post("/api/admin/stats", async (req, res) => {
       team_name: p.team_name || '',
     }));
 
-    // Also include users who have analyses but no profile
     const profileIds = new Set(profileList.map(p => p.id));
     const analysisUserIds = [...new Set((analyses || []).map(a => a.user_id))];
     analysisUserIds.forEach(uid => {
@@ -631,7 +618,6 @@ app.post("/api/admin/stats", async (req, res) => {
       }
     });
 
-    // Count analyses per user
     const analysisCount = {};
     (analyses || []).forEach(a => {
       analysisCount[a.user_id] = (analysisCount[a.user_id] || 0) + 1;
@@ -640,7 +626,6 @@ app.post("/api/admin/stats", async (req, res) => {
       p.total_analyses = analysisCount[p.id] || 0;
     });
 
-    // Today's stats
     const today = new Date().toISOString().split('T')[0];
     const signupsToday = Object.values(userMap).filter(u => u.created_at && u.created_at.startsWith(today)).length;
     const analysesToday = (analyses || []).filter(a => a.created_at && a.created_at.startsWith(today)).length;
@@ -669,12 +654,9 @@ app.post("/api/admin/stats", async (req, res) => {
 });
 
 // ─── CHUNKED UPLOAD TO GEMINI ────────────────────────────────────
-// Browser sends 5MB chunks → Railway forwards each to Gemini → never >5MB in RAM
 
-const chunkSessions = new Map(); // sessionId → { uploadUrl, offset, mimeType, ...metadata }
-const chunkUpload = multer({ dest: "/tmp/", limits: { fileSize: 10 * 1024 * 1024 } });
+const chunkSessions = new Map();
 
-// Step 1: Init a Gemini resumable upload session
 app.post("/api/chunk/init", async (req, res) => {
   const { fileSize, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   try {
@@ -707,9 +689,6 @@ app.post("/api/chunk/init", async (req, res) => {
   }
 });
 
-// Step 2: Stream chunk directly from browser → Railway → Gemini with zero buffering.
-// Body is NOT read into memory — req is piped straight to Gemini as a WHATWG ReadableStream.
-// This bypasses every Railway/Cloudflare body-size limit because nothing is buffered.
 app.post("/api/chunk/upload", async (req, res) => {
   const { sessionId, isLast } = req.query;
   const session = chunkSessions.get(sessionId);
@@ -722,7 +701,6 @@ app.post("/api/chunk/upload", async (req, res) => {
     const command = isLast === "true" ? "upload, finalize" : "upload";
     const { Readable } = require("stream");
 
-    // Pipe req stream straight to Gemini — Railway never holds the video in memory
     const uploadRes = await fetch(session.uploadUrl, {
       method: "POST",
       headers: {
@@ -758,14 +736,11 @@ app.post("/api/chunk/upload", async (req, res) => {
 });
 
 // ─── URL-BASED ANALYSIS ──────────────────────────────────────────
-// Railway fetches the video from a URL (Google Drive, Dropbox, etc.)
-// and pipes it straight to Gemini. No body size limit because this is
-// an outgoing request FROM Railway, not an incoming upload TO Railway.
+
 app.post("/api/auto-analyze/from-url", async (req, res) => {
   const { videoUrl, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   if (!videoUrl) return res.status(400).json({ success: false, error: "No videoUrl provided" });
 
-  // Convert Google Drive share links — use newer usercontent domain which handles large files
   let directUrl = videoUrl;
   const driveMatch = videoUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   const driveFileId = driveMatch ? driveMatch[1] : null;
@@ -781,7 +756,7 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
 
   const db = adminSupabase || supabase;
 
-  // Save status row immediately so frontend has something to poll
+  // Save status row so frontend has something to poll
   let statusId = null;
   try {
     const { data: statusRow, error: insertErr } = await db.from("analyses").insert({
@@ -789,31 +764,43 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
       position, play_type: "game summary", score: 0, grade: "F",
       summary: { status: "Fetching video..." }, user_id: userId,
     }).select('id').single();
-    if (insertErr) console.error("Status row insert error:", insertErr.message, insertErr.code, insertErr.details);
+    if (insertErr) console.error("Status row insert error:", insertErr.message, insertErr.code);
     statusId = statusRow?.id;
     console.log("Status row created:", statusId);
   } catch (e) {
     console.log("Could not create status row:", e.message);
   }
 
-  const saveError = async (msg) => {
-  console.error("from-url error:", msg);
-  try {
-    if (statusId) {
-      const { error: updateErr } = await db.from("analyses").update({ summary: { error: msg } }).eq('id', statusId);
-      if (updateErr) console.error("saveError update failed:", updateErr.message);
-    } else {
-      const { error: insertErr } = await db.from("analyses").insert({
-        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
-        position, play_type: "game summary", score: 0, grade: "F",
-        summary: { error: msg }, user_id: userId,
-      });
-      if (insertErr) console.error("saveError insert failed:", insertErr.message);
+  // Helper to update status without .catch() chaining
+  const updateStatus = async (status) => {
+    if (!statusId) return;
+    try {
+      const { error } = await db.from("analyses").update({ summary: { status } }).eq('id', statusId);
+      if (error) console.error("Status update failed:", error.message);
+    } catch (e) {
+      console.error("Status update crashed:", e.message);
     }
-  } catch(e) {
-    console.error("saveError crashed:", e.message);
-  }
-};
+  };
+
+  // Helper to save errors without .catch() chaining
+  const saveError = async (msg) => {
+    console.error("from-url error:", msg);
+    try {
+      if (statusId) {
+        const { error: updateErr } = await db.from("analyses").update({ summary: { error: msg } }).eq('id', statusId);
+        if (updateErr) console.error("saveError update failed:", updateErr.message);
+      } else {
+        const { error: insertErr } = await db.from("analyses").insert({
+          session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
+          position, play_type: "game summary", score: 0, grade: "F",
+          summary: { error: msg }, user_id: userId,
+        });
+        if (insertErr) console.error("saveError insert failed:", insertErr.message);
+      }
+    } catch(e) {
+      console.error("saveError crashed:", e.message);
+    }
+  };
 
   try {
     console.log("Fetching video from URL:", directUrl);
@@ -845,9 +832,7 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     const sizeMB = contentLength ? Math.round(contentLength / 1024 / 1024) : "unknown";
     console.log(`Got video: ${contentType}, ${sizeMB}MB`);
 
-    if (statusId) {
-      await db.from("analyses").update({ summary: { status: `Uploading ${sizeMB}MB to Gemini...` } }).eq('id', statusId).catch(() => {});
-    }
+    await updateStatus(`Uploading ${sizeMB}MB to Gemini...`);
 
     const initRes = await fetch(
       `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
@@ -890,9 +875,7 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     if (!fileName) throw new Error(`Gemini upload failed: ${JSON.stringify(fileData).slice(0, 200)}`);
 
     console.log("Uploaded to Gemini:", fileName);
-    if (statusId) {
-      await db.from("analyses").update({ summary: { status: "Gemini is watching your film..." } }).eq('id', statusId).catch(() => {});
-    }
+    await updateStatus("Gemini is watching your film...");
 
     await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId, statusId });
   } catch (err) {
@@ -903,7 +886,6 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
 
 // ─── SUPABASE STORAGE UPLOAD ─────────────────────────────────────
 
-// Generate a signed URL so the browser can upload directly to Supabase (bypasses Railway)
 app.post("/api/storage/upload-url", async (req, res) => {
   try {
     const { fileName, userId } = req.body;
@@ -922,7 +904,6 @@ app.post("/api/storage/upload-url", async (req, res) => {
   }
 });
 
-// Trigger analysis from a file already in Supabase Storage
 app.post("/api/auto-analyze/from-storage", (req, res) => {
   const { filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   if (!filePath) return res.status(400).json({ error: "No filePath provided" });
@@ -935,20 +916,17 @@ app.post("/api/auto-analyze/from-storage", (req, res) => {
 
 async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
   try {
-    // 1. Get a signed download URL from Supabase
     const { data: urlData, error: urlError } = await adminSupabase.storage
       .from("game-films")
       .createSignedUrl(filePath, 3600);
     if (urlError) throw urlError;
 
-    // 2. Download from Supabase as a stream
     console.log("⬇️  Streaming from Supabase...");
     const downloadRes = await fetch(urlData.signedUrl);
     if (!downloadRes.ok) throw new Error("Failed to download from Supabase");
     const contentLength = downloadRes.headers.get("content-length");
     const contentType = mimeType || downloadRes.headers.get("content-type") || "video/mp4";
 
-    // 3. Create Gemini resumable upload session
     const initRes = await fetch(
       `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${process.env.GEMINI_API_KEY}`,
       {
@@ -966,7 +944,6 @@ async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, pla
     const uploadUrl = initRes.headers.get("x-goog-upload-url");
     if (!uploadUrl) throw new Error("Failed to create Gemini upload session");
 
-    // 4. Stream from Supabase directly to Gemini — Railway holds only a small buffer
     console.log("📤 Streaming to Gemini...");
     const geminiUploadRes = await fetch(uploadUrl, {
       method: "POST",
@@ -983,27 +960,32 @@ async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, pla
     const fileName = fileData?.file?.name;
     if (!fileName) throw new Error("Gemini upload failed — no file name returned");
 
-    // 5. Wait for Gemini to process + run analysis
     await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
 
-    // 6. Clean up Supabase file
-    await adminSupabase.storage.from("game-films").remove([filePath]).catch(() => {});
+    try {
+      await adminSupabase.storage.from("game-films").remove([filePath]);
+    } catch (e) {
+      console.error("Cleanup failed:", e.message);
+    }
 
   } catch (err) {
     console.error("runAutoAnalysisFromStorage error:", err);
     if (userId) {
-      await supabase.from("analyses").insert([{
-        session_name: sessionName, player_name: playerName,
-        jersey_number: jerseyNumber, position, play_type: "game summary",
-        score: 0, grade: "F", summary: { error: err.message }, user_id: userId,
-      }]).catch(() => {});
+      try {
+        await supabase.from("analyses").insert([{
+          session_name: sessionName, player_name: playerName,
+          jersey_number: jerseyNumber, position, play_type: "game summary",
+          score: 0, grade: "F", summary: { error: err.message }, user_id: userId,
+        }]);
+      } catch (e) {
+        console.error("Error saving storage analysis error:", e.message);
+      }
     }
   }
 }
 
 // ─── AUTO ANALYSIS (Gemini 2.5 Flash) ────────────────────────────
 
-// Step 1: Browser requests a direct upload session to Google (Railway never touches the video)
 app.post("/api/auto-analyze/init", async (req, res) => {
   try {
     const { mimeType, fileSize, sessionName } = req.body;
@@ -1033,7 +1015,6 @@ app.post("/api/auto-analyze/init", async (req, res) => {
   }
 });
 
-// Step 2: Browser has uploaded file directly to Google, now run the analysis
 app.post("/api/auto-analyze/run", (req, res) => {
   const { fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
 
@@ -1045,7 +1026,6 @@ app.post("/api/auto-analyze/run", (req, res) => {
     .catch(err => console.error("Background auto-analysis failed:", err));
 });
 
-// Fallback: old route for direct server upload (kept for compatibility)
 app.post("/api/auto-analyze", upload.single("video"), (req, res) => {
   const { sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
   const file = req.file;
@@ -1063,14 +1043,12 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, je
   const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
 
   try {
-    // 1. Upload video to Gemini Files API
     console.log("📤 Uploading to Gemini Files API...");
     const uploadResult = await fileManager.uploadFile(file.path, {
       mimeType: file.mimetype || "video/mp4",
       displayName: sessionName || "Game Film",
     });
 
-    // 2. Poll until Gemini finishes processing the video
     console.log("⏳ Waiting for Gemini to process video...");
     let geminiFile = await fileManager.getFile(uploadResult.file.name);
     let attempts = 0;
@@ -1084,10 +1062,8 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, je
       throw new Error(`File processing failed. State: ${geminiFile.state}`);
     }
 
-    // 3–5. Shared: Brain context + Gemini analysis + save to Supabase
     await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
 
-    // 6. Clean up
     try { fs.unlinkSync(file.path); } catch (e) {}
     try { await fileManager.deleteFile(uploadResult.file.name); } catch (e) {}
 
@@ -1096,19 +1072,17 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, je
   } catch (err) {
     console.error("runAutoAnalysis error:", err);
     try { fs.unlinkSync(file.path); } catch (e) {}
-    // Save error record so frontend stops polling
     if (userId) {
-      await supabase.from("analyses").insert([{
-        session_name: sessionName,
-        player_name: playerName,
-        jersey_number: jerseyNumber,
-        position,
-        play_type: "game summary",
-        score: 0,
-        grade: "F",
-        summary: { error: err.message },
-        user_id: userId,
-      }]).catch(() => {});
+      try {
+        await supabase.from("analyses").insert([{
+          session_name: sessionName, player_name: playerName,
+          jersey_number: jerseyNumber, position,
+          play_type: "game summary", score: 0, grade: "F",
+          summary: { error: err.message }, user_id: userId,
+        }]);
+      } catch (e) {
+        console.error("Error saving analysis error:", e.message);
+      }
     }
   }
 }
@@ -1221,20 +1195,48 @@ Return valid JSON:
     { text: prompt },
   ]);
 
-  const analysis = JSON.parse(geminiResult.response.text());
+  const rawText = geminiResult.response.text();
+  console.log("Gemini raw response (first 300):", rawText.slice(0, 300));
+
+  let analysis;
+  try {
+    analysis = JSON.parse(rawText);
+  } catch (e) {
+    // Try to extract JSON from response
+    const match = rawText.match(/\{[\s\S]*\}/);
+    if (match) {
+      const cleaned = match[0]
+        .replace(/[\u0000-\u001F]+/g, " ")
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]");
+      analysis = JSON.parse(cleaned);
+    } else {
+      throw new Error("Gemini returned invalid JSON: " + rawText.slice(0, 200));
+    }
+  }
+
   analysis.plays = (analysis.plays || []).map(p => ({ ...p, grade: getGrade(p.score || 70) }));
   analysis.overallGrade = getGrade(analysis.overallScore || 70);
 
   if (userId) {
     const db = adminSupabase || supabase;
+
+    // Save each individual play
     for (const play of analysis.plays) {
-      await db.from("analyses").insert([{
-        session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
-        player_name: playerName, jersey_number: jerseyNumber, position,
-        play_type: play.playType, score: play.score, grade: play.grade,
-        summary: play.summary, user_id: userId,
-      }]);
+      try {
+        const { error } = await db.from("analyses").insert([{
+          session_name: `${sessionName} (${play.startTime}-${play.endTime})`,
+          player_name: playerName, jersey_number: jerseyNumber, position,
+          play_type: play.playType, score: play.score, grade: play.grade,
+          summary: play.summary, user_id: userId,
+        }]);
+        if (error) console.error("Play insert error:", error.message);
+      } catch (e) {
+        console.error("Play insert crashed:", e.message);
+      }
     }
+
+    // Save game summary
     const gameSummary = {
       session_name: sessionName, player_name: playerName,
       jersey_number: jerseyNumber, position, play_type: "game summary",
@@ -1246,10 +1248,17 @@ Return valid JSON:
       },
       user_id: userId,
     };
-    if (statusId) {
-      await db.from("analyses").update(gameSummary).eq('id', statusId);
-    } else {
-      await db.from("analyses").insert([gameSummary]);
+
+    try {
+      if (statusId) {
+        const { error } = await db.from("analyses").update(gameSummary).eq('id', statusId);
+        if (error) console.error("Game summary update error:", error.message);
+      } else {
+        const { error } = await db.from("analyses").insert([gameSummary]);
+        if (error) console.error("Game summary insert error:", error.message);
+      }
+    } catch (e) {
+      console.error("Game summary save crashed:", e.message);
     }
   }
 
@@ -1263,15 +1272,18 @@ async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jers
   const db = adminSupabase || supabase;
 
   const updateStatus = async (status) => {
-    if (statusId) {
-      await db.from("analyses").update({ summary: { status } }).eq('id', statusId).catch(() => {});
+    if (!statusId) return;
+    try {
+      const { error } = await db.from("analyses").update({ summary: { status } }).eq('id', statusId);
+      if (error) console.error("updateStatus failed:", error.message);
+    } catch (e) {
+      console.error("updateStatus crashed:", e.message);
     }
   };
 
   try {
     await updateStatus("Gemini is processing your video...");
 
-    // Poll until file is ready
     console.log("⏳ Waiting for Gemini file to be ready:", fileName);
     let geminiFile = await fileManager.getFile(fileName);
     let attempts = 0;
@@ -1284,20 +1296,25 @@ async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jers
 
     await updateStatus("Analyzing every possession...");
 
-    // Reuse the same analysis + save logic
     await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId });
 
     try { await fileManager.deleteFile(fileName); } catch (e) {}
   } catch (err) {
     console.error("runAutoAnalysisFromFile error:", err);
-    if (statusId) {
-      await db.from("analyses").update({ summary: { error: err.message } }).eq('id', statusId).catch(() => {});
-    } else if (userId) {
-      await db.from("analyses").insert([{
-        session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
-        position, play_type: "game summary", score: 0, grade: "F",
-        summary: { error: err.message }, user_id: userId,
-      }]).catch(() => {});
+    try {
+      if (statusId) {
+        const { error } = await db.from("analyses").update({ summary: { error: err.message } }).eq('id', statusId);
+        if (error) console.error("Error update failed:", error.message);
+      } else if (userId) {
+        const { error } = await db.from("analyses").insert([{
+          session_name: sessionName, player_name: playerName, jersey_number: jerseyNumber,
+          position, play_type: "game summary", score: 0, grade: "F",
+          summary: { error: err.message }, user_id: userId,
+        }]);
+        if (error) console.error("Error insert failed:", error.message);
+      }
+    } catch (e) {
+      console.error("Error saving failed:", e.message);
     }
   }
 }
