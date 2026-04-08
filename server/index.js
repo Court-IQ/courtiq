@@ -905,16 +905,16 @@ app.post("/api/storage/upload-url", async (req, res) => {
 });
 
 app.post("/api/auto-analyze/from-storage", (req, res) => {
-  const { filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
+  const { filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, focusAreas, customFocus } = req.body;
   if (!filePath) return res.status(400).json({ error: "No filePath provided" });
 
   res.json({ success: true, status: "processing" });
 
-  runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId })
+  runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId, focusAreas, customFocus })
     .catch(err => console.error("Storage auto-analysis failed:", err));
 });
 
-async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId }) {
+async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, focusAreas, customFocus }) {
   try {
     const { data: urlData, error: urlError } = await adminSupabase.storage
       .from("game-films")
@@ -960,7 +960,7 @@ async function runAutoAnalysisFromStorage({ filePath, mimeType, sessionName, pla
     const fileName = fileData?.file?.name;
     if (!fileName) throw new Error("Gemini upload failed — no file name returned");
 
-    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId });
+    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, focusAreas, customFocus });
 
     try {
       await adminSupabase.storage.from("game-films").remove([filePath]);

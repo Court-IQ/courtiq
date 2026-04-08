@@ -117,50 +117,49 @@ export default function AutoUpload() {
         setStatusMsg('Gemini is watching your film...');
         setProgress(20);
       } else {
-        // File mode (for smaller files)
-        const CHUNK_SIZE = 5 * 1024 * 1024;
-        // Gemini only accepts video/mp4 — normalize MOV and other types
-        const rawMime = file.type || 'video/mp4';
-        const mimeType = rawMime.startsWith('video/') ? 'video/mp4' : rawMime;
-        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        // File mode: browser → Supabase Storage → Render → Gemini
+        // Render never receives raw video bytes — no proxy size limits
+        const mimeType = 'video/mp4'; // Gemini only accepts mp4
 
+        // Step 1: Get a signed upload URL from Render
         setStatusMsg('Preparing upload...');
-        const initRes = await fetch(`${API_URL}/api/chunk/init`, {
+        setProgress(5);
+        const urlRes = await fetch(`${API_URL}/api/storage/upload-url`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileSize: file.size, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id }),
+          body: JSON.stringify({ fileName: file.name, userId: user.id }),
         });
-        const initText = await initRes.text();
-        let initData;
-        try { initData = JSON.parse(initText); }
-        catch (e) { throw new Error(`Server error: ${initText.slice(0, 120)}`); }
-        if (!initData.success) throw new Error(initData.error || 'Failed to start upload');
+        const urlText = await urlRes.text();
+        let urlData;
+        try { urlData = JSON.parse(urlText); }
+        catch (e) { throw new Error(`Server error: ${urlText.slice(0, 200)}`); }
+        if (!urlData.success) throw new Error(urlData.error || 'Could not get upload URL');
 
-        for (let i = 0; i < totalChunks; i++) {
-          const start = i * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, file.size);
-          const chunk = file.slice(start, end);
-          const isLast = i === totalChunks - 1;
-          const pct = Math.round(((i + 1) / totalChunks) * 100);
+        // Step 2: Upload directly from browser to Supabase (bypasses Render)
+        setStatusMsg('Uploading to storage...');
+        const uploadRes = await fetch(urlData.signedUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': mimeType },
+          body: file,
+        });
+        if (!uploadRes.ok) throw new Error(`Storage upload failed (${uploadRes.status})`);
+        setProgress(60);
 
-          setStatusMsg(`Uploading... ${pct}%`);
-          setProgress((i / totalChunks) * 70);
-
-          const uploadRes = await fetch(
-            `${API_URL}/api/chunk/upload?sessionId=${initData.sessionId}&isLast=${isLast}`,
-            { method: 'POST', body: chunk, headers: { 'Content-Type': mimeType } }
-          );
-          const uploadText = await uploadRes.text();
-          let uploadData;
-          try { uploadData = JSON.parse(uploadText); }
-          catch (e) { throw new Error(`Upload error: ${uploadText.slice(0, 120)}`); }
-          if (!uploadData.success) throw new Error(uploadData.error || 'Chunk upload failed');
-
-          if (isLast) {
-            setStatusMsg('Upload complete! Gemini is watching your film...');
-            setProgress(75);
-          }
-        }
+        // Step 3: Tell Render to pull from Supabase and send to Gemini
+        setStatusMsg('Sending to Gemini...');
+        const focusLabel = focusAreas.map(id => FOCUS_OPTIONS.find(o => o.id === id)?.label).filter(Boolean);
+        const analyzeRes = await fetch(`${API_URL}/api/auto-analyze/from-storage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filePath: urlData.path, mimeType, sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id, focusAreas: focusLabel, customFocus: customFocus.trim() }),
+        });
+        const analyzeText = await analyzeRes.text();
+        let analyzeData;
+        try { analyzeData = JSON.parse(analyzeText); }
+        catch (e) { throw new Error(`Server error: ${analyzeText.slice(0, 200)}`); }
+        if (!analyzeData.success && analyzeData.error) throw new Error(analyzeData.error);
+        setProgress(70);
+        setStatusMsg('Gemini is watching your film...');
       }
 
       // Poll Supabase until the game summary appears
