@@ -371,16 +371,30 @@ export default function AutoUpload() {
                 onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) setFile(f); }}
               >
                 {file ? (
-                  <>
-                    <div style={{ fontSize: '40px' }}>✅</div>
-                    <div style={{ fontWeight: '700', color: '#111827', fontSize: '14px' }}>{file.name}</div>
-                    <div style={{ color: '#888', fontSize: '12px' }}>{(file.size / 1024 / 1024).toFixed(1)} MB · Click to change</div>
-                  </>
+                  file.size > 50 * 1024 * 1024 ? (
+                    <>
+                      <div style={{ fontSize: '36px' }}>⚠️</div>
+                      <div style={{ fontWeight: '700', color: '#dc2626', fontSize: '14px' }}>File too large for direct upload</div>
+                      <div style={{ color: '#6b7280', fontSize: '13px', textAlign: 'center', maxWidth: '340px', lineHeight: '1.6' }}>
+                        {file.name} is {(file.size / 1024 / 1024).toFixed(0)} MB. Direct upload is limited to 50 MB.
+                      </div>
+                      <div style={{ background: '#fff5eb', border: '1px solid #fed7aa', borderRadius: '10px', padding: '12px 16px', fontSize: '13px', color: '#92400e', maxWidth: '360px', lineHeight: '1.7' }}>
+                        <strong>Use the URL method instead:</strong><br />
+                        Upload your video to Google Drive → set sharing to "Anyone with the link" → switch to "Paste URL" tab above and paste the link.
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '40px' }}>✅</div>
+                      <div style={{ fontWeight: '700', color: '#111827', fontSize: '14px' }}>{file.name}</div>
+                      <div style={{ color: '#888', fontSize: '12px' }}>{(file.size / 1024 / 1024).toFixed(1)} MB · Click to change</div>
+                    </>
+                  )
                 ) : (
                   <>
                     <div style={{ fontSize: '40px' }}>🎬</div>
                     <div style={{ fontWeight: '700', color: '#374151', fontSize: '15px' }}>Drop your game film here</div>
-                    <div style={{ color: '#9ca3af', fontSize: '13px' }}>or click to browse · MP4, MOV, AVI</div>
+                    <div style={{ color: '#9ca3af', fontSize: '13px' }}>or click to browse · MP4, MOV, AVI · max 50 MB</div>
                     <div style={{
                       marginTop: '4px', padding: '6px 14px', borderRadius: '8px',
                       background: '#ff6b00', color: '#fff', fontSize: '13px', fontWeight: '700',
@@ -433,8 +447,8 @@ export default function AutoUpload() {
           <button
             className="upload-btn"
             onClick={handleAnalyze}
-            style={{ width: '100%', opacity: (!(inputMode === 'url' ? videoUrl.trim() : file) || !sessionName || !jerseyNumber) ? 0.4 : 1 }}
-            disabled={!(inputMode === 'url' ? videoUrl.trim() : file) || !sessionName || !jerseyNumber}
+            style={{ width: '100%', opacity: (!(inputMode === 'url' ? videoUrl.trim() : file) || !sessionName || !jerseyNumber || (inputMode === 'file' && file && file.size > 50 * 1024 * 1024)) ? 0.4 : 1 }}
+            disabled={!(inputMode === 'url' ? videoUrl.trim() : file) || !sessionName || !jerseyNumber || (inputMode === 'file' && file && file.size > 50 * 1024 * 1024)}
           >
             Analyze Full Game with Gemini
           </button>
