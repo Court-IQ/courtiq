@@ -13,10 +13,30 @@ export default function AutoUpload() {
   const [inputMode, setInputMode] = useState('url'); // 'url' | 'file'
   const [videoUrl, setVideoUrl] = useState('');
   const [file, setFile] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [focusAreas, setFocusAreas] = useState([]);
+  const [customFocus, setCustomFocus] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [statusMsg, setStatusMsg] = useState('Uploading video...');
   const [progress, setProgress] = useState(0);
+
+  const FOCUS_OPTIONS = [
+    { id: 'shot_selection', label: 'Shot Selection' },
+    { id: 'decision_making', label: 'Decision Making' },
+    { id: 'off_ball', label: 'Off-Ball Movement' },
+    { id: 'ball_handling', label: 'Ball Handling' },
+    { id: 'defense', label: 'Defense' },
+    { id: 'pick_and_roll', label: 'Pick & Roll' },
+    { id: 'finishing', label: 'Finishing at the Rim' },
+    { id: 'passing', label: 'Passing & Vision' },
+    { id: 'transition', label: 'Transition Play' },
+    { id: 'footwork', label: 'Footwork' },
+  ];
+
+  function toggleFocus(id) {
+    setFocusAreas(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+  }
 
   useEffect(() => {
     async function init() {
@@ -75,10 +95,11 @@ export default function AutoUpload() {
       if (inputMode === 'url') {
         // URL mode: Railway fetches the video from the URL and pipes it to Gemini
         setStatusMsg('Sending URL to server...');
+        const focusLabel = focusAreas.map(id => FOCUS_OPTIONS.find(o => o.id === id)?.label).filter(Boolean);
         const res = await fetch(`${API_URL}/api/auto-analyze/from-url`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoUrl: videoUrl.trim(), sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id }),
+          body: JSON.stringify({ videoUrl: videoUrl.trim(), sessionName, playerName, jerseyNumber, jerseyColor, position, userId: user.id, focusAreas: focusLabel, customFocus: customFocus.trim() }),
         });
         const text = await res.text();
         let data;
@@ -315,43 +336,90 @@ export default function AutoUpload() {
               <div>
                 <input
                   type="text"
-                  placeholder="Paste Google Drive, Dropbox, or direct video URL"
+                  placeholder="Paste Google Drive or Dropbox link..."
                   value={videoUrl}
                   onChange={e => setVideoUrl(e.target.value)}
                   style={input}
                 />
-                <p style={{ color: '#888', fontSize: '12px', marginTop: '8px', marginBottom: 0 }}>
-                  Google Drive: set sharing to "Anyone with the link", then paste the link here.
-                </p>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '12px', color: '#888', background: '#f5f6f8', borderRadius: '6px', padding: '5px 10px' }}>
+                    Google Drive → Share → "Anyone with the link"
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#888', background: '#f5f6f8', borderRadius: '6px', padding: '5px 10px' }}>
+                    Dropbox → Share → Copy link
+                  </div>
+                </div>
               </div>
             ) : (
-              <label style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', gap: '8px', padding: '40px',
-                border: `2px dashed ${file ? '#ff6b00' : '#e5e7eb'}`,
-                borderRadius: '12px', cursor: 'pointer', transition: 'border-color 0.2s',
-              }}
-                onMouseEnter={e => !file && (e.currentTarget.style.borderColor = '#ff6b00')}
-                onMouseLeave={e => !file && (e.currentTarget.style.borderColor = '#e5e7eb')}
+              <label
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', gap: '10px', padding: '48px 24px',
+                  border: `2px dashed ${dragOver ? '#ff6b00' : file ? '#ff6b00' : '#d1d5db'}`,
+                  borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s',
+                  background: dragOver ? '#fff5eb' : file ? '#fff5eb' : '#fafafa',
+                }}
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) setFile(f); }}
               >
-                <span style={{ fontSize: '36px' }}>{file ? '✅' : '🎬'}</span>
-                <span style={{ color: file ? '#111827' : '#888', fontSize: '14px', fontWeight: '600' }}>
-                  {file ? file.name : 'Click to upload full game film'}
-                </span>
                 {file ? (
-                  <span style={{ color: '#888', fontSize: '12px' }}>{(file.size / 1024 / 1024).toFixed(0)} MB</span>
+                  <>
+                    <div style={{ fontSize: '40px' }}>✅</div>
+                    <div style={{ fontWeight: '700', color: '#111827', fontSize: '14px' }}>{file.name}</div>
+                    <div style={{ color: '#888', fontSize: '12px' }}>{(file.size / 1024 / 1024).toFixed(1)} MB · Click to change</div>
+                  </>
                 ) : (
-                  <span style={{ color: '#aaa', fontSize: '12px' }}>MP4, MOV, AVI · Small files only</span>
+                  <>
+                    <div style={{ fontSize: '40px' }}>🎬</div>
+                    <div style={{ fontWeight: '700', color: '#374151', fontSize: '15px' }}>Drop your game film here</div>
+                    <div style={{ color: '#9ca3af', fontSize: '13px' }}>or click to browse · MP4, MOV, AVI</div>
+                    <div style={{
+                      marginTop: '4px', padding: '6px 14px', borderRadius: '8px',
+                      background: '#ff6b00', color: '#fff', fontSize: '13px', fontWeight: '700',
+                    }}>Choose File</div>
+                  </>
                 )}
                 <input type="file" accept="video/*" onChange={e => setFile(e.target.files[0])} style={{ display: 'none' }} />
               </label>
             )}
           </div>
 
+          <div style={section}>
+            <div style={sectionTitle}>What should the AI focus on? <span style={{ color: '#aaa', fontWeight: '400', textTransform: 'none', letterSpacing: '0' }}>(optional)</span></div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+              {FOCUS_OPTIONS.map(opt => {
+                const selected = focusAreas.includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => toggleFocus(opt.id)}
+                    style={{
+                      padding: '7px 14px', borderRadius: '20px', cursor: 'pointer',
+                      fontSize: '13px', fontWeight: '600', transition: 'all 0.15s',
+                      border: selected ? 'none' : '1px solid #e5e7eb',
+                      background: selected ? '#ff6b00' : '#f5f6f8',
+                      color: selected ? '#fff' : '#555',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="text"
+              placeholder="Anything else? e.g. 'I tend to dribble too much on the wing'"
+              value={customFocus}
+              onChange={e => setCustomFocus(e.target.value)}
+              style={input}
+            />
+          </div>
+
           <div style={{ background: '#fff5eb', border: '1px solid #fed7aa', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
             <div style={{ fontSize: '12px', fontWeight: '700', color: '#ff6b00', marginBottom: '6px', letterSpacing: '1px' }}>HOW IT WORKS</div>
             <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.7' }}>
-              Gemini 2.5 Flash watches your entire video, finds every possession where #{jerseyNumber || '?'} touches the ball, and grades each play — no tagging required. Analysis takes <strong>2-5 minutes</strong> depending on video length.
+              Gemini 2.5 Flash watches your entire video, finds every possession where #{jerseyNumber || '?'} touches the ball, and grades each play — no tagging required. Analysis takes <strong>2–5 minutes</strong> depending on video length.
             </div>
           </div>
 

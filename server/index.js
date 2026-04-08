@@ -738,7 +738,7 @@ app.post("/api/chunk/upload", async (req, res) => {
 // ─── URL-BASED ANALYSIS ──────────────────────────────────────────
 
 app.post("/api/auto-analyze/from-url", async (req, res) => {
-  const { videoUrl, sessionName, playerName, jerseyNumber, jerseyColor, position, userId } = req.body;
+  const { videoUrl, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, focusAreas, customFocus } = req.body;
   if (!videoUrl) return res.status(400).json({ success: false, error: "No videoUrl provided" });
 
   let directUrl = videoUrl;
@@ -877,7 +877,7 @@ app.post("/api/auto-analyze/from-url", async (req, res) => {
     console.log("Uploaded to Gemini:", fileName);
     await updateStatus("Gemini is watching your film...");
 
-    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId, statusId });
+    await runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor: jerseyColor || "unknown", position, userId, statusId, focusAreas, customFocus });
   } catch (err) {
     const msg = err.name === "AbortError" ? "Timed out fetching video — check your URL is publicly accessible" : err.message;
     await saveError(msg);
@@ -1088,7 +1088,7 @@ async function runAutoAnalysis({ file, sessionName, playerName, jerseyNumber, je
 }
 
 // Shared: Brain context + Gemini prompt + save to Supabase
-async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId }) {
+async function analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId, focusAreas, customFocus }) {
   const getGrade = (score) => {
     if (score >= 93) return "A";
     if (score >= 90) return "A-";
@@ -1243,6 +1243,11 @@ Player info:
 
 IMPORTANT: Only track the player in the ${jerseyColor} #${jerseyNumber} jersey. If the opposing team also has a #${jerseyNumber}, ignore them — they will be wearing a different color.
 
+${(focusAreas && focusAreas.length > 0) || customFocus ? `COACHING FOCUS — The player specifically wants feedback on:
+${focusAreas && focusAreas.length > 0 ? focusAreas.map(f => `- ${f}`).join('\n') : ''}
+${customFocus ? `- ${customFocus}` : ''}
+Pay extra attention to these areas in every play. Call them out directly in your analysis even when the player does them well.
+` : ''}
 BASKETBALL BRAIN CONTEXT (apply this expert knowledge to your analysis):
 ${brainContext || 'No additional context.'}
 
@@ -1371,7 +1376,7 @@ If you can only find 1-2 possessions where #${jerseyNumber} is clearly visible, 
 }
 
 // Used when browser uploads directly to Google — skips the file upload step
-async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId }) {
+async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId, focusAreas, customFocus }) {
   const geminiAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
   const db = adminSupabase || supabase;
@@ -1401,7 +1406,7 @@ async function runAutoAnalysisFromFile({ fileName, sessionName, playerName, jers
 
     await updateStatus("Analyzing every possession...");
 
-    await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId });
+    await analyzeAndSave({ geminiFile, geminiAI, sessionName, playerName, jerseyNumber, jerseyColor, position, userId, statusId, focusAreas, customFocus });
 
     try { await fileManager.deleteFile(fileName); } catch (e) {}
   } catch (err) {
