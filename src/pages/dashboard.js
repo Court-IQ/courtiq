@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 function Dashboard() {
   const navigate = useNavigate();
   const [analyses, setAnalyses] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [usage, setUsage] = useState(null);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ function Dashboard() {
       .order('created_at', { ascending: true });
     if (error) console.error(error);
     else setAnalyses(data);
+    setLoadingData(false);
   }
 
   const avgScore = analyses.length
@@ -95,13 +97,16 @@ function Dashboard() {
 
       <div className="stats-row">
         {[
-          ['Total Sessions', analyses.length],
-          ['Avg Score', avgScore],
-          ['This Month', usage ? usage.used : '...'],
+          ['Total Sessions', loadingData ? null : analyses.length],
+          ['Avg Score', loadingData ? null : avgScore],
+          ['This Month', loadingData ? null : (usage ? usage.used : '—')],
         ].map(([label, val]) => (
           <div className="stat-card" key={label}>
             <div className="stat-label">{label}</div>
-            <div className="stat-value">{val}</div>
+            {val === null
+              ? <div className="skeleton" style={{ height: '36px', width: '60px', marginTop: '4px' }} />
+              : <div className="stat-value">{val}</div>
+            }
           </div>
         ))}
       </div>

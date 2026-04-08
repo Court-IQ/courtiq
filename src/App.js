@@ -22,11 +22,11 @@ function Sidebar({ onSignOut }) {
   const [open, setOpen] = useState(false);
 
   const navItems = [
-    { label: 'Dashboard', path: '/' },
-    { label: 'Auto Analysis', path: '/auto' },
-    { label: 'Upload', path: '/upload' },
-    { label: 'History', path: '/history' },
-    { label: 'Profile', path: '/profile' },
+    { label: 'Dashboard', path: '/', icon: '▦' },
+    { label: 'Auto Analysis', path: '/auto', icon: '◈' },
+    { label: 'Upload', path: '/upload', icon: '⊕' },
+    { label: 'History', path: '/history', icon: '◷' },
+    { label: 'Profile', path: '/profile', icon: '◉' },
   ];
 
   return (
@@ -72,13 +72,14 @@ function Sidebar({ onSignOut }) {
             <div className="logo-sub">AI FILM ANALYSIS</div>
           </div>
         </div>
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {navItems.map(item => (
             <div
               key={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={() => { navigate(item.path); setOpen(false); }}
             >
+              <span style={{ fontSize: '15px', opacity: 0.85 }}>{item.icon}</span>
               {item.label}
             </div>
           ))}
@@ -86,8 +87,9 @@ function Sidebar({ onSignOut }) {
         <div
           className="nav-item"
           onClick={onSignOut}
-          style={{ color: '#ff4444', marginTop: '8px' }}
+          style={{ color: '#6b7280', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}
         >
+          <span style={{ fontSize: '15px' }}>↪</span>
           Sign Out
         </div>
       </div>
