@@ -10,7 +10,7 @@ export default function AutoUpload() {
   const [jerseyNumber, setJerseyNumber] = useState('');
   const [jerseyColor, setJerseyColor] = useState('white');
   const [position, setPosition] = useState('point guard');
-  const [inputMode, setInputMode] = useState('url'); // 'url' | 'file'
+  const [inputMode, setInputMode] = useState('file'); // 'url' | 'file'
   const [videoUrl, setVideoUrl] = useState('');
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
