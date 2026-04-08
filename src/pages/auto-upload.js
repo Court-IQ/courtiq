@@ -137,12 +137,10 @@ export default function AutoUpload() {
 
         // Step 2: Upload directly from browser to Supabase (bypasses Render)
         setStatusMsg('Uploading to storage...');
-        const uploadRes = await fetch(urlData.signedUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': mimeType },
-          body: file,
-        });
-        if (!uploadRes.ok) throw new Error(`Storage upload failed (${uploadRes.status})`);
+        const { error: uploadError } = await supabase.storage
+          .from('game-films')
+          .uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: mimeType });
+        if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`);
         setProgress(60);
 
         // Step 3: Tell Render to pull from Supabase and send to Gemini
