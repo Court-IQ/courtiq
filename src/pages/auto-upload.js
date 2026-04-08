@@ -92,8 +92,16 @@ export default function AutoUpload() {
     setPhase(2);
 
     try {
+      // Wake up Render before doing anything — free tier sleeps after 15min
+      setStatusMsg('Connecting to server...');
+      try {
+        await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(60000) });
+      } catch (e) {
+        throw new Error('Server is not responding. Please try again in 30 seconds.');
+      }
+
       if (inputMode === 'url') {
-        // URL mode: Railway fetches the video from the URL and pipes it to Gemini
+        // URL mode
         setStatusMsg('Sending URL to server...');
         const focusLabel = focusAreas.map(id => FOCUS_OPTIONS.find(o => o.id === id)?.label).filter(Boolean);
         const res = await fetch(`${API_URL}/api/auto-analyze/from-url`, {
@@ -111,7 +119,9 @@ export default function AutoUpload() {
       } else {
         // File mode (for smaller files)
         const CHUNK_SIZE = 5 * 1024 * 1024;
-        const mimeType = file.type || 'video/mp4';
+        // Gemini only accepts video/mp4 — normalize MOV and other types
+        const rawMime = file.type || 'video/mp4';
+        const mimeType = rawMime.startsWith('video/') ? 'video/mp4' : rawMime;
         const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
         setStatusMsg('Preparing upload...');
