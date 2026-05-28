@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const FORMSPREE = "https://formspree.io/f/mojbnyjj";
 
@@ -42,12 +43,20 @@ export default function Home() {
           <div className="w-3 h-3 rounded-full bg-orange-500" />
           <span className="font-bold text-xl">CourtIQ</span>
         </div>
-        <a
-          href="#waitlist"
-          className="text-sm text-slate-300 hover:text-white"
-        >
-          Join waitlist →
-        </a>
+        <div className="flex items-center gap-5">
+          <Link
+            href="/chat"
+            className="text-sm text-slate-300 hover:text-orange-400 transition"
+          >
+            Ask the coach
+          </Link>
+          <a
+            href="#waitlist"
+            className="text-sm text-slate-300 hover:text-white"
+          >
+            Join waitlist →
+          </a>
+        </div>
       </nav>
 
       {/* hero */}
