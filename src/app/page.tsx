@@ -46,13 +46,19 @@ export default function Home() {
         <div className="flex items-center gap-5">
           <Link
             href="/chat"
-            className="text-sm text-slate-300 hover:text-orange-400 transition"
+            className="text-sm text-slate-300 hover:text-orange-400 transition hidden sm:inline"
           >
             Ask the coach
           </Link>
+          <Link
+            href="/plan"
+            className="text-sm text-slate-300 hover:text-orange-400 transition"
+          >
+            Build a plan
+          </Link>
           <a
             href="#waitlist"
-            className="text-sm text-slate-300 hover:text-white"
+            className="text-sm text-slate-300 hover:text-white hidden sm:inline"
           >
             Join waitlist →
           </a>
