@@ -56,6 +56,12 @@ export default function Home() {
           >
             Build a plan
           </Link>
+          <Link
+            href="/log"
+            className="text-sm text-slate-300 hover:text-orange-400 transition"
+          >
+            Game log
+          </Link>
           <a
             href="#waitlist"
             className="text-sm text-slate-300 hover:text-white hidden sm:inline"
