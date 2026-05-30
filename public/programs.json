@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "programs": [
+    {
+      "id": "pg-shoot-hs-45-5d",
+      "title": "Point Guard Shooting Series #1",
+      "byline": "Coach Matthew",
+      "position": [
+        "1",
+        "2"
+      ],
+      "level": [
+        "High School"
+      ],
+      "focus": [
+        "Shooting"
+      ],
+      "minutes_per_day": 45,
+      "days_per_week": 5,
+      "summary": "Five days of game-speed shooting volume. Form work Day 1, off-dribble and game-speed reps as the week progresses.",
+      "days": [
+        {
+          "day_number": 1,
+          "title": "Form + Volume",
+          "total_minutes": 45,
+          "drills": [
+            {
+              "name": "Form shots from 6 feet",
+              "description": "Stand 6 ft from rim. Shot pocket low, elbow under the ball, follow-through with full extension and hold. Hand under, not on the side.",
+              "reps_or_time": "50 makes (10 from each of 5 spots)",
+              "video_url": null
+            },
+            {
+              "name": "Catch-and-shoot from 5 spots",
+              "description": "Spin pass to yourself, catch in shot pocket, square hips and shoulders to rim, shoot in rhythm. Don't dip the ball. Spots: left corner, left wing, top, right wing, right corner.",
+              "reps_or_time": "50 makes (10 per spot)",
+              "video_url": null
+            },
+            {
+              "name": "One-dribble pull-ups from each elbow",
+              "description": "Start at the top of the key. One hard dribble to the elbow, gather, pull up. Footwork: inside foot plants first. Right side first, then left.",
+              "reps_or_time": "20 makes (10 per side)",
+              "video_url": null
+            }
+          ]
+        },
+        {
+          "day_number": 2,
+          "title": "Off-Dribble Mid-Range",
+          "total_minutes": 45,
+          "drills": [
+            {
+              "name": "Wing drive + pull-up",
+              "description": "From the wing, hard dribble to the elbow, jab-style pull-up. Focus on shoulder square and balance. Right then left.",
+              "reps_or_time": "20 makes (10 per side)",
+              "video_url": null
+            },
+            {
+              "name": "Hesitation into pull-up at the elbow",
+              "description": "Slow-fast move \u2014 change pace mid-dribble, then pull. The hesitation sells it. Don't shortcut the gather.",
+              "reps_or_time": "20 makes (10 per side)",
+              "video_url": null
+            },
+            {
+              "name": "Step-back from the wing",
+              "description": "Drive baseline 2 steps, push off front foot, step back into shot pocket. Stay low through the move.",
+              "reps_or_time": "20 makes (10 per side)",
+              "video_url": null
+            }
+          ]
+        },
+        {
+          "day_number": 3,
+          "title": "3-Point Volume + Recovery",
+          "total_minutes": 45,
+          "drills": [
+            {
+              "name": "3-point catch-and-shoot from 5 spots",
+              "description": "Same 5 spots as Day 1 but behind the line. Spin pass, catch ready, shoot. Strong base, no fade.",
+              "reps_or_time": "100 makes total (20 per spot)",
+              "video_url": null
+            },
+            {
+              "name": "Off-the-dribble 3 from wing",
+              "description": "One hard side-step dribble before the pull. Stay behind the line. Get used to the rhythm of one-dribble 3s.",
+              "reps_or_time": "20 makes (10 per side)",
+              "video_url": null
+            }
+          ]
+        },
+        {
+          "day_number": 4,
+          "title": "Game Speed",
+          "total_minutes": 45,
+          "drills": [
+            {
+              "name": "Spot-up shooting under closeout pressure",
+              "description": "Partner or chair closeout. Catch, rip-through, shoot or one-dribble pull depending on the closeout. Game decision.",
+              "reps_or_time": "50 reps total",
+              "video_url": null
+            },
+            {
+              "name": "Pull-up off pick simulation",
+              "description": "Set imaginary screen at the top. Dribble off it, attack downhill, pull at the elbow. Get the angle right.",
+              "reps_or_time": "30 makes (15 per side)",
+              "video_url": null
+            },
+            {
+              "name": "Free throws at the end (fatigued)",
+              "description": "After all your shooting work, shoot FTs. Routine the same every time. Breathe. Bend knees same depth.",
+              "reps_or_time": "25 makes",
+              "video_url": null
+            }
+          ]
+        },
+        {
+          "day_number": 5,
+          "title": "Make It Take It",
+          "total_minutes": 45,
+          "drills": [
+            {
+              "name": "5-spot make-it streak",
+              "description": "From each spot, make 5 in a row before moving. If you miss, start that spot over. Corner \u2192 wing \u2192 top \u2192 wing \u2192 corner. Mental rep as much as physical.",
+              "reps_or_time": "Make 5 in a row from each of 5 spots",
+              "video_url": null
+            },
+            {
+              "name": "Free throws",
+              "description": "Routine every time. Same dribbles, same breath, same release. Track the streak.",
+              "reps_or_time": "50 makes",
+              "video_url": null
+            },
+            {
+              "name": "End-of-game shot simulation",
+              "description": "5 seconds on imaginary clock. Count down out loud (3-2-1), catch-and-shoot a 3. Reset, repeat. Mental rep matters more than form here.",
+              "reps_or_time": "20 reps",
+              "video_url": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pg-handle-hs-15-3d",
+      "title": "Point Guard Ball Handling Series #1",
+      "byline": "Coach Matthew",
+      "position": [
+        "1"
+      ],
+      "level": [
+        "High School"
+      ],
+      "focus": [
+        "Ball handling"
+      ],
+      "minutes_per_day": 15,
+      "days_per_week": 3,
+      "summary": "Three short days for HS point guards \u2014 tight handles, weak hand confidence, and change-of-pace moves.",
+      "days": [
+        {
+          "day_number": 1,
+          "title": "Stationary Foundations",
+          "total_minutes": 15,
+          "drills": [
+            {
+              "name": "Pound dribble progression",
+              "description": "Pound the ball hard at hip height. Knees bent, eyes up, never look down at the ball. Right hand 30 sec, then left, then alternate every dribble for 30 sec. Rest 30 sec between rounds.",
+              "reps_or_time": "3 rounds: 30s right / 30s left / 30s alternating",
+              "video_url": null
+            },
+            {
+              "name": "Stationary handle sequence",
+              "description": "One set = crossover (8 reps), between the legs (8 reps), behind the back (8 reps), in-and-out (8 reps). Keep the dribble low and hard. Don't get sloppy when you're tired.",
+              "reps_or_time": "4 sets \u2014 8 reps of each move",
+              "video_url": null
+            },
+            {
+              "name": "Weak hand pound \u2014 height changes",
+              "description": "Left hand only. Pound dribble and change heights every 15 sec \u2014 high, low, high, low. Eyes up the whole time. This is the drill that closes the gap between your hands.",
+              "reps_or_time": "3 sets of 60 sec",
+              "video_url": null
+            }
+          ]
+        },
+        {
+          "day_number": 2,
+          "title": "On-the-Move",
+          "total_minutes": 15,
+          "drills": [
+            {
+              "name": "Full-court speed dribble",
+              "description": "Push dribble at top speed end-to-end. Stay low, push the ball out in front of you (not next to you). Trip 1 right, trip 2 left, repeat. Touch each baseline.",
+              "reps_or_time": "10 trips \u2014 alternate hand each trip",
+              "video_url": null
+            },
+            {
+              "name": "Hesitation move attack",
+              "description": "Start at half-court. Dribble at controlled pace, hesitate \u2014 slow down, sit, drop your shoulders like you're about to settle \u2014 then explode past an imaginary defender. Right side first, then left.",
+              "reps_or_time": "20 reps total (10 per side)",
+              "video_url": null
+            },
+            {
+              "name": "Crossover at speed",
+              "description": "Half-court to baseline at game speed. Each trip pick ONE move at the elbow area: crossover, between the legs, behind the back. Keep your eyes up the entire trip.",
+              "reps_or_time": "8 trips down, one move per trip",
+              "video_url": null
+            }
+          ]
+        },
+        {
+          "day_number": 3,
+          "title": "Two-Ball + Game Speed",
+          "total_minutes": 15,
+          "drills": [
+            {
+              "name": "Two-ball synchronized pound",
+              "description": "Hold one ball in each hand. Pound dribble both at the same time at hip height. Both bounces hit the floor together. Builds even hand strength and rhythm.",
+              "reps_or_time": "3 sets of 45 sec",
+              "video_url": null
+            },
+            {
+              "name": "Two-ball alternating",
+              "description": "One ball goes up while the other goes down. Alternating dribbles. Will feel awkward at first \u2014 that's the point. Eyes up forces you to feel the rhythm instead of looking.",
+              "reps_or_time": "3 sets of 45 sec",
+              "video_url": null
+            },
+            {
+              "name": "1-on-0 attack from top",
+              "description": "Start at top of key. Pick ONE move (crossover, between legs, behind back, or hesi) and attack the rim at full speed. Finish strong at the rim. This is the game rep \u2014 make every one count.",
+              "reps_or_time": "10 reps \u2014 5 going right, 5 going left",
+              "video_url": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -31,15 +31,13 @@ type StoredPlan = {
   created_at: string;
 };
 
-const POSITIONS = ["1 / PG", "2 / SG", "3 / SF", "4 / PF", "5 / C", "Combo guard", "Combo forward"];
-const LEVELS = ["HS JV", "HS Varsity", "AAU", "JuCo / D3 / NAIA", "D1 / D2", "Pro / Overseas"];
+const POSITIONS = ["1", "2", "3", "4", "5"];
+const LEVELS = ["High School", "College", "Pro"];
 const FOCUS_AREAS = [
   "Shooting",
   "Ball handling",
   "Finishing at the rim",
-  "Defense",
   "Game IQ + film",
-  "Conditioning + athleticism",
 ];
 const TIMES = [15, 30, 45, 60, 90];
 const DAYS = [3, 4, 5, 6, 7];
