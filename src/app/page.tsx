@@ -39,7 +39,14 @@ export default function Home() {
       {/* nav */}
       <nav className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-orange-500" />
+          <Image
+            src="/logo.png"
+            alt="CourtIQ"
+            width={36}
+            height={36}
+            className="rounded-lg"
+            priority
+          />
           <span className="font-bold text-xl">CourtIQ</span>
         </div>
         <div className="flex items-center gap-5">
