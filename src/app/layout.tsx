@@ -13,15 +13,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HooprLab — Your AI scouting report after every game",
+  metadataBase: new URL("https://courtiq-ebon.vercel.app"),
+  title: "HooprLab — AI scouting reports for hoopers",
   description:
     "Send us your game film. We send back a shot chart, your tendencies, and exactly what to work on before the next game.",
+  keywords: [
+    "basketball training app",
+    "AI basketball coach",
+    "scouting report",
+    "AAU",
+    "high school basketball",
+    "hooper",
+    "HooprLab",
+  ],
   openGraph: {
     title: "HooprLab — AI scouting reports for hoopers",
     description:
-      "Send us your game film. We send back a player scouting report.",
+      "Send your game film. Get a scouting report — shot chart, tendencies, what to work on.",
+    images: ["/cards/01_cover.png"],
+    type: "website",
+    siteName: "HooprLab",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HooprLab — AI scouting reports for hoopers",
+    description:
+      "Send your game film. Get a scouting report — shot chart, tendencies, what to work on.",
     images: ["/cards/01_cover.png"],
   },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
