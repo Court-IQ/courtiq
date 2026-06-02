@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CourtIQ — Your AI scouting report after every game",
+  title: "HooprLab — Your AI scouting report after every game",
   description:
     "Send us your game film. We send back a shot chart, your tendencies, and exactly what to work on before the next game.",
   openGraph: {
-    title: "CourtIQ — AI scouting reports for hoopers",
+    title: "HooprLab — AI scouting reports for hoopers",
     description:
       "Send us your game film. We send back a player scouting report.",
     images: ["/cards/01_cover.png"],

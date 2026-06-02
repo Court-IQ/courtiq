@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase-server";
 import { isCoachAuthenticated } from "@/lib/coach-auth";
 
-export const metadata = { title: "Queue — CourtIQ Coach" };
+export const metadata = { title: "Queue — HooprLab Coach" };
 export const dynamic = "force-dynamic";
 
 type Submission = {
@@ -56,7 +56,7 @@ export default async function CoachQueuePage() {
       <header className="border-b border-slate-800/60 px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-          <span className="font-bold text-lg">CourtIQ</span>
+          <span className="font-bold text-lg">HooprLab</span>
         </Link>
         <span className="text-xs text-slate-400">Coach · Queue</span>
       </header>

@@ -41,13 +41,13 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <Image
             src="/logo.png"
-            alt="CourtIQ"
+            alt="HooprLab"
             width={36}
             height={36}
             className="rounded-lg"
             priority
           />
-          <span className="font-bold text-xl">CourtIQ</span>
+          <span className="font-bold text-xl">HooprLab</span>
         </div>
         <div className="flex items-center gap-5">
           <a
@@ -198,7 +198,7 @@ export default function Home() {
       </section>
 
       <footer className="max-w-5xl mx-auto px-6 py-10 text-center text-slate-500 text-sm">
-        <p>© 2026 CourtIQ — built by a hooper, for hoopers.</p>
+        <p>© 2026 HooprLab — built by a hooper, for hoopers.</p>
       </footer>
     </div>
   );

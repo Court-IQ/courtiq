@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase-server";
 import { isCoachAuthenticated } from "@/lib/coach-auth";
 import SubmissionEditor from "./editor";
 
-export const metadata = { title: "Submission — CourtIQ Coach" };
+export const metadata = { title: "Submission — HooprLab Coach" };
 export const dynamic = "force-dynamic";
 
 type RouteParams = { params: Promise<{ id: string }> };

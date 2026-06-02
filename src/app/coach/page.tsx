@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { isCoachAuthenticated } from "@/lib/coach-auth";
 import CoachLoginForm from "./login-form";
 
-export const metadata = { title: "Coach — CourtIQ" };
+export const metadata = { title: "Coach — HooprLab" };
 
 export default async function CoachLoginPage() {
   if (await isCoachAuthenticated()) {
@@ -24,7 +24,7 @@ export default async function CoachLoginPage() {
           className="flex items-center gap-2 max-w-md mx-auto"
         >
           <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-          <span className="font-bold text-lg">CourtIQ</span>
+          <span className="font-bold text-lg">HooprLab</span>
         </Link>
       </header>
 

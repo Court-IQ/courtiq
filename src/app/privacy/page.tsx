@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy — CourtIQ",
-  description: "How CourtIQ handles your data.",
+  title: "Privacy Policy — HooprLab",
+  description: "How HooprLab handles your data.",
 };
 
 export default function PrivacyPage() {
@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       <header className="border-b border-slate-800/60 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 max-w-3xl mx-auto">
           <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-          <span className="font-bold text-lg">CourtIQ</span>
+          <span className="font-bold text-lg">HooprLab</span>
         </Link>
       </header>
 
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
 
         <Section title="The short version">
           <p>
-            CourtIQ is built to help you get better at basketball. We collect
+            HooprLab is built to help you get better at basketball. We collect
             as little as possible. Your chat history, practice plans, and
             game logs live on your device — not on our servers. Your
             questions to the AI coach are sent to Google&apos;s Gemini API
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
 
         <Section title="Players under 13">
           <p>
-            CourtIQ is built for high school, AAU, and college basketball
+            HooprLab is built for high school, AAU, and college basketball
             players (generally ages 14-22). The app is not directed at
             children under 13, and we don&apos;t knowingly collect data from
             them. If you&apos;re a parent and your child under 13 has used
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
 
         <p className="text-slate-500 text-sm mt-16">
           This policy is written in plain English on purpose. If you&apos;re
-          a lawyer reading this on behalf of someone considering CourtIQ,
+          a lawyer reading this on behalf of someone considering HooprLab,
           we&apos;re happy to answer specific questions — just email.
         </p>
 
@@ -179,7 +179,7 @@ export default function PrivacyPage() {
             href="/"
             className="text-orange-400 hover:underline"
           >
-            ← Back to CourtIQ
+            ← Back to HooprLab
           </Link>
         </div>
       </main>
