@@ -23,34 +23,38 @@ export default function PrivacyPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-12 leading-relaxed">
         <h1 className="text-4xl font-extrabold mb-2">Privacy Policy</h1>
-        <p className="text-slate-400 mb-10">Last updated: May 29, 2026</p>
+        <p className="text-slate-400 mb-10">Last updated: June 4, 2026</p>
 
         <Section title="The short version">
           <p>
-            HooprLab is built to help you get better at basketball. We collect
-            as little as possible. Your chat history, practice plans, and
-            game logs live on your device — not on our servers. Your
-            questions to the AI coach are sent to Google&apos;s Gemini API
-            so it can respond. We don&apos;t sell your data. We don&apos;t
-            track you across the web.
+            HooprLab helps you get better at basketball. We collect only what
+            we need to run the product: your email, your profile, the films
+            you submit, and your conversations with the AI coach. We don&apos;t
+            sell data, we don&apos;t run ads, and we don&apos;t track you across
+            other apps or sites. You can delete your account from inside the
+            app at any time.
           </p>
         </Section>
 
-        <Section title="What we collect, and where it lives">
+        <Section title="What we collect">
           <ul className="list-disc pl-6 space-y-2">
             <li>
-              <strong>On your device only:</strong> your chat history with the
-              AI coach, your generated practice plans, your logged games and
-              stats. This data stays in your phone&apos;s local storage. We
-              don&apos;t see it. You can clear it anytime by removing the app
-              or clearing your browser data.
+              <strong>Account info:</strong> email address (for sign-in),
+              optional profile fields you fill in — name, jersey number,
+              position, level, school/team, height. Stored in our database
+              (Supabase). Linked to your account.
             </li>
             <li>
-              <strong>Sent to Google for AI responses:</strong> when you ask
-              the coach a question or generate a practice plan, your question
-              (and recent chat context) is sent to Google&apos;s Gemini API
-              so it can generate a response. Google processes this data under
-              their own terms. See{" "}
+              <strong>Submitted film and notes:</strong> game film you upload or
+              link, plus the focus/jersey/notes you submit alongside it. Stored
+              in our database and storage (Supabase) so we can deliver your
+              scouting report.
+            </li>
+            <li>
+              <strong>AI coach conversations:</strong> messages you send to the
+              in-app coach. Your questions (and recent context) are sent to
+              Google&apos;s Gemini API so it can respond. Stored locally on
+              your device for chat history. See{" "}
               <a
                 href="https://ai.google.dev/terms"
                 className="text-orange-400 underline"
@@ -62,8 +66,8 @@ export default function PrivacyPage() {
               .
             </li>
             <li>
-              <strong>Email address (only if you join the waitlist):</strong>{" "}
-              if you enter your email on our website, it&apos;s stored by{" "}
+              <strong>Email address from the waitlist (website only):</strong>{" "}
+              if you enter your email on hooprlab.com, it&apos;s stored by{" "}
               <a
                 href="https://formspree.io/legal/privacy-policy"
                 className="text-orange-400 underline"
@@ -72,14 +76,25 @@ export default function PrivacyPage() {
               >
                 Formspree
               </a>{" "}
-              so we can email you when the product is ready. We don&apos;t add
-              you to any other lists. You can email us anytime to be removed.
+              so we can email you when the product is ready.
             </li>
             <li>
-              <strong>Basic crash and usage data:</strong> our app is hosted
-              on Apple TestFlight (during beta) and Vercel (for the website).
-              Both collect basic crash reports and request logs to keep the
-              service running. See{" "}
+              <strong>Crash and error data:</strong> when the app crashes or
+              errors, we send a stack trace to{" "}
+              <a
+                href="https://sentry.io/privacy/"
+                className="text-orange-400 underline"
+                target="_blank"
+                rel="noopener"
+              >
+                Sentry
+              </a>{" "}
+              so we can fix it. Includes device model, OS version, and the
+              code path that failed. Not used for marketing or analytics.
+            </li>
+            <li>
+              <strong>Infrastructure logs:</strong> our hosting providers
+              (Apple TestFlight during beta,{" "}
               <a
                 href="https://vercel.com/legal/privacy-policy"
                 className="text-orange-400 underline"
@@ -88,16 +103,17 @@ export default function PrivacyPage() {
               >
                 Vercel
               </a>{" "}
-              and{" "}
+              for the website,{" "}
               <a
-                href="https://www.apple.com/legal/privacy/en-ww/"
+                href="https://supabase.com/privacy"
                 className="text-orange-400 underline"
                 target="_blank"
                 rel="noopener"
               >
-                Apple
-              </a>
-              .
+                Supabase
+              </a>{" "}
+              for the backend) keep basic request logs to keep the service
+              running.
             </li>
           </ul>
         </Section>
@@ -111,12 +127,13 @@ export default function PrivacyPage() {
               Analytics or Facebook Pixel.
             </li>
             <li>
-              We don&apos;t require an account or login (for v1). Everything
-              is anonymous.
+              We don&apos;t track you across other apps or websites for
+              advertising.
             </li>
             <li>
-              We don&apos;t collect location, contacts, photos, or any other
-              device data we don&apos;t need.
+              We don&apos;t collect contacts, photos, or location unless you
+              explicitly upload film. Permissions are only requested when
+              you tap a feature that needs them.
             </li>
           </ul>
         </Section>
@@ -132,23 +149,20 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="Your rights">
-          <p>
-            Because almost all your data lives on your device, you control it:
-          </p>
-          <ul className="list-disc pl-6 space-y-2 mt-3">
+          <ul className="list-disc pl-6 space-y-2">
             <li>
-              <strong>Delete everything:</strong> delete the app on your phone,
-              or clear your browser&apos;s storage for the website. That
-              removes your chat history, plans, and game logs.
+              <strong>Delete your account:</strong> open the app, go to
+              Settings, tap &ldquo;Delete account.&rdquo; This permanently
+              removes your account, profile, submitted films, and all related
+              data from our servers. There is no undo.
             </li>
             <li>
-              <strong>Get a copy:</strong> email us — since the data is on
-              your device, you already have it, but we&apos;ll help you
-              extract anything related to your waitlist email.
+              <strong>Request a copy of your data:</strong> email us and we&apos;ll
+              export everything tied to your account within 30 days.
             </li>
             <li>
-              <strong>Be removed from waitlist:</strong> email us asking and
-              we&apos;ll remove your email from Formspree within 7 days.
+              <strong>Be removed from the waitlist:</strong> email us asking
+              and we&apos;ll remove your email from Formspree within 7 days.
             </li>
           </ul>
         </Section>
@@ -156,8 +170,8 @@ export default function PrivacyPage() {
         <Section title="Changes to this policy">
           <p>
             If we change something material, we&apos;ll update the &ldquo;last
-            updated&rdquo; date at the top and, if you&apos;re on the waitlist,
-            send you an email.
+            updated&rdquo; date at the top and, if you have an account, notify
+            you in-app.
           </p>
         </Section>
 
