@@ -58,7 +58,15 @@ export default async function CoachQueuePage() {
           <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
           <span className="font-bold text-lg">HooprLab</span>
         </Link>
-        <span className="text-xs text-slate-400">Coach · Queue</span>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/coach/stats"
+            className="text-xs text-slate-300 hover:text-orange-400"
+          >
+            Stats →
+          </Link>
+          <span className="text-xs text-slate-400">Coach · Queue</span>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
