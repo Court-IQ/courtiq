@@ -117,7 +117,14 @@ export default async function CoachSubmissionPage({ params }: RouteParams) {
               {data.jersey_number && (
                 <div className="flex justify-between">
                   <dt className="text-slate-400">Jersey</dt>
-                  <dd className="font-bold">#{data.jersey_number}</dd>
+                  <dd className="font-bold">
+                    #{data.jersey_number}
+                    {data.jersey_color ? (
+                      <span className="text-slate-400 font-normal">
+                        {" "}· {data.jersey_color}
+                      </span>
+                    ) : null}
+                  </dd>
                 </div>
               )}
               {data.profiles.position && (
