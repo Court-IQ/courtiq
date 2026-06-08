@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://courtiq-ebon.vercel.app"),
+  metadataBase: new URL("https://hooprlab.vercel.app"),
   title: "HooprLab — AI scouting reports for hoopers",
   description:
     "Send us your game film. We send back a shot chart, your tendencies, and exactly what to work on before the next game.",
