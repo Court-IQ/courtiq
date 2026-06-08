@@ -1,17 +1,28 @@
 import Image from "next/image";
 
+const APP_STORE_URL = "https://apps.apple.com/us/app/hooprlab/id6774494139";
 const SIGNUP_URL = "https://forms.gle/3AthB2hPyY5h8Geh7";
 
 function CTAButton() {
   return (
-    <a
-      href={SIGNUP_URL}
-      target="_blank"
-      rel="noopener"
-      className="inline-block px-8 py-4 rounded-xl font-bold text-slate-900 bg-gradient-to-r from-orange-500 to-orange-400 hover:opacity-90 transition text-lg"
-    >
-      Get early access →
-    </a>
+    <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+      <a
+        href={APP_STORE_URL}
+        target="_blank"
+        rel="noopener"
+        className="inline-block px-8 py-4 rounded-xl font-bold text-slate-900 bg-gradient-to-r from-orange-500 to-orange-400 hover:opacity-90 transition text-lg"
+      >
+        Download on the App Store
+      </a>
+      <a
+        href={SIGNUP_URL}
+        target="_blank"
+        rel="noopener"
+        className="inline-block px-6 py-4 rounded-xl font-bold text-white border border-slate-600 hover:border-orange-500 transition text-sm"
+      >
+        Join the list →
+      </a>
+    </div>
   );
 }
 
