@@ -1,29 +1,17 @@
 import Image from "next/image";
 
-const FORMSPREE = "https://formspree.io/f/mojbnyjj";
+const SIGNUP_URL = "https://forms.gle/3AthB2hPyY5h8Geh7";
 
-function WaitlistForm({ id }: { id: string }) {
+function CTAButton() {
   return (
-    <form
-      id={id}
-      action={FORMSPREE}
-      method="POST"
-      className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto w-full"
+    <a
+      href={SIGNUP_URL}
+      target="_blank"
+      rel="noopener"
+      className="inline-block px-8 py-4 rounded-xl font-bold text-slate-900 bg-gradient-to-r from-orange-500 to-orange-400 hover:opacity-90 transition text-lg"
     >
-      <input
-        type="email"
-        name="email"
-        required
-        placeholder="your@email.com"
-        className="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
-      />
-      <button
-        type="submit"
-        className="px-6 py-3 rounded-lg font-bold text-slate-900 bg-gradient-to-r from-orange-500 to-orange-400 hover:opacity-90 transition"
-      >
-        Get on the list
-      </button>
-    </form>
+      Get early access →
+    </a>
   );
 }
 
@@ -72,7 +60,7 @@ export default function Home() {
           Send us your game film. We send back a shot chart, your tendencies,
           and exactly what to work on before the next game.
         </p>
-        <WaitlistForm id="waitlist" />
+        <CTAButton />
         <p className="text-xs text-slate-500 mt-3">
           First 50 AAU + HS players get reports free.
         </p>
@@ -194,7 +182,7 @@ export default function Home() {
           <br />
           First 50 players get free reports.
         </p>
-        <WaitlistForm id="waitlist-bottom" />
+        <CTAButton />
       </section>
 
       <footer className="max-w-5xl mx-auto px-6 py-10 text-center text-slate-500 text-sm">
