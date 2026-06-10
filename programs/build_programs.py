@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
-"""
-Read programs.xlsx (all sheets) and build programs.json.
+"""Build programs.json from programs.xlsx (v3 schema).
 
-Each sheet = one position's programs. The build merges all 5 sheets
-into one JSON file the Rork app fetches.
+One row per drill, grouped by workout_id. All sheets are merged into one list.
 
 Usage:
-    python3 programs/build_programs.py
+    cd ~/courtiq && python3 programs/build_programs.py
 """
 
 from __future__ import annotations
 
 import json
-import sys
-from collections import defaultdict
+from collections import OrderedDict
 from pathlib import Path
 
 import openpyxl
@@ -22,130 +19,128 @@ ROOT = Path(__file__).resolve().parent
 SHEET = ROOT / "programs.xlsx"
 OUT = ROOT.parent / "public" / "programs.json"
 
-REQUIRED_COLUMNS = {
-    "program_id", "program_title", "byline", "position", "level", "focus",
-    "minutes_per_day", "days_per_week", "summary",
-    "day_number", "day_title", "day_total_minutes",
-    "drill_order", "drill_name", "drill_reps", "drill_description",
+REQUIRED = {
+    "workout_id",
+    "workout_title",
+    "byline",
+    "level",
+    "focuses",
+    "minutes_per_day",
+    "summary",
+    "drill_order",
+    "drill_name",
+    "drill_reps",
+    "drill_description",
 }
-# drill_video_url is optional
 
 
-def split_list(s) -> list[str]:
-    if s is None:
+def split_list(value) -> list[str]:
+    if value is None:
         return []
-    return [x.strip() for x in str(s).split(",") if x.strip()]
+    return [v.strip() for v in str(value).split("/") if v.strip()]
 
 
-def parse_sheet(ws, sheet_name: str,
-                by_prog: dict[str, dict],
-                by_prog_day: dict[tuple, list],
-                errors: list[str]) -> int:
-    """Read one sheet's rows into the shared accumulators. Returns row count."""
-    headers = [(cell.value or "").strip() for cell in ws[1]]
-    missing = REQUIRED_COLUMNS - set(headers)
-    if missing:
-        errors.append(f"Sheet '{sheet_name}' missing columns: {missing}")
-        return 0
-
-    col_idx = {name: i for i, name in enumerate(headers)}
-    rows_added = 0
-
-    for row in ws.iter_rows(min_row=3, values_only=True):
-        # Skip blank or header-only rows
-        if not row or not row[col_idx["program_id"]]:
-            continue
-
-        r = {h: row[col_idx[h]] for h in headers if h}
-        pid = str(r["program_id"]).strip()
-
-        try:
-            if pid not in by_prog:
-                by_prog[pid] = {
-                    "id": pid,
-                    "title": str(r["program_title"] or "").strip(),
-                    "byline": str(r["byline"] or "Coach Matthew").strip(),
-                    "position": split_list(r["position"]),
-                    "level": split_list(r["level"]),
-                    "focus": split_list(r["focus"]),
-                    "minutes_per_day": int(r["minutes_per_day"]),
-                    "days_per_week": int(r["days_per_week"]),
-                    "summary": str(r["summary"] or "").strip(),
-                    "days": {},
-                    "_sheet": sheet_name,
-                }
-            prog = by_prog[pid]
-
-            day_num = int(r["day_number"])
-            if day_num not in prog["days"]:
-                prog["days"][day_num] = {
-                    "day_number": day_num,
-                    "title": str(r["day_title"] or "").strip(),
-                    "total_minutes": int(r["day_total_minutes"]),
-                }
-
-            video_url = str(r.get("drill_video_url") or "").strip()
-            by_prog_day[(pid, day_num)].append({
-                "order": int(r["drill_order"]),
-                "name": str(r["drill_name"] or "").strip(),
-                "description": str(r["drill_description"] or "").strip(),
-                "reps_or_time": str(r["drill_reps"] or "").strip(),
-                "video_url": video_url if video_url else None,
-            })
-            rows_added += 1
-        except (ValueError, TypeError, KeyError) as e:
-            errors.append(f"Sheet '{sheet_name}' row with id '{pid}': {e}")
-
-    return rows_added
+def cell_str(v) -> str:
+    return "" if v is None else str(v).strip()
 
 
-def main() -> None:
+def main():
     if not SHEET.exists():
-        sys.exit(f"Missing {SHEET}. Run: python3 programs/_make_sheet.py")
+        print(f"ERROR: {SHEET} not found.")
+        raise SystemExit(1)
 
     wb = openpyxl.load_workbook(SHEET, data_only=True)
-
-    by_prog: dict[str, dict] = {}
-    by_prog_day: dict[tuple, list] = defaultdict(list)
+    workouts: "OrderedDict[str, dict]" = OrderedDict()
     errors: list[str] = []
-    sheet_counts: dict[str, int] = {}
 
     for sheet_name in wb.sheetnames:
         ws = wb[sheet_name]
-        added = parse_sheet(ws, sheet_name, by_prog, by_prog_day, errors)
-        sheet_counts[sheet_name] = added
-        print(f"  · '{sheet_name}': {added} drill rows")
+        rows = list(ws.iter_rows(values_only=False))
+        if not rows:
+            continue
+        header_cells = rows[0]
+        headers = [cell_str(c.value) for c in header_cells]
+        missing = REQUIRED - set(headers)
+        if missing:
+            errors.append(f"Sheet '{sheet_name}' missing columns: {missing}")
+            continue
+        col = {h: i for i, h in enumerate(headers)}
+
+        for row_idx, row in enumerate(rows[1:], start=2):
+            values = [c.value for c in row]
+            workout_id = cell_str(values[col["workout_id"]])
+            if not workout_id:
+                continue
+
+            drill_order = values[col["drill_order"]]
+            try:
+                drill_order_int = int(drill_order)
+            except (TypeError, ValueError):
+                errors.append(
+                    f"{sheet_name} row {row_idx}: drill_order must be a number"
+                )
+                continue
+
+            if workout_id not in workouts:
+                try:
+                    minutes_val = int(values[col["minutes_per_day"]])
+                except (TypeError, ValueError):
+                    errors.append(
+                        f"{sheet_name} row {row_idx}: minutes_per_day must be a number"
+                    )
+                    continue
+
+                workouts[workout_id] = {
+                    "id": workout_id,
+                    "title": cell_str(values[col["workout_title"]]),
+                    "byline": cell_str(values[col["byline"]]) or "Coach Matthew",
+                    "level": split_list(values[col["level"]]),
+                    "focus": split_list(values[col["focuses"]]),
+                    "minutes_per_day": minutes_val,
+                    "summary": cell_str(values[col["summary"]]),
+                    "days": [
+                        {
+                            "day_number": 1,
+                            "title": "Today's Workout",
+                            "total_minutes": minutes_val,
+                            "drills": [],
+                        }
+                    ],
+                }
+
+            video_idx = col.get("drill_video_url")
+            focus_idx = col.get("drill_focus")
+            drill = {
+                "name": cell_str(values[col["drill_name"]]),
+                "description": cell_str(values[col["drill_description"]]),
+                "reps_or_time": cell_str(values[col["drill_reps"]]),
+                "video_url": cell_str(values[video_idx]) if video_idx is not None else "",
+                "focus": cell_str(values[focus_idx]) if focus_idx is not None else "",
+            }
+            if drill["video_url"] == "":
+                drill["video_url"] = None
+            workouts[workout_id]["days"][0]["drills"].append((drill_order_int, drill))
 
     if errors:
-        print("\nErrors:")
+        print("Build errors:")
         for e in errors:
-            print(f"  ✗ {e}")
+            print(f"  - {e}")
+        raise SystemExit(1)
 
-    # Finalize programs: sort days + drills
-    programs_out: list[dict] = []
-    for pid, prog in by_prog.items():
-        days_list = []
-        for day_num in sorted(prog["days"].keys()):
-            day = prog["days"][day_num]
-            day_drills = sorted(by_prog_day[(pid, day_num)], key=lambda d: d["order"])
-            for d in day_drills:
-                d.pop("order")
-            day["drills"] = day_drills
-            days_list.append(day)
-        prog["days"] = days_list
-        prog.pop("_sheet", None)
-        programs_out.append(prog)
+    output_programs = []
+    for w in workouts.values():
+        for day in w["days"]:
+            day["drills"].sort(key=lambda x: x[0])
+            day["drills"] = [d for _, d in day["drills"]]
+        output_programs.append(w)
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"version": 1, "programs": programs_out}, indent=2))
-
-    n_days = sum(len(p["days"]) for p in programs_out)
-    n_drills = sum(len(d["drills"]) for p in programs_out for d in p["days"])
-    print(f"\n✓ {len(programs_out)} programs · {n_days} days · {n_drills} drills")
-    print(f"  → {OUT}")
-
-    if errors:
-        sys.exit(1)
+    payload = {"version": 3, "programs": output_programs}
+    OUT.write_text(json.dumps(payload, separators=(",", ":")))
+    print(
+        f"OK  {len(output_programs)} workouts  "
+        f"{sum(len(d['drills']) for w in output_programs for d in w['days'])} drills  "
+        f"-> {OUT}"
+    )
 
 
 if __name__ == "__main__":
